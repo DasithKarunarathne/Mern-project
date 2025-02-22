@@ -18,4 +18,7 @@ message:{
 }
 );
 
-module.exports = Feedback = mongoose.model("feedback", feedbackSchema);
+//module.exports = Feedback = mongoose.model("feedback", feedbackSchema);
+
+const Feedback = mongoose.model("feedback", feedbackSchema);
+export default Feedback;

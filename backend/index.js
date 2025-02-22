@@ -1,34 +1,30 @@
-const express = require("express");
-const dbconnection = require ("./config/db");
-const feedbackroutes = require("./routes/feedback.js");
-const bodyParser = require("body-parser");
-const dotenv = require("dotenv");  
-const cors = require("cors");
+import express from "express";
+import dbconnection from "./config/db.js"; // Correct import with .js extension
+import feedbackroutes from "./routes/feedback.js"; // Correct import with .js extension
+import employeeroute from "./routes/employee.js";
+import dotenv from "dotenv";
+import cors from "cors";
 
+dotenv.config(); // Load environment variables
 
-require("dotenv").config();
 const app = express();
-
-
 const PORT = process.env.PORT || 4000;
 
+// Middleware
 app.use(cors({ origin: true, credentials: true }));
-
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended:true}));
-
-//dbconnection 
-dbconnection();
-
-app.use(express.json());
+app.use(express.json()); // Use express.json() instead of body-parser
 app.use(express.urlencoded({ extended: true }));
 
+// Database connection
+dbconnection();
 
-app.get("/",(req,res) => res.send("Hello world") );
+// Routes
+app.get("/", (req, res) => res.send("Hello world"));
 
-app.use("/api/feedback",feedbackroutes );
+app.use("/api/feedback", feedbackroutes); // Feedback route
+app.use("/api/employee",employeeroute);
 
 
 
+// Start server
 app.listen(PORT, () => console.log(`Server running on PORT ${PORT}`));
-

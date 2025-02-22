@@ -12,4 +12,6 @@ const EmployeeSchema = new mongoose.Schema({
     etfPercentage: { type: Number, default: 3 }  // ETF 3%
 })
 
-module.exports = mongoose.model("EMployee",EmployeeSchema );
+const Employee = mongoose.model("Employee", EmployeeSchema);
+
+export default Employee;

@@ -1,8 +1,8 @@
-const express = require("express");
+import { Router } from "express";
 
-const router = express.Router();
+const router = Router();
 
-const Feedback = require("../models/feedback");
+//import Feedback, { find, findById, findByIdAndUpdate, findByIdAndDelete } from "../models/feedback.js";
 //const feedback = require("../models/feedback");
 
 //test
@@ -43,29 +43,29 @@ router.route("/add").post((req,res)=>{
 })*/
 
 router.get("/",(req,res)=>{
-    Feedback.find()
+    find()
     .then((feedback)=>res.json(feedback))
     .catch(()=>res.status(400).json({msg: "No feedback found"}));
      
 })
 
 router.get("/:id",(req,res)=>{
-    Feedback.findById(req.params.id).then((feedback)=>res.json(feedback)).catch(()=>res.status(400).json({msg: "Cannot find the feedback"}));
+    findById(req.params.id).then((feedback)=>res.json(feedback)).catch(()=>res.status(400).json({msg: "Cannot find the feedback"}));
 
 })
 
 
 router.put("/updatefeedback/:id", (req, res) => {
-    Feedback.findByIdAndUpdate(req.params.id, req.body)
+    findByIdAndUpdate(req.params.id, req.body)
       .then(() => res.json({ msg: "Update successful" }))
       .catch(() => res.status(400).json({ msg: "Update failed" }));
   })
   
   router.delete("/:id", (req, res) => {
-    Feedback.findByIdAndDelete(req.params.id)
+    findByIdAndDelete(req.params.id)
         .then(() => res.json({ msg: "Deleted successfully" }))
         .catch(() => res.status(400).json({ msg: "Cannot be deleted" }));
 });
 
 
-module.exports = router;
+export default router;
