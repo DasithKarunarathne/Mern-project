@@ -2,6 +2,7 @@ import express from "express";
 import dbconnection from "./config/db.js"; // Correct import with .js extension
 import feedbackroutes from "./routes/feedback.js"; // Correct import with .js extension
 import employeeroute from "./routes/employee.js";
+import salaryCalc from "./routes/salaryRoutes.js";
 import dotenv from "dotenv";
 import cors from "cors";
 
@@ -23,7 +24,7 @@ app.get("/", (req, res) => res.send("Hello world"));
 
 app.use("/api/feedback", feedbackroutes); // Feedback route
 app.use("/api/employee",employeeroute);
-
+app.use("/api/Salary",salaryCalc);
 
 
 // Start server

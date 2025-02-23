@@ -14,8 +14,8 @@ router.post("/", async (req,res) => {
 
 
  try {
-    await newEmployee.save();
-    res.status(201).json({success: true, data : newEmployee});
+    const NewEmploy = await newEmployee.save();
+    res.status(201).json({success: true, data : NewEmploy});
  }catch(error){
     console.error("Error could not create an employee", error.message);
     res.status(500).json({ success: false, message: "Server Error"});
@@ -33,9 +33,29 @@ try {
     console.log(error);
 }
     
+})
+
+
+router.get("/info/:id", async (req,res)=>{
+
+    try {
+
+       const empId =  req.params.id;
+       const employee = await Employee.findOne({employeeId:empId});
+
+       if(!employee){
+        res.status(404).json({success:false, message:"Enter a valid Employee ID"});
+       }
+       res.status(202).json({success:true, data: employee});
+
+        
+    } catch (error) {
+        res.status(505).json({success:false, message:error.message});
+    }
 
 
 
 })
+
 
 export default router;
