@@ -1,8 +1,10 @@
 import express from "express";
-import {salarycalculation} from "../controllers/salaryController.js"
+import {salarycalculation, getsalaries, markSalPaid} from "../controllers/salaryController.js"
 
 const router = express.Router();
 
-router.post("/calculateSal/", salarycalculation);
+router.post("/calculate", salarycalculation);
+router.get("/:month", getsalaries);//:month???
+router.put("/markPaid/:salaryId",markSalPaid);
 
 export default router;
