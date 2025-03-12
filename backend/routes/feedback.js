@@ -1,5 +1,5 @@
 import { Router } from "express";
-
+import Feedback from "../models/feedback.js";
 const router = Router();
 
 //import Feedback, { find, findById, findByIdAndUpdate, findByIdAndDelete } from "../models/feedback.js";
