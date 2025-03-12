@@ -2,7 +2,7 @@ import Salary from "../models/Salary.js";
 import Employee from "../models/Employee.js";
 
 export const salarycalculation = async (req,res)=>{//generate salaryyy one
-
+//githubb desktop
     try {
         
         const {month} = req.body;
