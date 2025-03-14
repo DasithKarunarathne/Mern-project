@@ -44,7 +44,13 @@ export const addPettyCash = async(req,res)=>{
 
             //add to ledger part methanta danna
 
-            const LedgerEntry = new Ledger({description, amount,category,source:'Petty cash'});
+            const LedgerEntry = new Ledger({description,
+                 amount,
+                 category,
+                 source:'Petty cash',
+                 transactionId:transaction._id,
+                 transactiontype:'Pettycash'  
+            });
             await LedgerEntry.save();
 
             res.status(201).json({message: 'Transaction Added', transaction});
@@ -73,22 +79,31 @@ export const DeletePettycash = async (req,res) => {
     try {
         const {id} = req.params;
        const transaction = await Pettycash.findById(id);
-       const initialbalance = await pettycashbal.findOne();
+      
 
        if(!transaction){
         return res.status(400).json({message:'No Petty Cash transactions are found'});
        }
 
+       const initialbalance = await pettycashbal.findOne();
+
+       if(!initialbalance){
+        return res.status(200).json({message:'No balance found.'});  
+       }
+
+
+
        if(transaction.type=='initial'){
-        initialbalance-=transaction.amount;
+        initialbalance.balance-=transaction.amount;
 
        }
        else if (transaction.type=='expense'){
-        initialbalance+=transaction.amount;
+        initialbalance.balance+=transaction.amount;
        }
+       await initialbalance.save();
 
        await Pettycash.findByIdAndDelete(id);
-       await Ledger.findOneAndDelete({source:'Petty cash', _id:id});
+       await Ledger.findOneAndDelete({ transactionId:id,transactiontype:'Pettycash'});
 
        res.status(200).json({message:'Transaction deleted'});
 
