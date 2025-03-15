@@ -5,7 +5,7 @@ const PettycashSchema = new mongoose.Schema({
     date:{type:Date, default: Date.now},
     description:{type:String, required:true},
     amount:{type:Number, required:true},
-    type:{type:String, enum:['initial', 'expense'], required:true},
+    type:{type:String, enum:['initial', 'expense','reimbursement'], required:true},
     category:{type:String},
 });
 

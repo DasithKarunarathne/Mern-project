@@ -5,7 +5,7 @@ import { addPettyCash,GetPettyCash,DeletePettycash } from "../controllers/pettyc
 const router = express.Router();
 
 router.post("/addPettyCash", addPettyCash);
-router.get("/getPettyCash",GetPettyCash);
+router.get("/getPettyCash/:month/:year",GetPettyCash);
 router.delete("/deletePettyCash/:id",DeletePettycash );
 //updateeka danawada ???
 export default router;

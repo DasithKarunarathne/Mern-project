@@ -9,7 +9,7 @@ export const addPettyCash = async(req,res)=>{
             
             const{description,amount, type,category} = req.body;
 
-            if(!description || !amount || !amount<0){
+            if(!description || !amount || amount<0){
                 return res.status(400).json({message:'Invalid input: description and positive amount required'});
             }
 
@@ -82,15 +82,220 @@ export const addPettyCash = async(req,res)=>{
 
 export const GetPettyCash =async (req,res)=>{
 
-
     try {
-        const transactions = await Pettycash.find();
-        res.status(200).json(transactions);
+        
+        const {month, year} = req.params;
+
+        const currentDate = new Date();
+        const monthNum = month ? parseInt(month, 10) : currentDate.getMonth()+1; //months are starting from 0
+        const YearNum = year ? parseInt(year, 10) : currentDate.getFullYear();
+
+        //validation
+        if (isNaN(monthNum) || monthNum<1 || monthNum>12){
+            res.status(400).json({message:'Invalid month. Must be between 1 to 12'});
+        }
+
+        if(year && (isNaN(YearNum)||YearNum<2000 || YearNum>9999)){
+            res.status(400).json({message:'Invalid Year'});
+
+
+        }
+
+        const startDate = new Date(YearNum, monthNum-1,1);//month idexing from 0 so if march comes as 3 in the indexing it is shown as 3-1 =2 0,1,2 jaan,feb,march
+        const EndDate = new Date(YearNum, monthNum, 0, 23,59,59,999);//date is 0 as 1 is the beginning of the month. 0 is the previous last date
+
+
+        const transactions = await Pettycash.find({//filtering by date
+            date:{
+                $gte:startDate,
+                $lte:EndDate,
+            },
+        }).sort({date:1});
+
+        const BalanceRecord = await pettycashbal.findOne();
+        const Currentbalance  = BalanceRecord ? BalanceRecord.balance :0;
+
+        res.status(400).json({
+            success:true,
+            transactions,
+            Currentbalance,
+            month:monthNum,
+            year:YearNum,
+        });
     } catch (error) {
-        res.status(500).json({message:'Error fetching transactions',error });
+        res.status(500).json({ success: false, message: "Error fetching petty cash transactions", error });
+    console.error(error);//anith ewatath dapan
     }
+    
+
 
 }
+
+export const UpdatepettyCash = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { description, amount, type, category } = req.body;
+  
+      // Validation
+      if (!description || !amount || amount < 0) {
+        return res.status(400).json({ message: "Invalid input: description and positive amount required" });
+      }
+  
+      // Find the transaction
+      const transaction = await Pettycash.findById(id); // Corrected: findById takes a string, not an object
+      if (!transaction) {
+        return res.status(404).json({ message: "Transaction not found" });
+      }
+  
+      // Find the balance record
+      const balanceRecord = await pettycashbal.findOne();
+      if (!balanceRecord) {
+        return res.status(404).json({ message: "No balance record found" });
+      }
+  
+      // Get latest CashBook balance
+      const latestCashEntry = await CashBook.findOne().sort({ date: -1 });
+      const currentCashBalance = latestCashEntry ? latestCashEntry.balance : 0;
+  
+      const amountDifference = amount - transaction.amount;
+  
+      // Handle transaction types
+      if (transaction.type === "initial") {
+        if (type !== "initial") {
+          return res.status(400).json({ message: "Cannot change initial transaction to another type" });
+        }
+  
+        // Increase initialAmount
+        if (amountDifference > 0) {
+          if (currentCashBalance < amountDifference) {
+            return res.status(400).json({ message: "Insufficient cash book balance to fund increase" });
+          }
+          balanceRecord.balance += amountDifference;
+          balanceRecord.initialAmount = amount;
+  
+          const cashBookEntry = new CashBook({
+            description: "Funding for increased petty cash initial amount",
+            amount: amountDifference,
+            type: "outflow",
+            category: "reimbursement",
+            referenceId: transaction._id,
+            balance: currentCashBalance - amountDifference,
+          });
+          await cashBookEntry.save();
+  
+          const ledgerEntry = new Ledger({
+            description: "Funding for increased petty cash initial amount",
+            amount: amountDifference,
+            category: "Fund Adjustment",
+            source: "Cash Book",
+            transactionId: cashBookEntry._id,
+            transactiontype: "CashBook",
+          });
+          await ledgerEntry.save();
+        }
+        // Decrease initialAmount
+        else if (amountDifference < 0) {
+          const newBalance = balanceRecord.balance + amountDifference; // Fixed: Use balance, not initialAmount
+          if (newBalance < 0) {
+            return res.status(400).json({ message: "Insufficient balance to decrease initial amount" });
+          }
+          balanceRecord.balance = newBalance;
+          balanceRecord.initialAmount = amount;
+  
+          if (newBalance > amount) { // Excess if balance > new initialAmount
+            const excess = newBalance - amount;
+            balanceRecord.balance = amount; // Cap at new initialAmount
+  
+            const cashBookEntry = new CashBook({
+              description: "Excess from decreased petty cash initial amount",
+              amount: excess,
+              type: "inflow",
+              category: "pettyCashExcess",
+              referenceId: transaction._id,
+              balance: currentCashBalance + excess,
+            });
+            await cashBookEntry.save();
+  
+            const ledgerEntry = new Ledger({
+              description: "Excess from decreased petty cash initial amount",
+              amount: excess,
+              category: "Fund Adjustment",
+              source: "Petty Cash",
+              transactionId: cashBookEntry._id,
+              transactiontype: "CashBook",
+            });
+            await ledgerEntry.save();
+          }
+        }
+      }
+      else if (transaction.type === "expense") {
+        // Reverse old expense
+        balanceRecord.balance += transaction.amount;
+  
+        if (type === "expense") {
+          if (balanceRecord.balance < amount) {
+            return res.status(400).json({ message: "Insufficient balance for updated expense" });
+          }
+          balanceRecord.balance -= amount;
+        } else if (type === "reimbursement") {
+          const neededReimbursement = balanceRecord.initialAmount - balanceRecord.balance;
+          if (amount > neededReimbursement) {
+            return res.status(400).json({ message: `Reimbursement exceeds needed amount (${neededReimbursement})` });
+          }
+          balanceRecord.balance += amount;
+        } else {
+          return res.status(400).json({ message: "Invalid type change from expense" });
+        }
+      }
+      else if (transaction.type === "reimbursement") {
+        // Reverse old reimbursement
+        balanceRecord.balance -= transaction.amount;
+  
+        if (type === "reimbursement") {
+          const neededReimbursement = balanceRecord.initialAmount - balanceRecord.balance;
+          if (amount > neededReimbursement) {
+            return res.status(400).json({ message: `Reimbursement exceeds needed amount (${neededReimbursement})` });
+          }
+          balanceRecord.balance += amount;
+        } else if (type === "expense") {
+          if (balanceRecord.balance < amount) {
+            return res.status(400).json({ message: "Insufficient balance for updated expense" });
+          }
+          balanceRecord.balance -= amount;
+        } else {
+          return res.status(400).json({ message: "Invalid type change from reimbursement" });
+        }
+      }
+  
+      // Update balance record
+      balanceRecord.lastUpdated = Date.now();
+      await balanceRecord.save();
+  
+      // Update the Pettycash transaction
+      transaction.description = description;
+      transaction.amount = amount;
+      transaction.type = type;
+      transaction.category = category;
+      await transaction.save();
+  
+      // Update the corresponding Ledger entry
+      const ledgerEntry = await Ledger.findOne({ transactionId: id, transactiontype: "Pettycash" });
+      if (ledgerEntry) {
+        ledgerEntry.description = description;
+        ledgerEntry.amount = amount;
+        ledgerEntry.category = category;
+        await ledgerEntry.save();
+      }
+  
+      res.status(200).json({ message: "Transaction updated", transaction });
+    } catch (error) {
+      res.status(500).json({ message: "Error updating transaction", error });
+      console.error(error);
+    }
+  };
+
+
+
 
 export const DeletePettycash = async (req,res) => {
     
