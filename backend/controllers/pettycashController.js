@@ -140,6 +140,11 @@ export const UpdatepettyCash = async (req, res) => {
       if (!description || !amount || amount < 0) {
         return res.status(400).json({ message: "Invalid input: description and positive amount required" });
       }
+
+      const validTypes = ["initial", "expense", "reimbursement"];
+      if (!validTypes.includes(type)) {
+       return res.status(400).json({ message: "Invalid transaction type" });
+      }
   
       // Find the transaction
       const transaction = await Pettycash.findById(id); // Corrected: findById takes a string, not an object

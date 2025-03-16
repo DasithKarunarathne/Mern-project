@@ -106,7 +106,7 @@ useEffect(() => {
                     {salary.status === 'Pending'?(
                         <button onClick={()=>markSalaryPaid(salary._id)}>Mark as Paid</button>
                     ) :(
-                        <span>Paid on {new Date(salary.paymentDate).toLocaleDateString()}</span>
+                        <span>Paid on {new Date(salary.paymentDate).toLocaleDateString()}</span>//check this
                     )
                     }
                 </td>
