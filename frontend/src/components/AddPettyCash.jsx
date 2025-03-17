@@ -1,5 +1,5 @@
 import React,{useState} from "react";
-import { Box, Button, TextField, MenuItem, Select } from "@mui/material";
+import { Box, Button, TextField, MenuItem, Select, Dialog, DialogActions,DialogContent,DialogContentText,DialogTitle } from "@mui/material";
 import axios from "axios";
 
 const AddTransaction = ({fetchTransactions}) =>{
@@ -38,7 +38,7 @@ const AddTransaction = ({fetchTransactions}) =>{
         }
     };
 
-    const closeMdodal  =() => setErrormsg("");
+    const closeModal  =() => setErrormsg("");
     
     return(
 
@@ -54,7 +54,7 @@ const AddTransaction = ({fetchTransactions}) =>{
           label="Description"
           variant="outlined"
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={(e) => setdescription(e.target.value)}
           required
           fullWidth
           sx={{ mb: 2 }} // Margin bottom for spacing
@@ -74,7 +74,7 @@ const AddTransaction = ({fetchTransactions}) =>{
 
 <Select
           value={type}
-          onChange={(e) => setType(e.target.value)}
+          onChange={(e) => settype(e.target.value)}
           fullWidth
           variant="outlined"
           displayEmpty
@@ -103,6 +103,26 @@ const AddTransaction = ({fetchTransactions}) =>{
         <Button type="submit" variant="contained" color="primary" fullWidth>
             Add Transaction
         </Button>
+
+        <Dialog
+        open={!!errormsg}//if errormsg is not empty
+        onClose={closeModal}
+        fullScreen={fullScreen} // Full-screen below md breakpoint (900px)
+        maxWidth="sm" // Standard width on larger screens
+        fullWidth // Takes full width up to maxWidth
+      >
+        <DialogTitle>Error</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ color: "red" }}>
+            {errormsg}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeModal} color="primary">
+            OK
+          </Button>{/*When ok is clicked the error msg is set to "" noting*/}
+        </DialogActions>
+      </Dialog>
             </form>
             </Box>
     );
