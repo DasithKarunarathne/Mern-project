@@ -15,7 +15,7 @@ const AddTransaction = ({fetchTransactions}) =>{
 
         try {
 
-            const response = await axios.post("/api/Pettycash//addPettyCash",{
+            const response = await axios.post("/api/Pettycash/addPettyCash",{
                 description,
                 amount,
                 type,

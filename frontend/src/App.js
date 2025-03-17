@@ -5,7 +5,7 @@ import Salarytable from './components/SalaryTable';
 import ShowFeedbackDetailsIn from './components/showIndividualCarddetails';
 import UpdateFeedback from './components/updateFeedback'
 import {BrowserRouter as Router, Routes, Route} from "react-router-dom"
-
+//import PettyCashList from './components/PettyCashList.jsx';
 
 function App() {
   return (
@@ -22,6 +22,7 @@ function App() {
       <div>
         <Allfeedback />
         <AddFeedback />
+        
         
       </div>
     }
