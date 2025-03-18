@@ -9,6 +9,8 @@ export const addPettyCash = async(req,res)=>{
             
             const{description,amount, type,category} = req.body;
 
+
+            //frontend validated these
             if(!description || !amount || amount<0){
                 return res.status(400).json({message:'Invalid input: description and positive amount required'});
             }
