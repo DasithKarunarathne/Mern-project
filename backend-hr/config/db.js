@@ -13,7 +13,7 @@ const dbconnection = async () => {
         }
         await connect(uri); // Removed deprecated options
         console.log("MongoDB Connected~");
-    } catch (e) {
+    } catch (error) {
         console.error("MongoDB Connection Failed:", e.message);
         process.exit(1);
     }
