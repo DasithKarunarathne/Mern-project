@@ -62,7 +62,7 @@ router.route("/update/:id").put (async(req,res) =>{
 
  const update = await Product.findByIdAndUpdate(userId,updateProduct)
  .then(() => {
-    res.status(200).send({status:"User updated",user:update})
+    res.status(200).send({status:"User updated"})
  }).catch((err)=>{
     console.log(err);
     res.status(500).send({status:"Error with updating data",error:err.message});
@@ -76,7 +76,7 @@ router.route("/delete/:id").delete(async(req,res)=>{
      let userId=req.params.id;
 
      await Product.findByIdAndDelete(userId)
-     .then(() => {
+     .then(() => { 
         res.status(200).send({status:"User deleted"});
      }).catch((err)=>{
         console.log(err.message);
@@ -87,17 +87,17 @@ router.route("/delete/:id").delete(async(req,res)=>{
 
    
     router.route("/get/:id").get(async (req, res) => {
-        let userId = req.params.id;
+        let productId = req.params.id;
         try {
-            const user = await Product.findById(userId);
-            if (!user) {
-                return res.status(404).send({ status: "User not found" });
+            const product = await Product.findById(productId);
+            if (!product) {
+                return res.status(404).send({ status: "Product not found" });
             }
-            res.status(200).send({ status: "User fetched", user });
+            res.status(200).send({ status: "Product fetched", product });
         } catch (err) {
             console.log(err.message);
-            res.status(500).send({ status: "Error with get user", error: err.message });
+            res.status(500).send({ status: "Error with get product", error: err.message });
         }
     });
-
+    
 module.exports=router;
