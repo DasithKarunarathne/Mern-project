@@ -3,7 +3,7 @@ import axios from "axios";
 const API_URL = 'http://localhost:4000/api/pettycash'
 
 export const addPettyCash = (data) =>
-    axios.post(`{$API_URL}/addPettyCash`,data);
+    axios.post(`${API_URL}/addPettyCash`,data);
 
 export const getPettyCash = (month,year) =>
     axios.get(`${API_URL}/getPettyCash/${month}/${year}`);

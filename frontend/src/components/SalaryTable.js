@@ -125,6 +125,6 @@ useEffect(() => {
 
 
 
-}
+};
 
 export default Salarytable;

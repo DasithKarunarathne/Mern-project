@@ -8,7 +8,7 @@ const BalanceCard = ({ balance }) => {
             <CardContent>
                 <Typography variant="h6">Current Balance</Typography>
                 <Typography variant="h4" color="primary">
-                    ${balance.tofixed(2)}
+                    ${balance.toFixed(2)}
                 </Typography>
             </CardContent>
 
@@ -17,4 +17,5 @@ const BalanceCard = ({ balance }) => {
     )
 
 
-} 
+};
+export default BalanceCard;
