@@ -1,103 +1,118 @@
+// backend/routes/products.js
 const router = require("express").Router();
-//let Product= require ("../models/Product.js");
-let Product = require("../models/Product.js");
-console.log(Product.schema.obj); // Log the schema to verify its fields
+const Product = require("../models/Product.js");
+const Cart = require("../models/Cart.js");
+const multer = require('multer');
+const path = require('path');
 
-//http://Localhost:8070/product/add
+// Multer setup for image uploads
+const storage = multer.diskStorage({
+  destination: './uploads/',
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
+});
+const upload = multer({ storage });
 
-router.route("/add").post((req,res)=>{
-   
-    const name = req.body.name;
-    const description = req.body.description;
-    const price=Number(req.body.price);// number ekt convert krnnwa
-    const stockQuantity=Number(req.body.stockQuantity);
-    const category = req.body.category;
+// Log the schema to verify its fields
+console.log(Product.schema.obj);
 
-    const newProduct= new Product({                  
- 
-        name,
-        description,
-        price,
-        stockQuantity,
-        category
-        
-    })
+// POST /api/products - Add a new product
+router.route("/").post(upload.single('image'), async (req, res) => {
+  try {
+    const { name, description, price, stockQuantity, category } = req.body;
+    const image = req.file ? `/uploads/${req.file.filename}` : undefined;
 
-    newProduct.save().then(()=>{
-        res.json("Product Added")
-    }).catch((err)=>{
-        console.log(err);
-    })
+    // Validate required fields
+    if (!name || !description || !price || !stockQuantity || !category) {
+      return res.status(400).json({ error: 'All fields (name, description, price, stockQuantity, category) are required' });
+    }
 
-
-})
-
-//http://Localhost:8080/product   //display
-
-router.route("/").get((req,res)=>{
-    
-    Product.find().then((products)=>{  //find keyword eken okkom display wenwa
-        res.json(products)
-    }).catch((err)=>{
-        console.log(err)
-    })
-
-
-})
-
-//http://Localhost:8080/product /update/5fetywert5r6ytg
-
-router.route("/update/:id").put (async(req,res) =>{
-     let userId=req.params.id;
-     const{name,description,  price,stockQuantity, category}=req.body;
-
-     const updateProduct = {
-        name,
-        description,  
-        price,
-        stockQuantity, 
-        category
-        
-     }
-
- const update = await Product.findByIdAndUpdate(userId,updateProduct)
- .then(() => {
-    res.status(200).send({status:"User updated"})
- }).catch((err)=>{
-    console.log(err);
-    res.status(500).send({status:"Error with updating data",error:err.message});
- })
-
-})
-
-//http://Localhost:8080/product/delete/5fetywert5r6ytg
-
-router.route("/delete/:id").delete(async(req,res)=>{
-     let userId=req.params.id;
-
-     await Product.findByIdAndDelete(userId)
-     .then(() => { 
-        res.status(200).send({status:"User deleted"});
-     }).catch((err)=>{
-        console.log(err.message);
-        res.status(500).send({status:"Error with delete user",error:err.message});
-     })
-    
-    })
-
-   
-    router.route("/get/:id").get(async (req, res) => {
-        let productId = req.params.id;
-        try {
-            const product = await Product.findById(productId);
-            if (!product) {
-                return res.status(404).send({ status: "Product not found" });
-            }
-            res.status(200).send({ status: "Product fetched", product });
-        } catch (err) {
-            console.log(err.message);
-            res.status(500).send({ status: "Error with get product", error: err.message });
-        }
+    const newProduct = new Product({
+      name,
+      description,
+      price: Number(price),
+      stockQuantity: Number(stockQuantity),
+      category,
+      image
     });
-    
-module.exports=router;
+
+    const savedProduct = await newProduct.save();
+    res.status(201).json(savedProduct);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: `Failed to add product: ${err.message}` });
+  }
+});
+
+// GET /api/products - Get all products
+router.route("/").get(async (req, res) => {
+  try {
+    const products = await Product.find();
+    res.json(products);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PUT /api/products/:id - Update a product
+router.route("/:id").put(upload.single('image'), async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { name, description, price, stockQuantity, category } = req.body;
+    const image = req.file ? `/uploads/${req.file.filename}` : undefined;
+
+    const updateProduct = {
+      name,
+      description,
+      price: Number(price),
+      stockQuantity: Number(stockQuantity),
+      category,
+      ...(image && { image }) // Only update image if a new one is uploaded
+    };
+
+    const updatedProduct = await Product.findByIdAndUpdate(userId, updateProduct, { new: true });
+    if (!updatedProduct) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+    res.status(200).json({ status: "Product updated", product: updatedProduct });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: `Failed to update product: ${err.message}` });
+  }
+});
+
+// DELETE /api/products/:id - Delete a product
+router.route("/:id").delete(async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const product = await Product.findByIdAndDelete(userId);
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+    // Remove all cart items referencing this product
+    await Cart.deleteMany({ productId: userId });
+    res.status(200).json({ status: "Product deleted" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: `Failed to delete product: ${err.message}` });
+  }
+});
+
+// GET /api/products/:id - Get a product by ID
+router.route("/:id").get(async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+    res.status(200).json({ status: "Product fetched", product });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: `Failed to fetch product: ${err.message}` });
+  }
+});
+
+module.exports = router;

@@ -1,9 +1,9 @@
-const mongoose = require('mongoose');//mongoose package ek import krgnnwa
+// models/Product.js
+const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 
-const productSchema=new Schema({//object ekk hdgnnwa
-   
+const productSchema = new Schema({
     name: {
         type: String,
         required: true
@@ -23,11 +23,12 @@ const productSchema=new Schema({//object ekk hdgnnwa
     category: {
         type: String,
         required: true
+    },
+    image: {
+        type: String // Store the path to the image
     }
-    
-
 });
 
-const Product = mongoose.model("Product",productSchema);
+const Product = mongoose.model("Product", productSchema);
 
-module.exports=Product;
+module.exports = Product;

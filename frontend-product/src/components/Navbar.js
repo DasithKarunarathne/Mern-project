@@ -1,18 +1,24 @@
+// src/components/Navbar.js
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { AppBar, Toolbar, Typography, Button } from '@mui/material';
-import './Navbar.css';
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   return (
-    <AppBar position="static" sx={{ backgroundColor: '#8B4513' }}>
+    <AppBar position="static">
       <Toolbar>
-        <Typography variant="h6" component={Link} to="/" sx={{ flexGrow: 1, textDecoration: 'none', color: '#F5F5DC' }}>
+        <Typography variant="h6" sx={{ flexGrow: 1 }}>
           Handicraft Store
         </Typography>
-        <Button color="inherit" component={Link} to="/">Shop</Button>
-        <Button color="inherit" component={Link} to="/cart">Cart</Button>
-        <Button color="inherit" component={Link} to="/delivery">Checkout</Button>
+        <Button color="inherit" component={Link} to="/">
+          Home
+        </Button>
+        <Button color="inherit" component={Link} to="/cart">
+          Cart
+        </Button>
+        <Button color="inherit" component={Link} to="/manager">
+          Manage Products
+        </Button>
       </Toolbar>
     </AppBar>
   );
