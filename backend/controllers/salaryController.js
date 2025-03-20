@@ -1,5 +1,5 @@
 import Salary from "../models/Salary.js";
-import Employee from "../models/Employee.js";
+import Employee from "../../backend-hr/models/employee.js";
 
 export const salarycalculation = async (req,res)=>{//generate salaryyy one
 //githubb desktop
@@ -11,7 +11,12 @@ export const salarycalculation = async (req,res)=>{//generate salaryyy one
         }
         //when a new emplloyee is added should generate slary 
         const existingSalaries = await Salary.find({month});
-        const existingEmployeeIDs = existingSalaries.map(sal=>sal.employeeId); 
+
+        if (!existingSalaries) {
+            return res.status(500).json({ success: false, message: "Error fetching existing salaries" });
+          }
+
+        const existingEmployeeIDs = existingSalaries.map(sal=>sal.empID); 
 
         const getAllEmployees = await Employee.find();
 
@@ -24,7 +29,7 @@ export const salarycalculation = async (req,res)=>{//generate salaryyy one
 
         for(let employee of getAllEmployees){
 
-            if(!existingEmployeeIDs.includes(employee.employeeId)){
+            if(!existingEmployeeIDs.includes(employee.empID)){
 
             const overtimepay = employee.overtimeHours * employee.overtimeRate;
             const epf = employee.basicSalary*0.08;//12% kapenawada?????
@@ -33,7 +38,7 @@ export const salarycalculation = async (req,res)=>{//generate salaryyy one
 
             const salary = new Salary({
 
-                employeeId:employee.employeeId,
+                employeeId:employee.empID,
                 employeeName: employee.name,
                 month: month,
                 basicSalary:employee.basicSalary,
