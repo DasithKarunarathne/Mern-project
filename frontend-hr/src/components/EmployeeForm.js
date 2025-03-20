@@ -1,16 +1,15 @@
 import React, { useState } from "react";
-import axios from "axios";
+import axios from "axios"; // Removed duplicate import
 import {
-  Box,
   TextField,
   Button,
+  Box,
   Typography,
-  Paper,
-  FormControl,
-  InputLabel,
+  Input,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
 
-const EmployeeForm = () => {
+const EmployeeForm = ({ onEmployeeAdded }) => {
   const [formData, setFormData] = useState({
     empID: "",
     empname: "",
@@ -24,6 +23,9 @@ const EmployeeForm = () => {
     birthCertificate: null,
     medicalRecords: null,
   });
+  const [successMessage, setSuccessMessage] = useState(""); // State for success message
+
+  const navigate = useNavigate(); // Hook for navigation
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -53,8 +55,9 @@ const EmployeeForm = () => {
     try {
       const response = await axios.post("http://localhost:4000/api/employee/add", data, {
         headers: { "Content-Type": "multipart/form-data" },
+        timeout: 10000,
       });
-      alert(response.data); // "Employee Added"
+      setSuccessMessage("Employee Added Successfully"); // Set success message
       setFormData({
         empID: "",
         empname: "",
@@ -69,29 +72,72 @@ const EmployeeForm = () => {
         medicalRecords: null,
       });
       document.querySelectorAll("input[type=file]").forEach(input => (input.value = ""));
+      setTimeout(() => setSuccessMessage(""), 3000);
+      if (onEmployeeAdded) onEmployeeAdded(); // Notify parent to refresh EmployeeList
+      navigate("/list"); // Navigate to Employee List page
     } catch (error) {
-      console.error(error);
-      alert("Error adding employee: " + (error.response?.data?.error || error.message));
+      console.error("Frontend error:", error);
+      if (error.response) {
+        alert("Error adding employee: " + (error.response.data?.error || error.response.statusText));
+      } else if (error.request) {
+        alert("Error adding employee: Network Error - No response received from server. Check if backend is running on http://localhost:4000.");
+      } else {
+        alert("Error adding employee: " + error.message);
+      }
     }
   };
 
+  const handleViewList = () => {
+    navigate("/list"); // Navigate to Employee List page
+  };
+
   return (
-    <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
-      <Typography variant="h6" gutterBottom>
+    <Box sx={{ mb: 4 }}>
+      <Typography variant="h5" gutterBottom>
         Add Employee
       </Typography>
-      <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        <TextField label="Employee ID" name="empID" value={formData.empID} onChange={handleChange} required fullWidth />
-        <TextField label="Name" name="empname" value={formData.empname} onChange={handleChange} required fullWidth />
-        <TextField label="Role" name="role" value={formData.role} onChange={handleChange} required fullWidth />
+      {successMessage && (
+        <Typography variant="body1" color="success.main" sx={{ mb: 2 }}>
+          {successMessage}
+        </Typography>
+      )}
+      <form onSubmit={handleSubmit}>
+        <TextField
+          label="Employee ID"
+          name="empID"
+          value={formData.empID}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+          required
+        />
+        <TextField
+          label="Name"
+          name="empname"
+          value={formData.empname}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+          required
+        />
+        <TextField
+          label="Role"
+          name="role"
+          value={formData.role}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+          required
+        />
         <TextField
           label="Basic Salary"
           name="basicSalary"
           type="number"
           value={formData.basicSalary}
           onChange={handleChange}
-          required
           fullWidth
+          margin="normal"
+          required
         />
         <TextField
           label="Overtime Hours (optional)"
@@ -100,6 +146,7 @@ const EmployeeForm = () => {
           value={formData.overtimeHours}
           onChange={handleChange}
           fullWidth
+          margin="normal"
         />
         <TextField
           label="Overtime Rate (optional)"
@@ -108,6 +155,7 @@ const EmployeeForm = () => {
           value={formData.overtimeRate}
           onChange={handleChange}
           fullWidth
+          margin="normal"
         />
         <TextField
           label="EPF Percentage (optional)"
@@ -116,6 +164,7 @@ const EmployeeForm = () => {
           value={formData.epfPercentage}
           onChange={handleChange}
           fullWidth
+          margin="normal"
         />
         <TextField
           label="ETF Percentage (optional)"
@@ -124,36 +173,39 @@ const EmployeeForm = () => {
           value={formData.etfPercentage}
           onChange={handleChange}
           fullWidth
+          margin="normal"
         />
-        <FormControl fullWidth>
-          <InputLabel shrink>Image (optional)</InputLabel>
-          <input type="file" name="image" accept="image/jpeg,image/png" onChange={handleChange} style={{ marginTop: "16px" }} />
-        </FormControl>
-        <FormControl fullWidth>
-          <InputLabel shrink>Birth Certificate (optional)</InputLabel>
-          <input
-            type="file"
-            name="birthCertificate"
-            accept="image/jpeg,image/png,application/pdf"
-            onChange={handleChange}
-            style={{ marginTop: "16px" }}
-          />
-        </FormControl>
-        <FormControl fullWidth>
-          <InputLabel shrink>Medical Records (optional)</InputLabel>
-          <input
-            type="file"
-            name="medicalRecords"
-            accept="image/jpeg,image/png,application/pdf"
-            onChange={handleChange}
-            style={{ marginTop: "16px" }}
-          />
-        </FormControl>
-        <Button variant="contained" color="primary" type="submit">
-          Add Employee
-        </Button>
-      </Box>
-    </Paper>
+        <Input
+          type="file"
+          name="image"
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+        />
+        <Input
+          type="file"
+          name="birthCertificate"
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+        />
+        <Input
+          type="file"
+          name="medicalRecords"
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+        />
+        <Box sx={{ mt: 2, display: "flex", gap: 2 }}>
+          <Button type="submit" variant="contained" color="primary">
+            Add Employee
+          </Button>
+          <Button variant="outlined" color="primary" onClick={handleViewList}>
+            Employee List
+          </Button>
+        </Box>
+      </form>
+    </Box>
   );
 };
 

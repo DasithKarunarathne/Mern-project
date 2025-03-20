@@ -3,111 +3,83 @@ import axios from "axios";
 import {
   Card,
   CardContent,
-  Typography,
   CardMedia,
-  Button,
   Box,
+  Button,
+  Typography,
   IconButton,
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
-import EmployeeUpdateForm from "./EmployeeUpdateForm";
+import { Edit, Delete } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
+import EmployeeUpdateForm from "./EmployeeUpdateForm"; // Ensure this file exists
 
-const EmployeeList = () => {
+const EmployeeList = ({ refresh }) => {
   const [employees, setEmployees] = useState([]);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
-
-  useEffect(() => {
-    fetchEmployees();
-  }, []);
+  const navigate = useNavigate();
 
   const fetchEmployees = async () => {
     try {
-      const response = await axios.get("http://localhost:4000/api/employee/");
+      const response = await axios.get("http://localhost:5000/api/employee/");
       setEmployees(response.data);
     } catch (error) {
       console.error("Error fetching employees:", error);
     }
   };
 
+  useEffect(() => {
+    fetchEmployees();
+  }, [refresh]);
+
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this employee?")) {
       try {
-        await axios.delete(`http://localhost:4000/api/employee/delete/${id}`);
-        alert("Employee Deleted");
-        fetchEmployees(); // Refresh list
+        await axios.delete(`http://localhost:5000/api/employee/delete/${id}`);
+        fetchEmployees();
       } catch (error) {
-        console.error(error);
-        alert("Error deleting employee: " + (error.response?.data?.error || error.message));
+        console.error("Error deleting employee:", error);
       }
     }
   };
 
   const handleUpdateClick = (id) => {
-    setSelectedEmployeeId(id === selectedEmployeeId ? null : id); // Toggle update form
+    setSelectedEmployeeId(id === selectedEmployeeId ? null : id);
   };
 
   return (
     <Box>
-      <Typography variant="h6" gutterBottom>
-        Employee List
-      </Typography>
+      <Typography variant="h6">Employee List</Typography>
       {employees.length === 0 ? (
         <Typography>No employees found.</Typography>
       ) : (
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          {employees.map((employee) => (
-            <Card key={employee._id} sx={{ maxWidth: 600 }}>
-              <CardContent>
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <Typography variant="h6">
-                    {employee.empname} (ID: {employee.empID})
-                  </Typography>
-                  <Box>
-                    <IconButton color="primary" onClick={() => handleUpdateClick(employee._id)}>
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton color="error" onClick={() => handleDelete(employee._id)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </Box>
-                </Box>
-                <Typography color="textSecondary">{employee.role}</Typography>
-                <Typography>
-                  Salary: ${employee.basicSalary}, Overtime: {employee.overtimeHours} hrs @ ${employee.overtimeRate}/hr
+        employees.map((employee) => (
+          <Card key={employee._id} sx={{ maxWidth: 600, mb: 2 }}>
+            <CardContent>
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <Typography variant="h6">
+                  {employee.empname} (ID: {employee.empID})
                 </Typography>
-                <Typography>EPF: {employee.epfPercentage}%, ETF: {employee.etfPercentage}%</Typography>
-                {employee.image && (
-                  <CardMedia component="img" image={employee.image} alt={employee.empname} sx={{ width: 100, mt: 1 }} />
-                )}
-                <Box sx={{ mt: 1 }}>
-                  {employee.birthCertificate && (
-                    <Button
-                      variant="outlined"
-                      href={employee.birthCertificate}
-                      download={`${employee.empID}_birth_certificate`}
-                      sx={{ mr: 1 }}
-                    >
-                      Birth Certificate
-                    </Button>
-                  )}
-                  {employee.medicalRecords && (
-                    <Button
-                      variant="outlined"
-                      href={employee.medicalRecords}
-                      download={`${employee.empID}_medical_records`}
-                    >
-                      Medical Records
-                    </Button>
-                  )}
+                <Box>
+                  <IconButton color="primary" onClick={() => handleUpdateClick(employee._id)}>
+                    <Edit />
+                  </IconButton>
+                  <IconButton color="error" onClick={() => handleDelete(employee._id)}>
+                    <Delete />
+                  </IconButton>
                 </Box>
-                {selectedEmployeeId === employee._id && (
-                  <EmployeeUpdateForm employee={employee} onUpdate={fetchEmployees} onCancel={() => setSelectedEmployeeId(null)} />
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </Box>
+              </Box>
+              <Typography color="textSecondary">{employee.role}</Typography>
+              <Typography>Salary: ${employee.basicSalary}</Typography>
+              <Typography>Overtime: {employee.overtimeHours} hrs @ ${employee.overtimeRate}/hr</Typography>
+              {employee.image && (
+                <CardMedia component="img" image={employee.image} alt={employee.empname} sx={{ width: 100, mt: 1 }} />
+              )}
+              {selectedEmployeeId === employee._id && (
+                <EmployeeUpdateForm employee={employee} onUpdate={fetchEmployees} onCancel={() => setSelectedEmployeeId(null)} />
+              )}
+            </CardContent>
+          </Card>
+        ))
       )}
     </Box>
   );
