@@ -48,15 +48,13 @@ const UpdateTransactionForm = ({transaction, onUpdate}) => {
                 <MenuItem value="reimbursement">Reimbursement</MenuItem>
         </TextField>
         
-        <TextField>     
-            
-            label="Category"
-            value={formData.category}
-            onChange={(e)=>setFormData({...formData, category:e.target.value})}
-            fullWidth
-            sx={{mb:2}}
-
-        </TextField>
+        <TextField
+        label="Category"
+        value={formData.category}
+        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+        fullWidth
+        sx={{ mb: 2 }}
+      />
 
         <Button type="submit" variant="contained">Update</Button>
         

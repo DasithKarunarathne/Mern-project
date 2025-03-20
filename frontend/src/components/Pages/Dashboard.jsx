@@ -22,6 +22,8 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import PettyCashDashboard from '../PettyCash.js/PettyCashDashboard'; // Import PettyCashDashboard component
+import BalanceCard from '../PettyCash.js/BalanceCard.jsx';
+
 import { Bar } from 'react-chartjs-2'; // For graphs
 import {
   Chart as ChartJS,
@@ -98,7 +100,7 @@ export default function Dashboard() {
       <Grid item xs={12} sm={6} md={4}>
         <Paper sx={{ p: 2 }}>
           <Typography variant="h6">Total Petty Cash</Typography>
-          <Typography variant="h4">$500</Typography>
+          <BalanceCard/>
         </Paper>
       </Grid>
       <Grid item xs={12} sm={6} md={4}>

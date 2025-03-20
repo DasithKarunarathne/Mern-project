@@ -1,14 +1,18 @@
 import { Card, CardContent, Typography } from "@mui/material";
 import React from "react";
 
-const BalanceCard = ({ balance }) => { 
+const BalanceCard = ({balance}) => { 
+
+    const formattedBalance = typeof balance === "number" ? balance.toFixed(2) : "0.00";
+
+
     return(
 
-        <Card sx={{mb:2}}>
+        <Card sx={{marginBottom:2}}>
             <CardContent>
                 <Typography variant="h6">Current Balance</Typography>
                 <Typography variant="h4" color="primary">
-                    ${balance.toFixed(2)}
+                    Rs.{formattedBalance}
                 </Typography>
             </CardContent>
 

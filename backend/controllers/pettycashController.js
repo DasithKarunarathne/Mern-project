@@ -4,83 +4,70 @@ import Ledger from "../models/Ledger.js";
 import CashBook from "../models/CashBook.js";
 
 
-export const addPettyCash = async(req,res)=>{
-        try {
-            
-            const{description,amount, type,category} = req.body;
+export const addPettyCash = async (req, res) => {
+  try {
+      const { description, amount, type, category } = req.body;
 
+      if (!description || !amount || amount <= 0) {
+          return res.status(400).json({ message: 'Invalid input: description and positive amount required' });
+      }
 
-            //frontend validated these
-            if(!description || !amount || amount<0){
-                return res.status(400).json({message:'Invalid input: description and positive amount required'});
-            }
+      let balanceRecord = await pettycashbal.findOne();
 
-             let balanceRecord =await pettycashbal.findOne();
+      // Handle Initial Transaction
+      if (!balanceRecord) {
+          if (type !== "initial") {
+              return res.status(400).json({ message: "No initial balance set. Add an initial payment first." });
+          }
+          balanceRecord = new pettycashbal({ balance: amount, initialAmount: amount });
+      } else {
+          if (type === "initial") {
+              return res.status(400).json({ message: "Initial amount already set. Cannot insert again." });
+          }
+      }
 
-             if (!balanceRecord) {
-                if (type !== "initial") {
-                  return res
-                    .status(400)
-                    .json({ message: "No initial Balance set. Add an initial Payment" });
-                }
-                // Create a new balance record for initial transaction
-                balanceRecord = new pettycashbal({ balance: amount, initialAmount: amount });
-              } else {
-                // If balanceRecord exists, prevent re-setting initial amount
-                if (type === "initial") {
-                  return res
-                    .status(400)
-                    .json({ message: "Initial Amount already set. Cannot insert again" });
-                }
-              }
-          
-              // Handle expense transaction
-              if (type === "expense") {
-                if (balanceRecord.balance < amount) {
-                  return res
-                    .status(400)
-                    .json({ message: "Insufficient balance. Add more funds" });
-                }
-                balanceRecord.balance -= amount;
-              } else if(type=="reimbursement"){
-                const neededReimbursement = balanceRecord.initialAmount - balanceRecord.balance;
-                 if(amount>neededReimbursement){
-                    res.status(400).json({message:'Reimbursement exceeds initial amount'});
-                 }
-                 balanceRecord.balance+=amount;
-              }
-              else if (type !== "initial") {
-                // If type is neither "initial" nor "expense", it’s invalid
-                return res.status(400).json({ message: "Invalid transaction type" });
-              }
-            //updating the lastupdated time of the intial amount
-            balanceRecord.lastUpdated = Date.now();
-            
-            //saving the transaction in the db in the PettyCashBalance
-            await balanceRecord.save();
+      // Handle Expense
+      if (type === "expense") {
+          if (balanceRecord.balance < amount) {
+              return res.status(400).json({ message: "Insufficient balance. Add more funds." });
+          }
+          balanceRecord.balance -= amount;
+      }
+      
+      // Handle Reimbursement
+      else if (type === "reimbursement") {
+          const maxReimbursement = balanceRecord.initialAmount - balanceRecord.balance;
+          if (amount > maxReimbursement) {
+              return res.status(400).json({ message: "Reimbursement exceeds required amount." });
+          }
+          balanceRecord.balance += amount;
+      }
 
-            const transaction = new Pettycash({description,amount,type,category});
-            await transaction.save();
+      // Save balance update
+      await balanceRecord.save();
 
-            //add to ledger part methanta danna
+      // Save Transaction
+      const transaction = new Pettycash({ description, amount, type, category });
+      await transaction.save();
 
-            const LedgerEntry = new Ledger({description,
-                 amount,
-                 category,
-                 source:'Petty Cash',
-                 transactionId:transaction._id,
-                 transactiontype:'Pettycash'  
-            });
-            await LedgerEntry.save();
+      // Save to Ledger
+      const ledgerEntry = new Ledger({
+          description,
+          amount,
+          category,
+          source: 'Petty Cash',
+          transactionId: transaction._id,
+          transactiontype: 'Pettycash'
+      });
+      await ledgerEntry.save();
 
-            res.status(201).json({message: 'Transaction Added', transaction});
+      res.status(201).json({ message: 'Transaction added successfully', transaction });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Error adding transaction', error });
+  }
+};
 
-
-        } catch (error) {
-            res.status(500).json({message:'Error Adding Transaction', error});
-            console.error(error);
-        }
-}
 
 export const GetPettyCash =async (req,res)=>{
 
@@ -94,11 +81,11 @@ export const GetPettyCash =async (req,res)=>{
 
         //validation
         if (isNaN(monthNum) || monthNum<1 || monthNum>12){
-            res.status(400).json({message:'Invalid month. Must be between 1 to 12'});
+            return res.status(400).json({message:'Invalid month. Must be between 1 to 12'});
         }
 
         if(year && (isNaN(YearNum)||YearNum<2000 || YearNum>9999)){
-            res.status(400).json({message:'Invalid Year'});
+            return res.status(400).json({message:'Invalid Year'});
 
 
         }
@@ -117,7 +104,7 @@ export const GetPettyCash =async (req,res)=>{
         const BalanceRecord = await pettycashbal.findOne();
         const Currentbalance  = BalanceRecord ? BalanceRecord.balance :0;
 
-        res.status(400).json({
+        return res.status(200).json({
             success:true,
             transactions,
             Currentbalance,
@@ -125,7 +112,7 @@ export const GetPettyCash =async (req,res)=>{
             year:YearNum,
         });
     } catch (error) {
-        res.status(500).json({ success: false, message: "Error fetching petty cash transactions", error });
+        return res.status(500).json({ success: false, message: "Error fetching petty cash transactions", error });
     console.error(error);//anith ewatath dapan
     }
     
@@ -328,7 +315,7 @@ export const DeletePettycash = async (req,res) => {
 
        if(transaction.type==='initial'){
         if(BalanceRecord.balance<transaction.amount){
-            res.status(400).json({message:'Insufficient balance for initial transaction deletion'});
+            return res.status(400).json({message:'Insufficient balance for initial transaction deletion'});
         }
         BalanceRecord.balance-=transaction.amount;
 
