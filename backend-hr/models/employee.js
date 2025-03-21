@@ -20,10 +20,6 @@ const employeeSchema = new Schema({
         type: Number, 
         required: true
     },
-    overtimeHours: { 
-        type: Number,
-        default: 0 
-    },
     overtimeRate: { 
         type: Number,
         default: 200 
@@ -38,27 +34,27 @@ const employeeSchema = new Schema({
     },
     image: { 
         type: Buffer, 
-        required: false 
+        required: true 
     },
     imageType: { 
         type: String, 
+        required: true 
+    },
+    birthCertificate: { 
+        type: Buffer,
+        required: true 
+    },
+    birthCertificateType: { 
+        type: String,
+        required: true
+    },
+    medicalRecords: { 
+        type: Buffer,
         required: false 
     },
-    birthCertificate: { // New field for birth certificate
-        type: Buffer,
-        required: false // Optional
-    },
-    birthCertificateType: { // MIME type for birth certificate
-        type: String,
-        required: false
-    },
-    medicalRecords: { // New field for medical records
-        type: Buffer,
-        required: false // Optional
-    },
-    medicalRecordsType: { // MIME type for medical records
-        type: String,
-        required: false
+    medicalRecordsType: { 
+        type: String, 
+        required: false 
     }
 });
 
