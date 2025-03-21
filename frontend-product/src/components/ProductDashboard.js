@@ -1,18 +1,23 @@
 // src/components/ProductDashboard.js
 import React, { useState, useEffect } from 'react';
-import { getProducts, addToCart } from '../services/api';
-import { Box, Typography, Button, Card, CardMedia, CardContent, CardActions } from '@mui/material';
+import { getProducts } from '../services/api';
+import { Box, Typography, TextField, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
 const ProductDashboard = () => {
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const navigate = useNavigate();
 
+  // Fetch products on component mount
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const response = await getProducts();
         setProducts(response.data);
+        setFilteredProducts(response.data); // Initially, all products are displayed
       } catch (error) {
         console.error('Error fetching products:', error);
       }
@@ -20,23 +25,38 @@ const ProductDashboard = () => {
     fetchProducts();
   }, []);
 
-  const handleAddToCart = async (productId) => {
-    try {
-      await addToCart({ productId, quantity: 1 });
-      alert('Product added to cart!');
-      navigate('/cart');
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-      alert('Failed to add to cart: ' + (error.response?.data?.message || error.message));
-    }
-  };
+  // Get unique categories for the filter dropdown
+  const categories = ['All', ...new Set(products.map((product) => product.category))];
 
-  const handleBuyNow = (productId) => {
-    navigate('/delivery', { state: { productId, quantity: 1 } });
-  };
+  // Filter products based on search term and selected category
+  useEffect(() => {
+    let filtered = products;
+
+    // Filter by search term (case-insensitive)
+    if (searchTerm) {
+      filtered = filtered.filter((product) =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Filter by category
+    if (selectedCategory !== 'All') {
+      filtered = filtered.filter((product) => product.category === selectedCategory);
+    }
+
+    setFilteredProducts(filtered);
+  }, [searchTerm, selectedCategory, products]);
 
   const handleViewDetails = (productId) => {
     navigate(`/product/${productId}`);
+  };
+
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const handleCategoryChange = (event) => {
+    setSelectedCategory(event.target.value);
   };
 
   return (
@@ -44,57 +64,69 @@ const ProductDashboard = () => {
       <Typography variant="h4" sx={{ marginBottom: 3, textAlign: 'center' }}>
         Handicraft Products
       </Typography>
-      {products.length === 0 ? (
+
+      {/* Search Bar and Category Filter */}
+      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, marginBottom: 3 }}>
+        {/* Search Bar */}
+        <TextField
+          label="Search Products"
+          variant="outlined"
+          value={searchTerm}
+          onChange={handleSearchChange}
+          sx={{ width: 300 }}
+        />
+
+        {/* Category Filter */}
+        <FormControl sx={{ width: 200 }}>
+          <InputLabel>Category</InputLabel>
+          <Select
+            value={selectedCategory}
+            onChange={handleCategoryChange}
+            label="Category"
+          >
+            {categories.map((category) => (
+              <MenuItem key={category} value={category}>
+                {category}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
+
+      {/* Product Grid */}
+      {filteredProducts.length === 0 ? (
         <Typography variant="h6" sx={{ textAlign: 'center' }}>
           No products available.
         </Typography>
       ) : (
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center' }}>
-          {products.map((product) => (
-            <Card key={product._id} sx={{ width: 300, boxShadow: 3 }}>
-              <CardMedia
-                component="img"
-                height="200"
-                image={product.image ? `http://localhost:8080${product.image}` : 'https://via.placeholder.com/300'}
+          {filteredProducts.map((product) => (
+            <Box
+              key={product._id}
+              sx={{
+                width: 200,
+                height: 200,
+                cursor: 'pointer',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                boxShadow: 3,
+                '&:hover': {
+                  transform: 'scale(1.05)',
+                  transition: 'transform 0.3s ease-in-out',
+                },
+              }}
+              onClick={() => handleViewDetails(product._id)}
+            >
+              <img
+                src={product.image ? `http://localhost:8080${product.image}` : 'https://via.placeholder.com/200'}
                 alt={product.name}
-                sx={{ objectFit: 'cover' }}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                }}
               />
-              <CardContent>
-                <Typography variant="h6">{product.name}</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Category: {product.category}
-                </Typography>
-                <Typography variant="body1" sx={{ marginTop: 1 }}>
-                  Price: LKR {product.price}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Stock: {product.stockQuantity}
-                </Typography>
-              </CardContent>
-              <CardActions sx={{ justifyContent: 'space-between', padding: 2 }}>
-                <Button
-                  variant="contained"
-                  onClick={() => handleBuyNow(product._id)}
-                  sx={{ backgroundColor: '#DAA520', '&:hover': { backgroundColor: '#228B22' } }}
-                >
-                  Buy Now
-                </Button>
-                <Button
-                  variant="contained"
-                  onClick={() => handleAddToCart(product._id)}
-                  sx={{ backgroundColor: '#8B4513', '&:hover': { backgroundColor: '#228B22' } }}
-                >
-                  Add to Cart
-                </Button>
-                <Button
-                  variant="outlined"
-                  onClick={() => handleViewDetails(product._id)}
-                  sx={{ borderColor: '#1976d2', color: '#1976d2', '&:hover': { borderColor: '#1565c0', color: '#1565c0' } }}
-                >
-                  View Details
-                </Button>
-              </CardActions>
-            </Card>
+            </Box>
           ))}
         </Box>
       )}

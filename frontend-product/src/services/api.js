@@ -13,3 +13,9 @@ export const getCart = () => axios.get(`${API_URL}/cart`);
 export const updateCartQuantity = (id, quantity) => axios.put(`${API_URL}/cart/${id}`, { quantity });
 export const removeFromCart = (id) => axios.delete(`${API_URL}/cart/${id}`);
 export const placeOrder = (data) => axios.post(`${API_URL}/orders`, data);
+export const saveDeliveryDetails = (data) => axios.post(`${API_URL}/deliveries`, data);
+export const getDeliveryCharge = (postalCode) => axios.get(`${API_URL}/delivery-charges/${postalCode}`); // Added: Fetch delivery charge
+
+
+
+

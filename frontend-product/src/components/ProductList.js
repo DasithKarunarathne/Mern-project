@@ -1,4 +1,4 @@
-// src/components/ProductList.js
+// src/components/ProductList.js (unchanged, but verified)
 import React, { useState, useEffect } from 'react';
 import { getProductById, addToCart } from '../services/api';
 import { Box, Typography, Button } from '@mui/material';

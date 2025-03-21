@@ -39,10 +39,17 @@ connection.once("open", () => {
 
 const productRouter = require("./routes/products.js");
 const cartRouter = require("./routes/cart.js");
+const deliveryRouter = require('./routes/deliveries.js');
+const deliveryChargeRouter = require('./routes/deliveryCharges.js');
+
 //const orderRouter = require("./routes/orders.js"); // Added: Import order router
 
 app.use("/api/products", productRouter); // Updated: Mount at /api/products
-app.use("/api/cart", cartRouter); // Updated: Mount at /api/cart
+app.use("/api/cart", cartRouter);// Updated: Mount at /api/cart
+app.use('/api/deliveries', deliveryRouter);
+app.use('/api/delivery-charges', deliveryChargeRouter);
+
+
 //app.use("/api/orders", orderRouter); // Added: Mount order router
 
 app.listen(PORT, () => {
