@@ -8,7 +8,12 @@ import {
   Paper,
   FormControl,
   InputLabel,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
+
+// Use the same BACKEND_URL as in other components
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
 const EmployeeUpdateForm = ({ employee, onUpdate, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -16,7 +21,6 @@ const EmployeeUpdateForm = ({ employee, onUpdate, onCancel }) => {
     empname: employee.empname,
     role: employee.role,
     basicSalary: employee.basicSalary,
-    overtimeHours: employee.overtimeHours,
     overtimeRate: employee.overtimeRate,
     epfPercentage: employee.epfPercentage,
     etfPercentage: employee.etfPercentage,
@@ -24,6 +28,10 @@ const EmployeeUpdateForm = ({ employee, onUpdate, onCancel }) => {
     birthCertificate: null,
     medicalRecords: null,
   });
+
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -37,12 +45,15 @@ const EmployeeUpdateForm = ({ employee, onUpdate, onCancel }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    setLoading(true);
+    setSuccessMessage("");
+    setErrorMessage("");
+
     const data = new FormData();
     data.append("empID", formData.empID);
     data.append("empname", formData.empname);
     data.append("role", formData.role);
     data.append("basicSalary", formData.basicSalary);
-    data.append("overtimeHours", formData.overtimeHours || "0");
     data.append("overtimeRate", formData.overtimeRate || "200");
     data.append("epfPercentage", formData.epfPercentage || "8");
     data.append("etfPercentage", formData.etfPercentage || "3");
@@ -50,17 +61,43 @@ const EmployeeUpdateForm = ({ employee, onUpdate, onCancel }) => {
     if (formData.birthCertificate) data.append("birthCertificate", formData.birthCertificate);
     if (formData.medicalRecords) data.append("medicalRecords", formData.medicalRecords);
 
-    try {
-      const response = await axios.put(`http://localhost:4000/api/employee/update/${employee._id}`, data, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      alert(response.data.status); // "User Updated"
-      onUpdate(); // Refresh list
-      onCancel(); // Close form
-    } catch (error) {
-      console.error(error);
-      alert("Error updating employee: " + (error.response?.data?.error || error.message));
+    const maxRetries = 3;
+    let attempt = 0;
+    let success = false;
+    let lastError = null;
+
+    while (attempt < maxRetries && !success) {
+      try {
+        const response = await axios.put(`${BACKEND_URL}/api/employee/update/${employee._id}`, data, {
+          headers: { "Content-Type": "multipart/form-data" },
+          timeout: 20000,
+        });
+        success = true;
+        setSuccessMessage("Employee Updated Successfully");
+        setTimeout(() => {
+          setSuccessMessage("");
+          onUpdate();
+          onCancel();
+        }, 3000);
+      } catch (error) {
+        attempt++;
+        lastError = error;
+        console.error(`Attempt ${attempt} failed:`, error);
+        if (attempt === maxRetries) {
+          console.error("Max retries reached. Failing...");
+          setErrorMessage(
+            error.response?.data?.details
+              ? `Error updating employee: ${error.response.data.error} - ${error.response.data.details}`
+              : `Error updating employee: ${error.response?.data?.error || error.message}`
+          );
+        } else {
+          console.log(`Retrying... (${attempt}/${maxRetries})`);
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+      }
     }
+
+    setLoading(false);
   };
 
   return (
@@ -68,10 +105,20 @@ const EmployeeUpdateForm = ({ employee, onUpdate, onCancel }) => {
       <Typography variant="h6" gutterBottom>
         Update Employee
       </Typography>
+      {successMessage && (
+        <Alert severity="success" sx={{ mb: 2 }}>
+          {successMessage}
+        </Alert>
+      )}
+      {errorMessage && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {errorMessage}
+        </Alert>
+      )}
       <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        <TextField label="Employee ID" name="empID" value={formData.empID} onChange={handleChange} required fullWidth />
-        <TextField label="Name" name="empname" value={formData.empname} onChange={handleChange} required fullWidth />
-        <TextField label="Role" name="role" value={formData.role} onChange={handleChange} required fullWidth />
+        <TextField label="Employee ID" name="empID" value={formData.empID} onChange={handleChange} required fullWidth disabled={loading} />
+        <TextField label="Name" name="empname" value={formData.empname} onChange={handleChange} required fullWidth disabled={loading} />
+        <TextField label="Role" name="role" value={formData.role} onChange={handleChange} required fullWidth disabled={loading} />
         <TextField
           label="Basic Salary"
           name="basicSalary"
@@ -80,14 +127,7 @@ const EmployeeUpdateForm = ({ employee, onUpdate, onCancel }) => {
           onChange={handleChange}
           required
           fullWidth
-        />
-        <TextField
-          label="Overtime Hours (optional)"
-          name="overtimeHours"
-          type="number"
-          value={formData.overtimeHours}
-          onChange={handleChange}
-          fullWidth
+          disabled={loading}
         />
         <TextField
           label="Overtime Rate (optional)"
@@ -96,6 +136,7 @@ const EmployeeUpdateForm = ({ employee, onUpdate, onCancel }) => {
           value={formData.overtimeRate}
           onChange={handleChange}
           fullWidth
+          disabled={loading}
         />
         <TextField
           label="EPF Percentage (optional)"
@@ -104,6 +145,7 @@ const EmployeeUpdateForm = ({ employee, onUpdate, onCancel }) => {
           value={formData.epfPercentage}
           onChange={handleChange}
           fullWidth
+          disabled={loading}
         />
         <TextField
           label="ETF Percentage (optional)"
@@ -112,36 +154,60 @@ const EmployeeUpdateForm = ({ employee, onUpdate, onCancel }) => {
           value={formData.etfPercentage}
           onChange={handleChange}
           fullWidth
+          disabled={loading}
         />
         <FormControl fullWidth>
-          <InputLabel shrink>Image (optional)</InputLabel>
-          <input type="file" name="image" accept="image/jpeg,image/png" onChange={handleChange} style={{ marginTop: "16px" }} />
+          <InputLabel shrink>Employee Photo (current file will be kept if not updated)</InputLabel>
+          <input type="file" name="image" accept="image/jpeg,image/png" onChange={handleChange} style={{ marginTop: "16px" }} disabled={loading} />
+          {employee.image && !formData.image && (
+            <Typography variant="caption" color="textSecondary">
+              Current: Image file (type: {employee.imageType})
+            </Typography>
+          )}
         </FormControl>
         <FormControl fullWidth>
-          <InputLabel shrink>Birth Certificate (optional)</InputLabel>
+          <InputLabel shrink>Birth Certificate (current file will be kept if not updated)</InputLabel>
           <input
             type="file"
             name="birthCertificate"
             accept="image/jpeg,image/png,application/pdf"
             onChange={handleChange}
             style={{ marginTop: "16px" }}
+            disabled={loading}
           />
+          {employee.birthCertificate && !formData.birthCertificate && (
+            <Typography variant="caption" color="textSecondary">
+              Current: Birth Certificate (type: {employee.birthCertificateType})
+            </Typography>
+          )}
         </FormControl>
         <FormControl fullWidth>
-          <InputLabel shrink>Medical Records (optional)</InputLabel>
+          <InputLabel shrink>Medical Records (optional, current file will be kept if not updated)</InputLabel>
           <input
             type="file"
             name="medicalRecords"
             accept="image/jpeg,image/png,application/pdf"
             onChange={handleChange}
             style={{ marginTop: "16px" }}
+            disabled={loading}
           />
+          {employee.medicalRecords && !formData.medicalRecords && (
+            <Typography variant="caption" color="textSecondary">
+              Current: Medical Records (type: {employee.medicalRecordsType})
+            </Typography>
+          )}
         </FormControl>
         <Box sx={{ display: "flex", gap: 2 }}>
-          <Button variant="contained" color="primary" type="submit">
-            Update Employee
+          <Button
+            variant="contained"
+            color="primary"
+            type="submit"
+            disabled={loading}
+            startIcon={loading ? <CircularProgress size={20} /> : null}
+          >
+            {loading ? "Updating Employee..." : "Update Employee"}
           </Button>
-          <Button variant="outlined" color="secondary" onClick={onCancel}>
+          <Button variant="outlined" color="secondary" onClick={onCancel} disabled={loading}>
             Cancel
           </Button>
         </Box>

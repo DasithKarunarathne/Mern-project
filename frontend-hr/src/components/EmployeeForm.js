@@ -1,13 +1,19 @@
 import React, { useState } from "react";
-import axios from "axios"; // Removed duplicate import
+import axios from "axios";
 import {
   TextField,
   Button,
   Box,
   Typography,
-  Input,
+  FormControl,
+  InputLabel,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
+import { useNavigate } from "react-router-dom";
+
+// Use an environment variable for the backend URL
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
 const EmployeeForm = ({ onEmployeeAdded }) => {
   const [formData, setFormData] = useState({
@@ -15,7 +21,6 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
     empname: "",
     role: "",
     basicSalary: "",
-    overtimeHours: "",
     overtimeRate: "",
     epfPercentage: "",
     etfPercentage: "",
@@ -23,9 +28,13 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
     birthCertificate: null,
     medicalRecords: null,
   });
-  const [successMessage, setSuccessMessage] = useState(""); // State for success message
 
-  const navigate = useNavigate(); // Hook for navigation
+  const [errors, setErrors] = useState({});
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -36,15 +45,34 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
     }
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.empID) newErrors.empID = "Employee ID is required";
+    if (!formData.empname) newErrors.empname = "Name is required";
+    if (!formData.role) newErrors.role = "Role is required";
+    if (!formData.basicSalary) newErrors.basicSalary = "Basic Salary is required";
+    if (!formData.image) newErrors.image = "Employee Photo is required";
+    if (!formData.birthCertificate) newErrors.birthCertificate = "Birth Certificate is required";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setLoading(true);
+    setSuccessMessage("");
+    setErrorMessage("");
 
     const data = new FormData();
     data.append("empID", formData.empID);
     data.append("empname", formData.empname);
     data.append("role", formData.role);
     data.append("basicSalary", formData.basicSalary);
-    data.append("overtimeHours", formData.overtimeHours || "0");
     data.append("overtimeRate", formData.overtimeRate || "200");
     data.append("epfPercentage", formData.epfPercentage || "8");
     data.append("etfPercentage", formData.etfPercentage || "3");
@@ -52,43 +80,106 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
     if (formData.birthCertificate) data.append("birthCertificate", formData.birthCertificate);
     if (formData.medicalRecords) data.append("medicalRecords", formData.medicalRecords);
 
-    try {
-      const response = await axios.post("http://localhost:4000/api/employee/add", data, {
-        headers: { "Content-Type": "multipart/form-data" },
-        timeout: 10000,
-      });
-      setSuccessMessage("Employee Added Successfully"); // Set success message
-      setFormData({
-        empID: "",
-        empname: "",
-        role: "",
-        basicSalary: "",
-        overtimeHours: "",
-        overtimeRate: "",
-        epfPercentage: "",
-        etfPercentage: "",
-        image: null,
-        birthCertificate: null,
-        medicalRecords: null,
-      });
-      document.querySelectorAll("input[type=file]").forEach(input => (input.value = ""));
-      setTimeout(() => setSuccessMessage(""), 3000);
-      if (onEmployeeAdded) onEmployeeAdded(); // Notify parent to refresh EmployeeList
-      navigate("/list"); // Navigate to Employee List page
-    } catch (error) {
-      console.error("Frontend error:", error);
-      if (error.response) {
-        alert("Error adding employee: " + (error.response.data?.error || error.response.statusText));
-      } else if (error.request) {
-        alert("Error adding employee: Network Error - No response received from server. Check if backend is running on http://localhost:4000.");
-      } else {
-        alert("Error adding employee: " + error.message);
+    console.log("Sending data to backend:", {
+      empID: formData.empID,
+      empname: formData.empname,
+      role: formData.role,
+      basicSalary: formData.basicSalary,
+      overtimeRate: formData.overtimeRate || "200",
+      epfPercentage: formData.epfPercentage || "8",
+      etfPercentage: formData.etfPercentage || "3",
+      image: formData.image ? formData.image.name : null,
+      birthCertificate: formData.birthCertificate ? formData.birthCertificate.name : null,
+      medicalRecords: formData.medicalRecords ? formData.medicalRecords.name : null,
+    });
+
+    const maxRetries = 3;
+    let attempt = 0;
+    let success = false;
+    let lastError = null;
+
+    while (attempt < maxRetries && !success) {
+      try {
+        const response = await axios.post(`${BACKEND_URL}/api/employee/add`, data, {
+          headers: { "Content-Type": "multipart/form-data" },
+          timeout: 20000,
+        });
+        console.log("Backend response:", response.data);
+        success = true;
+        setSuccessMessage("Employee Added Successfully");
+        setFormData({
+          empID: "",
+          empname: "",
+          role: "",
+          basicSalary: "",
+          overtimeRate: "",
+          epfPercentage: "",
+          etfPercentage: "",
+          image: null,
+          birthCertificate: null,
+          medicalRecords: null,
+        });
+        setErrors({});
+        document.querySelectorAll("input[type=file]").forEach(input => (input.value = ""));
+        setTimeout(() => {
+          setSuccessMessage("");
+          if (onEmployeeAdded) onEmployeeAdded();
+          navigate("/list");
+        }, 3000);
+      } catch (error) {
+        attempt++;
+        lastError = error;
+        console.error(`Attempt ${attempt} failed:`, error);
+        if (attempt === maxRetries) {
+          console.error("Max retries reached. Checking if employee was added...");
+        } else {
+          console.log(`Retrying... (${attempt}/${maxRetries})`);
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
       }
     }
+
+    if (!success) {
+      try {
+        const response = await axios.get(`${BACKEND_URL}/api/employee/`);
+        const employees = response.data;
+        const employeeExists = employees.some(emp => emp.empID === formData.empID);
+        if (employeeExists) {
+          console.log("Employee was added despite error, redirecting...");
+          setSuccessMessage("Employee Added Successfully (Detected via fallback)");
+          setFormData({
+            empID: "",
+            empname: "",
+            role: "",
+            basicSalary: "",
+            overtimeRate: "",
+            epfPercentage: "",
+            etfPercentage: "",
+            image: null,
+            birthCertificate: null,
+            medicalRecords: null,
+          });
+          setErrors({});
+          document.querySelectorAll("input[type=file]").forEach(input => (input.value = ""));
+          setTimeout(() => {
+            setSuccessMessage("");
+            if (onEmployeeAdded) onEmployeeAdded();
+            navigate("/list");
+          }, 3000);
+        } else {
+          setErrorMessage("Error adding employee: " + (lastError.response?.data?.error || lastError.message));
+        }
+      } catch (checkErr) {
+        console.error("Error checking employee list:", checkErr);
+        setErrorMessage("Error adding employee: " + (lastError.response?.data?.error || lastError.message));
+      }
+    }
+
+    setLoading(false);
   };
 
   const handleViewList = () => {
-    navigate("/list"); // Navigate to Employee List page
+    navigate("/list");
   };
 
   return (
@@ -97,9 +188,14 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
         Add Employee
       </Typography>
       {successMessage && (
-        <Typography variant="body1" color="success.main" sx={{ mb: 2 }}>
+        <Alert severity="success" sx={{ mb: 2 }}>
           {successMessage}
-        </Typography>
+        </Alert>
+      )}
+      {errorMessage && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {errorMessage}
+        </Alert>
       )}
       <form onSubmit={handleSubmit}>
         <TextField
@@ -110,6 +206,9 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
           fullWidth
           margin="normal"
           required
+          error={!!errors.empID}
+          helperText={errors.empID}
+          disabled={loading}
         />
         <TextField
           label="Name"
@@ -119,6 +218,9 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
           fullWidth
           margin="normal"
           required
+          error={!!errors.empname}
+          helperText={errors.empname}
+          disabled={loading}
         />
         <TextField
           label="Role"
@@ -128,6 +230,9 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
           fullWidth
           margin="normal"
           required
+          error={!!errors.role}
+          helperText={errors.role}
+          disabled={loading}
         />
         <TextField
           label="Basic Salary"
@@ -138,15 +243,9 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
           fullWidth
           margin="normal"
           required
-        />
-        <TextField
-          label="Overtime Hours (optional)"
-          name="overtimeHours"
-          type="number"
-          value={formData.overtimeHours}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
+          error={!!errors.basicSalary}
+          helperText={errors.basicSalary}
+          disabled={loading}
         />
         <TextField
           label="Overtime Rate (optional)"
@@ -156,6 +255,7 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
           onChange={handleChange}
           fullWidth
           margin="normal"
+          disabled={loading}
         />
         <TextField
           label="EPF Percentage (optional)"
@@ -165,6 +265,7 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
           onChange={handleChange}
           fullWidth
           margin="normal"
+          disabled={loading}
         />
         <TextField
           label="ETF Percentage (optional)"
@@ -174,33 +275,64 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
           onChange={handleChange}
           fullWidth
           margin="normal"
+          disabled={loading}
         />
-        <Input
-          type="file"
-          name="image"
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-        />
-        <Input
-          type="file"
-          name="birthCertificate"
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-        />
-        <Input
-          type="file"
-          name="medicalRecords"
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-        />
+        <FormControl fullWidth margin="normal">
+          <InputLabel shrink>Employee Photo *</InputLabel>
+          <input
+            type="file"
+            name="image"
+            onChange={handleChange}
+            accept="image/jpeg,image/png"
+            style={{ marginTop: "16px" }}
+            required
+            disabled={loading}
+          />
+          {errors.image && (
+            <Typography color="error" variant="caption">
+              {errors.image}
+            </Typography>
+          )}
+        </FormControl>
+        <FormControl fullWidth margin="normal">
+          <InputLabel shrink>Birth Certificate *</InputLabel>
+          <input
+            type="file"
+            name="birthCertificate"
+            onChange={handleChange}
+            accept="image/jpeg,image/png,application/pdf"
+            style={{ marginTop: "16px" }}
+            required
+            disabled={loading}
+          />
+          {errors.birthCertificate && (
+            <Typography color="error" variant="caption">
+              {errors.birthCertificate}
+            </Typography>
+          )}
+        </FormControl>
+        <FormControl fullWidth margin="normal">
+          <InputLabel shrink>Medical Records (optional)</InputLabel>
+          <input
+            type="file"
+            name="medicalRecords"
+            onChange={handleChange}
+            accept="image/jpeg,image/png,application/pdf"
+            style={{ marginTop: "16px" }}
+            disabled={loading}
+          />
+        </FormControl>
         <Box sx={{ mt: 2, display: "flex", gap: 2 }}>
-          <Button type="submit" variant="contained" color="primary">
-            Add Employee
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            disabled={loading}
+            startIcon={loading ? <CircularProgress size={20} /> : null}
+          >
+            {loading ? "Adding Employee..." : "Add Employee"}
           </Button>
-          <Button variant="outlined" color="primary" onClick={handleViewList}>
+          <Button variant="outlined" color="primary" onClick={handleViewList} disabled={loading}>
             Employee List
           </Button>
         </Box>
