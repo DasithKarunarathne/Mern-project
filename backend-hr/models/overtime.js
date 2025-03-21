@@ -21,15 +21,18 @@ const overtimeSchema = new Schema({
     employeeId: {
         type: Schema.Types.ObjectId,
         ref: "Employee",
-        required: true
+        required: true,
+        index: true
     },
     empID: {
         type: String,
-        required: true
+        required: true,
+        index: true
     },
     month: {  // Store the month and year (e.g., "2025-03")
         type: String,
-        required: true
+        required: true,
+        index: true
     },
     totalOvertimeHours: {  // Total overtime hours for the month
         type: Number,

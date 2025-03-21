@@ -8,6 +8,7 @@ const salaryShcema = new mongoose.Schema({
     basicSalary: { type: Number, required: true },
     overtimeHours: { type: Number, default: 0 },
     overtimeRate: { type: Number, default: 0 },
+    totalOvertime: { type: Number, default: 0 },
     epf: { type: Number, default: 0 },
     etf: { type: Number, default: 0 },
     netSalary: { type: Number },

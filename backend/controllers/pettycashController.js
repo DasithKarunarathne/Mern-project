@@ -36,11 +36,13 @@ export const addPettyCash = async (req, res) => {
         return res.status(400).json({ message: "Insufficient cash book balance to fund petty cash" });
       }
 
+      
+
       const cashBookEntry = new CashBook({
         description: "Initial funding for petty cash",
         amount: amount,
         type: "outflow",
-        category: "pettyCashInitial",
+        category: "Petty Cash Initial",
         referenceId: transaction._id, // Link to Pettycash transaction
         balance: currentCashBalance - amount,
       });
@@ -76,16 +78,28 @@ export const addPettyCash = async (req, res) => {
     
     // Handle Reimbursement
     else if (type === "reimbursement") {
+      // Calculate total expenses
       const totalExpenses = await Pettycash.aggregate([
         { $match: { type: "expense" } },
         { $group: { _id: null, total: { $sum: "$amount" } } },
       ]);
 
+      // Calculate total existing reimbursements
+      const totalReimbursements = await Pettycash.aggregate([
+        { $match: { type: "reimbursement" } },
+        { $group: { _id: null, total: { $sum: "$amount" } } },
+      ]);
+
       const totalExpensesAmount = totalExpenses.length > 0 ? totalExpenses[0].total : 0;
-      const maxReimbursement = totalExpensesAmount - (balanceRecord.initialAmount - balanceRecord.balance);
+      const existingReimbursements = totalReimbursements.length > 0 ? totalReimbursements[0].total : 0;
+      
+      // Calculate maximum allowed reimbursement
+      const maxReimbursement = totalExpensesAmount - existingReimbursements;
 
       if (amount > maxReimbursement) {
-        return res.status(400).json({ message: "Reimbursement exceeds allowable amount." });
+        return res.status(400).json({ 
+          message: `Reimbursement exceeds allowable amount. Maximum allowed: ${maxReimbursement}` 
+        });
       }
 
       balanceRecord.balance += amount;

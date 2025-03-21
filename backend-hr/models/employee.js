@@ -6,7 +6,8 @@ const employeeSchema = new Schema({
     empID: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        index: true
     },
     empname: {
         type: String,

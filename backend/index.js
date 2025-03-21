@@ -9,6 +9,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import CashBook from "./models/CashBook.js";
 import { addCashBookEntry } from "./controllers/cashBook.js";
+import { createProxyMiddleware } from "http-proxy-middleware"; // Add this
 
 dotenv.config(); // Load environment variables
 
@@ -31,6 +32,21 @@ app.use("/api/feedback", feedbackroutes); // Feedback route
 app.use("/api/Salary",salaryCalc);
 app.use("/api/Pettycash", pettycash);
 app.use("/api/cashbook", CashBookroutes);
+
+
+
+app.use(
+    "/api/employee",
+    createProxyMiddleware({
+      target: "http://localhost:5000", // Your friend's backend
+      changeOrigin: true,
+      pathRewrite: { "^/api/employee": "/api/employee" }, // Keep path as is
+      onError: (err, req, res) => {
+        console.error("Proxy error:", err);
+        res.status(500).send("Proxy error");
+      }
+    })
+);
 
 
 // Start server
