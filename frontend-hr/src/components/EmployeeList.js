@@ -118,10 +118,25 @@ const EmployeeList = ({ refresh }) => {
 
   // Helper function to format date safely
   const formatDate = (dateString) => {
-    if (!dateString) return "Invalid Date";
+    if (!dateString) return "No date available";
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "Invalid Date";
-    return date.toISOString().split("T")[0];
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  // Helper function to format the month (e.g., "2025-03" to "Mar 2025")
+  const formatMonth = (monthString) => {
+    if (!monthString) return "Unknown Month";
+    const [year, month] = monthString.split("-");
+    const date = new Date(year, month - 1); // month is 0-based in JavaScript
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+    });
   };
 
   return (
@@ -176,9 +191,20 @@ const EmployeeList = ({ refresh }) => {
               <Typography>Overtime Rate: ${employee.overtimeRate}/hr</Typography>
               {overtimeRecords[employee._id] && overtimeRecords[employee._id].length > 0 ? (
                 overtimeRecords[employee._id].map((record) => (
-                  <Typography key={record._id}>
-                    Overtime ({formatDate(record.date)}): {record.overtimeHours} hrs (EmpID: {record.empID})
-                  </Typography>
+                  <Box key={record._id}>
+                    <Typography variant="subtitle2" sx={{ mt: 1 }}>
+                      Month: {formatMonth(record.month)}
+                    </Typography>
+                    {record.details && record.details.length > 0 ? (
+                      record.details.map((detail, index) => (
+                        <Typography key={`${record._id}-${index}`}>
+                          Overtime ({formatDate(detail.date)}): {detail.overtimeHours} hrs (EmpID: {record.empID})
+                        </Typography>
+                      ))
+                    ) : (
+                      <Typography>No overtime details found for this month.</Typography>
+                    )}
+                  </Box>
                 ))
               ) : (
                 <Typography>No overtime records found.</Typography>

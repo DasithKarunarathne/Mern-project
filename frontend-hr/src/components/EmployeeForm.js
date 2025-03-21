@@ -28,8 +28,6 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
     role: "",
     basicSalary: "",
     overtimeRate: "",
-    epfPercentage: "",
-    etfPercentage: "",
     image: null,
     birthCertificate: null,
     medicalRecords: null,
@@ -103,8 +101,6 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
     data.append("role", formData.role);
     data.append("basicSalary", formData.basicSalary);
     data.append("overtimeRate", formData.overtimeRate || "200");
-    data.append("epfPercentage", formData.epfPercentage || "8");
-    data.append("etfPercentage", formData.etfPercentage || "3");
     if (formData.image) data.append("image", formData.image);
     if (formData.birthCertificate) data.append("birthCertificate", formData.birthCertificate);
     if (formData.medicalRecords) data.append("medicalRecords", formData.medicalRecords);
@@ -115,8 +111,6 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
       role: formData.role,
       basicSalary: formData.basicSalary,
       overtimeRate: formData.overtimeRate || "200",
-      epfPercentage: formData.epfPercentage || "8",
-      etfPercentage: formData.etfPercentage || "3",
       image: formData.image ? formData.image.name : null,
       birthCertificate: formData.birthCertificate ? formData.birthCertificate.name : null,
       medicalRecords: formData.medicalRecords ? formData.medicalRecords.name : null,
@@ -142,8 +136,6 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
           role: "",
           basicSalary: "",
           overtimeRate: "",
-          epfPercentage: "",
-          etfPercentage: "",
           image: null,
           birthCertificate: null,
           medicalRecords: null,
@@ -182,8 +174,6 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
             role: "",
             basicSalary: "",
             overtimeRate: "",
-            epfPercentage: "",
-            etfPercentage: "",
             image: null,
             birthCertificate: null,
             medicalRecords: null,
@@ -321,26 +311,6 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
           name="overtimeRate"
           type="number"
           value={formData.overtimeRate}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-          disabled={loading}
-        />
-        <TextField
-          label="EPF Percentage (optional)"
-          name="epfPercentage"
-          type="number"
-          value={formData.epfPercentage}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-          disabled={loading}
-        />
-        <TextField
-          label="ETF Percentage (optional)"
-          name="etfPercentage"
-          type="number"
-          value={formData.etfPercentage}
           onChange={handleChange}
           fullWidth
           margin="normal"

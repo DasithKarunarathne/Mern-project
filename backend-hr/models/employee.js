@@ -24,14 +24,6 @@ const employeeSchema = new Schema({
         type: Number,
         default: 200 
     },
-    epfPercentage: { 
-        type: Number, 
-        default: 8 
-    },
-    etfPercentage: { 
-        type: Number, 
-        default: 3 
-    },
     image: { 
         type: Buffer, 
         required: true 

@@ -30,7 +30,7 @@ router.post("/add", upload, async (req, res) => {
     try {
         console.log("Starting /api/employee/add route...");
 
-        const { empID, empname, role, basicSalary, overtimeRate, epfPercentage, etfPercentage } = req.body;
+        const { empID, empname, role, basicSalary, overtimeRate } = req.body;
 
         // Log the incoming request data
         console.log("Received data:", {
@@ -39,8 +39,6 @@ router.post("/add", upload, async (req, res) => {
             role,
             basicSalary,
             overtimeRate,
-            epfPercentage,
-            etfPercentage,
             image: req.files["image"] ? req.files["image"][0].originalname : null,
             birthCertificate: req.files["birthCertificate"] ? req.files["birthCertificate"][0].originalname : null,
             medicalRecords: req.files["medicalRecords"] ? req.files["medicalRecords"][0].originalname : null,
@@ -94,8 +92,6 @@ router.post("/add", upload, async (req, res) => {
             role,
             basicSalary: Number(basicSalary),
             overtimeRate: Number(overtimeRate) || 200,
-            epfPercentage: Number(epfPercentage) || 8,
-            etfPercentage: Number(etfPercentage) || 3,
             image,
             imageType,
             birthCertificate,
@@ -174,7 +170,7 @@ router.delete("/delete/:id", async (req, res) => {
 router.put("/update/:id", upload, async (req, res) => {
     try {
         const { id } = req.params;
-        const { empID, empname, role, basicSalary, overtimeRate, epfPercentage, etfPercentage } = req.body;
+        const { empID, empname, role, basicSalary, overtimeRate } = req.body;
 
         // Validate the ID
         if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -194,8 +190,6 @@ router.put("/update/:id", upload, async (req, res) => {
             role,
             basicSalary,
             overtimeRate,
-            epfPercentage,
-            etfPercentage,
             image: req.files["image"] ? req.files["image"][0].originalname : null,
             birthCertificate: req.files["birthCertificate"] ? req.files["birthCertificate"][0].originalname : null,
             medicalRecords: req.files["medicalRecords"] ? req.files["medicalRecords"][0].originalname : null,
@@ -222,8 +216,6 @@ router.put("/update/:id", upload, async (req, res) => {
         employee.role = role;
         employee.basicSalary = Number(basicSalary);
         employee.overtimeRate = Number(overtimeRate) || 200;
-        employee.epfPercentage = Number(epfPercentage) || 8;
-        employee.etfPercentage = Number(etfPercentage) || 3;
 
         // Update files if provided (otherwise keep existing files)
         if (req.files && req.files["image"]) {
