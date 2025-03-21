@@ -80,5 +80,64 @@ router.route("/").get(async (req, res) => {
     }
 });
 
+
+
+
+// GET /api/employee/:empID
+router.get("/:empID", async (req, res) => {
+    try {
+        const { empID } = req.params; // Extract empID from the URL parameters
+
+        // Find the employee by empID
+        const employee = await Employee.findOne({ empID });
+
+        // If no employee is found, return a 404 error
+        if (!employee) {
+            return res.status(404).json({ success: false, message: "Employee not found" });
+        }
+
+        // Convert the employee document to a plain object
+        const employeeObj = employee.toObject();
+
+        // Add base64-encoded file data if it exists
+        if (employee.image && employee.imageType) {
+            employeeObj.image = `data:${employee.imageType};base64,${employee.image.toString("base64")}`;
+        }
+        if (employee.birthCertificate && employee.birthCertificateType) {
+            employeeObj.birthCertificate = `data:${employee.birthCertificateType};base64,${employee.birthCertificate.toString("base64")}`;
+        }
+        if (employee.medicalRecords && employee.medicalRecordsType) {
+            employeeObj.medicalRecords = `data:${employee.medicalRecordsType};base64,${employee.medicalRecords.toString("base64")}`;
+        }
+
+        // Return the employee data
+        res.status(200).json({ success: true, employee: employeeObj });
+    } catch (err) {
+        console.error("Error fetching employee:", err);
+        res.status(500).json({ success: false, message: "Error fetching employee", error: err.message });
+    }
+});
+
+// DELETE /api/employee/:id
+router.delete("/:id", async (req, res) => {
+    try {
+        const { id } = req.params; // Extract the employee ID from the URL parameters
+
+        // Find and delete the employee by ID
+        const deletedEmployee = await Employee.findByIdAndDelete(id);
+
+        // If no employee is found, return a 404 error
+        if (!deletedEmployee) {
+            return res.status(404).json({ success: false, message: "Employee not found" });
+        }
+
+        // Return a success response
+        res.status(200).json({ success: true, message: "Employee deleted", employee: deletedEmployee });
+    } catch (err) {
+        console.error("Error deleting employee:", err);
+        res.status(500).json({ success: false, message: "Error deleting employee", error: err.message });
+    }
+});
+
 // Other routes remain unchanged
 export default router;
