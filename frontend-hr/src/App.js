@@ -41,6 +41,7 @@ function App() {
           <Route path="/list" element={<EmployeeList refresh={refresh} />} />
           <Route path="/overtime" element={<OvertimeForm employees={employees} />} />
           <Route path="/overtime/monthly" element={<MonthlyOvertime />} />
+          <Route path="/overtime/monthly/:year/:month" element={<MonthlyOvertime />} /> {/* Add dynamic route */}
         </Routes>
       </Container>
     </Router>

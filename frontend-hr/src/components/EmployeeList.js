@@ -177,7 +177,7 @@ const EmployeeList = ({ refresh }) => {
               {overtimeRecords[employee._id] && overtimeRecords[employee._id].length > 0 ? (
                 overtimeRecords[employee._id].map((record) => (
                   <Typography key={record._id}>
-                    Overtime ({formatDate(record.date)}): {record.overtimeHours} hrs
+                    Overtime ({formatDate(record.date)}): {record.overtimeHours} hrs (EmpID: {record.empID})
                   </Typography>
                 ))
               ) : (

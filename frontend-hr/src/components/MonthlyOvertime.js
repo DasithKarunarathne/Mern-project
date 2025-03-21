@@ -15,21 +15,21 @@ import {
   CircularProgress,
   Alert,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 // Use the same BACKEND_URL as in other components
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
 const MonthlyOvertime = () => {
-  const [year, setYear] = useState("2025"); // Default to 2025
-  const [month, setMonth] = useState("03"); // Default to March (03)
+  const { year: paramYear, month: paramMonth } = useParams();
+  const [year, setYear] = useState(paramYear || "2025");
+  const [month, setMonth] = useState(paramMonth || "03");
   const [monthlyOvertime, setMonthlyOvertime] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const fetchMonthlyOvertime = async () => {
-    // Validate year and month
     if (!year || !month) {
       setError("Please enter both year and month.");
       return;
@@ -41,6 +41,7 @@ const MonthlyOvertime = () => {
       return;
     }
 
+    navigate(`/overtime/monthly/${year}/${month}`); // Update the URL
     setLoading(true);
     setError(null);
     try {
@@ -54,12 +55,10 @@ const MonthlyOvertime = () => {
     }
   };
 
-  // Fetch the report automatically when the component mounts or when year/month changes
   useEffect(() => {
     fetchMonthlyOvertime();
-  }, [year, month]); // Dependencies: re-fetch when year or month changes
+  }, [year, month]);
 
-  // Helper function to format date
   const formatDate = (dateString) => {
     if (!dateString) return "Invalid Date";
     const date = new Date(dateString);
@@ -68,23 +67,29 @@ const MonthlyOvertime = () => {
   };
 
   return (
-    <Box sx={{ mb: 4 }}>
+    <Box sx={{ mb: 4, p: 3, maxWidth: 1200, margin: "0 auto" }}>
+      <Typography variant="h4" gutterBottom>
+        Employee Management
+      </Typography>
       <Typography variant="h5" gutterBottom>
         Monthly Overtime Report
       </Typography>
-      <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+      <Box sx={{ display: "flex", gap: 2, mb: 2, alignItems: "center" }}>
         <TextField
           label="Year (YYYY)"
           value={year}
           onChange={(e) => setYear(e.target.value)}
-          fullWidth
+          sx={{ width: 100 }}
         />
         <TextField
           label="Month (MM)"
           value={month}
           onChange={(e) => setMonth(e.target.value)}
-          fullWidth
+          sx={{ width: 100 }}
         />
+        <Button variant="contained" color="primary" onClick={fetchMonthlyOvertime}>
+          Fetch Report
+        </Button>
         <Button variant="outlined" color="primary" onClick={() => navigate("/list")}>
           Back to Employee List
         </Button>
@@ -107,7 +112,7 @@ const MonthlyOvertime = () => {
                 <TableCell>Employee ID</TableCell>
                 <TableCell>Name</TableCell>
                 <TableCell>Total Overtime Hours</TableCell>
-                <TableCell>Overtime Rate ($/hr)</TableCell> {/* New column */}
+                <TableCell>Overtime Rate ($/hr)</TableCell>
                 <TableCell>Overtime Pay ($)</TableCell>
                 <TableCell>Overtime Details</TableCell>
               </TableRow>
@@ -118,8 +123,8 @@ const MonthlyOvertime = () => {
                   <TableCell>{record.empID}</TableCell>
                   <TableCell>{record.empname}</TableCell>
                   <TableCell>{record.totalOvertimeHours}</TableCell>
-                  <TableCell>{record.overtimeRate.toFixed(2)}</TableCell> {/* Display overtime rate */}
-                  <TableCell>{record.overtimePay.toFixed(2)}</TableCell>
+                  <TableCell>{record.overtimeRate.toLocaleString()}</TableCell>
+                  <TableCell>{record.overtimePay.toLocaleString()}</TableCell>
                   <TableCell>
                     {record.details && record.details.length > 0 ? (
                       <Table size="small">
@@ -127,6 +132,7 @@ const MonthlyOvertime = () => {
                           <TableRow>
                             <TableCell>Date</TableCell>
                             <TableCell>Hours</TableCell>
+                            <TableCell>Pay</TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
@@ -134,6 +140,7 @@ const MonthlyOvertime = () => {
                             <TableRow key={index}>
                               <TableCell>{formatDate(detail.date)}</TableCell>
                               <TableCell>{detail.overtimeHours}</TableCell>
+                              <TableCell>${detail.overtimePay.toLocaleString()}</TableCell>
                             </TableRow>
                           ))}
                         </TableBody>

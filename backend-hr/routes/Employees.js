@@ -268,7 +268,7 @@ router.post("/overtime/add", async (req, res) => {
             return res.status(400).json({ error: "Invalid employee ID" });
         }
 
-        // Check if the employee exists
+        // Check if the employee exists and fetch empID and overtimeRate
         const employee = await Employee.findById(employeeId).maxTimeMS(10000);
         if (!employee) {
             return res.status(404).json({ error: "Employee not found" });
@@ -280,23 +280,60 @@ router.post("/overtime/add", async (req, res) => {
             return res.status(400).json({ error: "Invalid date format. Use YYYY-MM-DD." });
         }
 
-        // Check if an overtime record already exists for this employee and date
-        const existingOvertime = await Overtime.findOne({ employeeId, date: parsedDate }).maxTimeMS(10000);
-        if (existingOvertime) {
-            return res.status(400).json({ error: `Overtime record for date ${date} already exists for this employee` });
+        // Calculate the month in YYYY-MM format
+        const year = parsedDate.getFullYear();
+        const month = (parsedDate.getMonth() + 1).toString().padStart(2, "0");
+        const monthString = `${year}-${month}`;
+
+        // Calculate overtimePay for this entry
+        const overtimePay = Number(overtimeHours) * employee.overtimeRate;
+
+        // Check if an overtime record exists for this employee for the given month
+        let overtimeRecord = await Overtime.findOne({ employeeId, month: monthString }).maxTimeMS(10000);
+
+        if (overtimeRecord) {
+            // Check if an entry for this date already exists in the details array
+            const existingDetail = overtimeRecord.details.find(detail => detail.date.toISOString().split("T")[0] === parsedDate.toISOString().split("T")[0]);
+            if (existingDetail) {
+                return res.status(400).json({ error: `Overtime record for date ${date} already exists for this employee in this month` });
+            }
+
+            // Add the new overtime entry to the details array
+            overtimeRecord.details.push({
+                date: parsedDate,
+                overtimeHours: Number(overtimeHours),
+                overtimePay
+            });
+
+            // Update the totals
+            overtimeRecord.totalOvertimeHours += Number(overtimeHours);
+            overtimeRecord.totalOvertimePay += overtimePay;
+            overtimeRecord.updatedAt = new Date();
+
+            // Save the updated record
+            const updatedOvertime = await overtimeRecord.save({ maxTimeMS: 10000 });
+            console.log("Overtime record updated in MongoDB:", updatedOvertime);
+            res.status(200).json({ message: "Overtime record updated", overtime: updatedOvertime });
+        } else {
+            // Create a new overtime record for the month
+            const newOvertime = new Overtime({
+                employeeId,
+                empID: employee.empID,
+                month: monthString,
+                totalOvertimeHours: Number(overtimeHours),
+                totalOvertimePay: overtimePay,
+                details: [{
+                    date: parsedDate,
+                    overtimeHours: Number(overtimeHours),
+                    overtimePay
+                }]
+            });
+
+            // Save the new record
+            const savedOvertime = await newOvertime.save({ maxTimeMS: 10000 });
+            console.log("Overtime record saved to MongoDB:", savedOvertime);
+            res.status(200).json({ message: "Overtime record added", overtime: savedOvertime });
         }
-
-        // Create a new overtime record
-        const newOvertime = new Overtime({
-            employeeId,
-            overtimeHours: Number(overtimeHours),
-            date: parsedDate
-        });
-
-        // Save the overtime record
-        const savedOvertime = await newOvertime.save({ maxTimeMS: 10000 });
-        console.log("Overtime record saved to MongoDB:", savedOvertime);
-        res.status(200).json({ message: "Overtime record added", overtime: savedOvertime });
     } catch (err) {
         console.error("Error adding overtime record to MongoDB:", err);
         res.status(500).json({ error: "Failed to add overtime record", details: err.message });
@@ -314,7 +351,7 @@ router.get("/overtime/:employeeId", async (req, res) => {
         }
 
         // Fetch overtime records for the employee
-        const overtimeRecords = await Overtime.find({ employeeId }).sort({ date: -1 }).maxTimeMS(10000);
+        const overtimeRecords = await Overtime.find({ employeeId }).sort({ month: -1 }).maxTimeMS(10000);
         console.log(`Fetched ${overtimeRecords.length} overtime records for employee ${employeeId}`);
         res.status(200).json(overtimeRecords);
     } catch (err) {
@@ -335,43 +372,32 @@ router.get("/overtime/monthly/:year/:month", async (req, res) => {
             return res.status(400).json({ error: "Invalid year or month" });
         }
 
-        // Define the date range for the given month
-        const startDate = new Date(parsedYear, parsedMonth - 1, 1);
-        const endDate = new Date(parsedYear, parsedMonth, 0); // Last day of the month
+        // Construct the month string (e.g., "2025-03")
+        const monthString = `${parsedYear}-${parsedMonth.toString().padStart(2, "0")}`;
 
         // Fetch all employees
         const employees = await Employee.find().maxTimeMS(10000);
 
-        // Fetch overtime records within the date range
-        const overtimeRecords = await Overtime.find({
-            date: {
-                $gte: startDate,
-                $lte: endDate,
-            },
-        }).maxTimeMS(10000);
+        // Fetch overtime records for the given month
+        const overtimeRecords = await Overtime.find({ month: monthString }).maxTimeMS(10000);
 
-        // Calculate total overtime hours, pay, and include detailed records for each employee
+        // Map the overtime records to the required format
         const monthlyOvertime = employees.map(employee => {
-            const employeeOvertime = overtimeRecords.filter(record => record.employeeId.toString() === employee._id.toString());
-            const totalOvertimeHours = employeeOvertime.reduce((sum, record) => sum + record.overtimeHours, 0);
-            const overtimePay = totalOvertimeHours * employee.overtimeRate;
-
-            // Include detailed overtime records (date and hours)
-            const details = employeeOvertime.map(record => ({
-                date: record.date,
-                overtimeHours: record.overtimeHours,
-            }));
+            const employeeOvertime = overtimeRecords.find(record => record.employeeId.toString() === employee._id.toString());
+            if (!employeeOvertime) {
+                return null; // Skip employees with no overtime in this month
+            }
 
             return {
                 employeeId: employee._id,
                 empID: employee.empID,
                 empname: employee.empname,
-                totalOvertimeHours,
-                overtimePay,
+                totalOvertimeHours: employeeOvertime.totalOvertimeHours,
+                overtimePay: employeeOvertime.totalOvertimePay,
                 overtimeRate: employee.overtimeRate,
-                details,
+                details: employeeOvertime.details
             };
-        }).filter(record => record.totalOvertimeHours > 0);
+        }).filter(record => record !== null);
 
         res.status(200).json(monthlyOvertime);
     } catch (err) {
