@@ -1,6 +1,6 @@
 import Salary from "../models/Salary.js";
 import Employee from "../../backend-hr/models/employee.js";
-
+//wenas unadaaaaaaaaaaaaaaa balapan
 export const salarycalculation = async (req, res) => {
     try {
       console.log("Request body:", req.body); // Log the request body
