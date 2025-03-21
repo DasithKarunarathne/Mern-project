@@ -23,6 +23,7 @@ import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import PettyCashDashboard from '../PettyCash.js/PettyCashDashboard'; // Import PettyCashDashboard component
 import BalanceCard from '../PettyCash.js/BalanceCard.jsx';
+import CashBookPage from '../cashBook/cashBook.jsx';
 
 import { Bar } from 'react-chartjs-2'; // For graphs
 import {
@@ -90,6 +91,10 @@ export default function Dashboard() {
         <ListItem component={Link} to="/dashboard/salary" onClick={handleDrawerClose}>
           <ListItemIcon><CalculateIcon /></ListItemIcon>
           <ListItemText primary="Salary Calculation" />
+        </ListItem>
+        <ListItem component={Link} to="/dashboard/Cashbook" onClick={handleDrawerClose}>
+          <ListItemIcon><DashboardIcon /></ListItemIcon>
+          <ListItemText primary="Cash Book" />
         </ListItem>
       </List>
     </Box>
@@ -163,6 +168,7 @@ export default function Dashboard() {
           <Route path="/" element={<Overview />} />
           <Route path="/pettycash" element={<PettyCashDashboard />} />
           <Route path="/salary" element={<Salarytable />} />
+          <Route path="/Cashbook" element={<CashBookPage />} />
         </Routes>
       </Main>
     </Box>

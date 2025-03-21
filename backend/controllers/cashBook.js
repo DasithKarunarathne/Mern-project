@@ -15,21 +15,27 @@ export const addCashBookEntry = async (req, res) => {
     let cashBalanceRecord = await CashBalance.findOne();
     if (!cashBalanceRecord) {
       // Initialize cash balance if it doesn't exist
-      cashBalanceRecord = new CashBalance({ balance: 0, initialAmount: 0 });
+      cashBalanceRecord = new CashBalance({
+        balance: amount && type === "inflow" ? amount : 0,
+        initialAmount: amount && type === "inflow" ? amount : 0
+      });
       await cashBalanceRecord.save();
-    }
-
-    // Calculate new balance
-    let newBalance = cashBalanceRecord.balance;
-    if (type === "inflow") {
-      newBalance += amount;
-    } else if (type === "outflow") {
-      if (cashBalanceRecord.balance < amount) {
-        return res.status(400).json({ message: "Insufficient cash balance" });
-      }
-      newBalance -= amount;
     } else {
-      return res.status(400).json({ message: "Invalid transaction type" });
+      // Calculate new balance
+      let newBalance = Number(cashBalanceRecord.balance); // Ensure numeric value
+      if (type === "inflow") {
+        newBalance += Number(amount);
+      } else if (type === "outflow") {
+        if (newBalance < amount) {
+          return res.status(400).json({ message: "Insufficient cash balance" });
+        }
+        newBalance -= Number(amount);
+      } else {
+        return res.status(400).json({ message: "Invalid transaction type" });
+      }
+      
+      // Update balance before creating new entry
+      cashBalanceRecord.balance = newBalance;
     }
 
     // Create CashBook entry
@@ -38,12 +44,12 @@ export const addCashBookEntry = async (req, res) => {
       amount,
       type,
       category,
-      balance: newBalance,
+      balance: cashBalanceRecord.balance,
+      date: new Date(),
     });
     await cashBookEntry.save();
 
     // Update CashBalance
-    cashBalanceRecord.balance = newBalance;
     cashBalanceRecord.lastUpdated = Date.now();
     await cashBalanceRecord.save();
 
@@ -55,6 +61,7 @@ export const addCashBookEntry = async (req, res) => {
       source: "Cash Book",
       transactionId: cashBookEntry._id,
       transactiontype: "CashBook",
+      
     });
     await ledgerEntry.save();
 
@@ -81,7 +88,8 @@ export const getCashBookEntries = async (req, res) => {
 // Get cash book entries for a specific month and year
 export const getcashBookentriesbyMonth = async (req, res) => {
   try {
-    const { month, year } = req.params;
+    const month = parseInt(req.params.month);
+    const year = parseInt(req.params.year);
 
     // Validate month and year
     if (isNaN(month) || month < 1 || month > 12) {
@@ -98,10 +106,10 @@ export const getcashBookentriesbyMonth = async (req, res) => {
     // Fetch transactions from the database
     const entries = await CashBook.find({
       date: {
-        $gte: startDate, // Greater than or equal to the start date
-        $lte: endDate,   // Less than or equal to the end date
+        $gte: startDate,
+        $lte: endDate,
       },
-    }).sort({ date: 1 }); // Sort by date in ascending order
+    }).sort({ date: 1 });
 
     // Send the response
     res.status(200).json({
