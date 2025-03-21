@@ -3,9 +3,12 @@ import dbconnection from "./config/db.js"; // Correct import with .js extension
 import feedbackroutes from "./routes/feedback.js"; // Correct import with .js extension
 //import employeeroute from "./routes/employee.js";
 import salaryCalc from "./routes/salaryRoutes.js";
+import CashBookroutes from "./routes/CashBookroutes.js";
 import pettycash from "./routes/PettyCashRoute.js";
 import dotenv from "dotenv";
 import cors from "cors";
+import CashBook from "./models/CashBook.js";
+import { addCashBookEntry } from "./controllers/cashBook.js";
 
 dotenv.config(); // Load environment variables
 
@@ -27,6 +30,7 @@ app.use("/api/feedback", feedbackroutes); // Feedback route
 //app.use("/api/employee",employeeroute);
 app.use("/api/Salary",salaryCalc);
 app.use("/api/Pettycash", pettycash);
+app.use("/api/cashbook", CashBookroutes);
 
 
 // Start server

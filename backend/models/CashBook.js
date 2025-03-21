@@ -5,7 +5,7 @@ const CashBookSchema = new mongoose.Schema({
     description:{type:String, required:true},
     amount:{type:Number, required:true},
     type:{type:String, enum: ['inflow', 'outflow'], required:true },
-    category:{type: String, enum: ['salary', 'reimbursement', 'order_income', 'pettyCashExcess']},
+    category:{type: String, enum: ['salary', 'reimbursement', 'order_income', 'pettyCashExcess', 'initial_cash']},
     referenceId:{type:mongoose.Schema.Types.ObjectId},
     balance: { type: Number, required: true }
 });

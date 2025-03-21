@@ -6,68 +6,126 @@ import CashBook from "../models/CashBook.js";
 
 export const addPettyCash = async (req, res) => {
   try {
-      const { description, amount, type, category } = req.body;
+    const { description, amount, type, category } = req.body;
 
-      if (!description || !amount || amount <= 0) {
-          return res.status(400).json({ message: 'Invalid input: description and positive amount required' });
+    if (!description || !amount || amount <= 0) {
+      return res.status(400).json({ message: "Invalid input: description and positive amount required" });
+    }
+
+    let balanceRecord = await pettycashbal.findOne();
+
+    // Create Pettycash transaction (all types go here)
+    const transaction = new Pettycash({
+      description,
+      amount,
+      type,
+      category,
+      date: new Date(),
+    });
+
+    // Handle Initial Transaction
+    if (!balanceRecord) {
+      if (type !== "initial") {
+        return res.status(400).json({ message: "No initial balance set. Add an initial payment first." });
       }
 
-      let balanceRecord = await pettycashbal.findOne();
+      const latestCashEntry = await CashBook.findOne().sort({ date: -1 });
+      const currentCashBalance = latestCashEntry ? latestCashEntry.balance : 0;
 
-      // Handle Initial Transaction
-      if (!balanceRecord) {
-          if (type !== "initial") {
-              return res.status(400).json({ message: "No initial balance set. Add an initial payment first." });
-          }
-          balanceRecord = new pettycashbal({ balance: amount, initialAmount: amount });
-      } else {
-          if (type === "initial") {
-              return res.status(400).json({ message: "Initial amount already set. Cannot insert again." });
-          }
+      if (currentCashBalance < amount) {
+        return res.status(400).json({ message: "Insufficient cash book balance to fund petty cash" });
       }
 
-      // Handle Expense
-      if (type === "expense") {
-          if (balanceRecord.balance < amount) {
-              return res.status(400).json({ message: "Insufficient balance. Add more funds." });
-          }
-          balanceRecord.balance -= amount;
-      }
-      
-      // Handle Reimbursement
-      else if (type === "reimbursement") {
-          const maxReimbursement = balanceRecord.initialAmount - balanceRecord.balance;
-          if (amount > maxReimbursement) {
-              return res.status(400).json({ message: "Reimbursement exceeds required amount." });
-          }
-          balanceRecord.balance += amount;
-      }
+      const cashBookEntry = new CashBook({
+        description: "Initial funding for petty cash",
+        amount: amount,
+        type: "outflow",
+        category: "pettyCashInitial",
+        referenceId: transaction._id, // Link to Pettycash transaction
+        balance: currentCashBalance - amount,
+      });
+      await cashBookEntry.save();
 
-      // Save balance update
-      await balanceRecord.save();
-
-      // Save Transaction
-      const transaction = new Pettycash({ description, amount, type, category });
-      await transaction.save();
-
-      // Save to Ledger
       const ledgerEntry = new Ledger({
-          description,
-          amount,
-          category,
-          source: 'Petty Cash',
-          transactionId: transaction._id,
-          transactiontype: 'Pettycash'
+        description: "Initial funding for petty cash",
+        amount: amount,
+        category: "Petty Cash Initial Funding",
+        source: "Cash Book",
+        transactionId: cashBookEntry._id,
+        transactiontype: "CashBook",
       });
       await ledgerEntry.save();
 
-      res.status(201).json({ message: 'Transaction added successfully', transaction });
+      balanceRecord = new pettycashbal({ balance: amount, initialAmount: amount });
+    } else {
+      if (type === "initial") {
+        return res.status(400).json({ message: "Initial amount already set. Cannot insert again." });
+      }
+    }
+
+    // Save the transaction to Pettycash first
+    await transaction.save();
+
+    // Handle Expense
+    if (type === "expense") {
+      if (balanceRecord.balance < amount) {
+        return res.status(400).json({ message: "Insufficient balance. Add more funds." });
+      }
+      balanceRecord.balance -= amount;
+    }
+    
+    // Handle Reimbursement
+    else if (type === "reimbursement") {
+      const totalExpenses = await Pettycash.aggregate([
+        { $match: { type: "expense" } },
+        { $group: { _id: null, total: { $sum: "$amount" } } },
+      ]);
+
+      const totalExpensesAmount = totalExpenses.length > 0 ? totalExpenses[0].total : 0;
+      const maxReimbursement = totalExpensesAmount - (balanceRecord.initialAmount - balanceRecord.balance);
+
+      if (amount > maxReimbursement) {
+        return res.status(400).json({ message: "Reimbursement exceeds allowable amount." });
+      }
+
+      balanceRecord.balance += amount;
+
+      const latestCashEntry = await CashBook.findOne().sort({ date: -1 });
+      const currentCashBalance = latestCashEntry ? latestCashEntry.balance : 0;
+
+      if (currentCashBalance < amount) {
+        return res.status(400).json({ message: "Insufficient cash book balance for reimbursement" });
+      }
+
+      const cashBookEntry = new CashBook({
+        description: "Reimbursement for petty cash",
+        amount: amount,
+        type: "outflow",
+        category: "reimbursement",
+        referenceId: transaction._id, // Link to Pettycash transaction
+        balance: currentCashBalance - amount,
+      });
+      await cashBookEntry.save();
+
+      const ledgerEntry = new Ledger({
+        description: "Reimbursement for petty cash",
+        amount: amount,
+        category: "Petty Cash Reimbursement",
+        source: "Cash Book",
+        transactionId: cashBookEntry._id,
+        transactiontype: "CashBook",
+      });
+      await ledgerEntry.save();
+    }
+
+    await balanceRecord.save();
+
+    res.status(201).json({ message: "Transaction added successfully", transaction });
   } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Error adding transaction', error });
+    console.error(error);
+    res.status(500).json({ message: "Error adding transaction", error });
   }
 };
-
 
 export const GetPettyCash =async (req,res)=>{
 
@@ -121,265 +179,160 @@ export const GetPettyCash =async (req,res)=>{
 }
 
 export const UpdatepettyCash = async (req, res) => {
-    try {
-      const { id } = req.params;
-      const { description, amount, type, category } = req.body;
-  
-      // Validation
-      if (!description || !amount || amount < 0) {
-        return res.status(400).json({ message: "Invalid input: description and positive amount required" });
+  try {
+    const { id } = req.params;
+    const { description, amount, type, category } = req.body;
+
+    if (!description || !amount || amount < 0) {
+      return res.status(400).json({ message: "Invalid input: description and positive amount required" });
+    }
+
+    const transaction = await Pettycash.findById(id);
+    if (!transaction) {
+      return res.status(404).json({ message: "Transaction not found" });
+    }
+
+    const balanceRecord = await pettycashbal.findOne();
+    if (!balanceRecord) {
+      return res.status(404).json({ message: "No balance record found" });
+    }
+
+    const latestCashEntry = await CashBook.findOne().sort({ date: -1 });
+    const currentCashBalance = latestCashEntry ? latestCashEntry.balance : 0;
+
+    if (transaction.type === "initial") {
+      if (amount !== transaction.amount || type !== "initial") {
+        return res.status(400).json({ message: "Initial transaction amount and type cannot be modified" });
+      }
+      // Update only description and category in Pettycash
+      transaction.description = description;
+      transaction.category = category;
+    } else {
+      const amountDifference = amount - transaction.amount;
+
+      if (transaction.type === "expense" && type === "expense") {
+        balanceRecord.balance += transaction.amount; // Reverse old expense
+        if (balanceRecord.balance < amount) {
+          return res.status(400).json({ message: "Insufficient balance for updated expense" });
+        }
+        balanceRecord.balance -= amount;
+      } else if (transaction.type === "reimbursement" && type === "reimbursement") {
+        balanceRecord.balance -= transaction.amount; // Reverse old reimbursement
+        const neededReimbursement = balanceRecord.initialAmount - balanceRecord.balance;
+        if (amount > neededReimbursement) {
+          return res.status(400).json({ message: `Reimbursement exceeds needed amount (${neededReimbursement})` });
+        }
+        balanceRecord.balance += amount;
+
+        // Update CashBook if amount changes
+        if (amountDifference !== 0) {
+          const cashBookEntry = await CashBook.findOne({ referenceId: transaction._id });
+          if (cashBookEntry) {
+            cashBookEntry.amount = amount;
+            cashBookEntry.balance = currentCashBalance - amountDifference;
+            await cashBookEntry.save();
+
+            const ledgerEntry = await Ledger.findOne({ transactionId: cashBookEntry._id });
+            if (ledgerEntry) {
+              ledgerEntry.amount = amount;
+              await ledgerEntry.save();
+            }
+          }
+        }
+      } else {
+        return res.status(400).json({ message: "Cannot change transaction type" });
       }
 
-      const validTypes = ["initial", "expense", "reimbursement"];
-      if (!validTypes.includes(type)) {
-       return res.status(400).json({ message: "Invalid transaction type" });
-      }
-  
-      // Find the transaction
-      const transaction = await Pettycash.findById(id); // Corrected: findById takes a string, not an object
-      if (!transaction) {
-        return res.status(404).json({ message: "Transaction not found" });
-      }
-  
-      // Find the balance record
-      const balanceRecord = await pettycashbal.findOne();
-      if (!balanceRecord) {
-        return res.status(404).json({ message: "No balance record found" });
-      }
-  
-      // Get latest CashBook balance
-      const latestCashEntry = await CashBook.findOne().sort({ date: -1 });
-      const currentCashBalance = latestCashEntry ? latestCashEntry.balance : 0;
-  
-      const amountDifference = amount - transaction.amount;
-  
-      // Handle transaction types
-      if (transaction.type === "initial") {
-        if (type !== "initial") {
-          return res.status(400).json({ message: "Cannot change initial transaction to another type" });
-        }
-  
-        // Increase initialAmount
-        if (amountDifference > 0) {
-          if (currentCashBalance < amountDifference) {
-            return res.status(400).json({ message: "Insufficient cash book balance to fund increase" });
-          }
-          balanceRecord.balance += amountDifference;
-          balanceRecord.initialAmount = amount;
-  
-          const cashBookEntry = new CashBook({
-            description: "Funding for increased petty cash initial amount",
-            amount: amountDifference,
-            type: "outflow",
-            category: "reimbursement",
-            referenceId: transaction._id,
-            balance: currentCashBalance - amountDifference,
-          });
-          await cashBookEntry.save();
-  
-          const ledgerEntry = new Ledger({
-            description: "Funding for increased petty cash initial amount",
-            amount: amountDifference,
-            category: "Fund Adjustment",
-            source: "Cash Book",
-            transactionId: cashBookEntry._id,
-            transactiontype: "CashBook",
-          });
-          await ledgerEntry.save();
-        }
-        // Decrease initialAmount
-        else if (amountDifference < 0) {
-          const newBalance = balanceRecord.balance + amountDifference; // Fixed: Use balance, not initialAmount
-          if (newBalance < 0) {
-            return res.status(400).json({ message: "Insufficient balance to decrease initial amount" });
-          }
-          balanceRecord.balance = newBalance;
-          balanceRecord.initialAmount = amount;
-  
-          if (newBalance > amount) { // Excess if balance > new initialAmount
-            const excess = newBalance - amount;
-            balanceRecord.balance = amount; // Cap at new initialAmount
-  
-            const cashBookEntry = new CashBook({
-              description: "Excess from decreased petty cash initial amount",
-              amount: excess,
-              type: "inflow",
-              category: "pettyCashExcess",
-              referenceId: transaction._id,
-              balance: currentCashBalance + excess,
-            });
-            await cashBookEntry.save();
-  
-            const ledgerEntry = new Ledger({
-              description: "Excess from decreased petty cash initial amount",
-              amount: excess,
-              category: "Fund Adjustment",
-              source: "Petty Cash",
-              transactionId: cashBookEntry._id,
-              transactiontype: "CashBook",
-            });
-            await ledgerEntry.save();
-          }
-        }
-      }
-      else if (transaction.type === "expense") {
-        // Reverse old expense
-        balanceRecord.balance += transaction.amount;
-  
-        if (type === "expense") {
-          if (balanceRecord.balance < amount) {
-            return res.status(400).json({ message: "Insufficient balance for updated expense" });
-          }
-          balanceRecord.balance -= amount;
-        } else if (type === "reimbursement") {
-          const neededReimbursement = balanceRecord.initialAmount - balanceRecord.balance;
-          if (amount > neededReimbursement) {
-            return res.status(400).json({ message: `Reimbursement exceeds needed amount (${neededReimbursement})` });
-          }
-          balanceRecord.balance += amount;
-        } else {
-          return res.status(400).json({ message: "Invalid type change from expense" });
-        }
-      }
-      else if (transaction.type === "reimbursement") {
-        // Reverse old reimbursement
-        balanceRecord.balance -= transaction.amount;
-  
-        if (type === "reimbursement") {
-          const neededReimbursement = balanceRecord.initialAmount - balanceRecord.balance;
-          if (amount > neededReimbursement) {
-            return res.status(400).json({ message: `Reimbursement exceeds needed amount (${neededReimbursement})` });
-          }
-          balanceRecord.balance += amount;
-        } else if (type === "expense") {
-          if (balanceRecord.balance < amount) {
-            return res.status(400).json({ message: "Insufficient balance for updated expense" });
-          }
-          balanceRecord.balance -= amount;
-        } else {
-          return res.status(400).json({ message: "Invalid type change from reimbursement" });
-        }
-      }
-  
-      // Update balance record
-      balanceRecord.lastUpdated = Date.now();
-      await balanceRecord.save();
-  
-      // Update the Pettycash transaction
+      // Update Pettycash transaction
       transaction.description = description;
       transaction.amount = amount;
       transaction.type = type;
       transaction.category = category;
-      await transaction.save();
-  
-      // Update the corresponding Ledger entry
-      const ledgerEntry = await Ledger.findOne({ transactionId: id, transactiontype: "Pettycash" });
-      if (ledgerEntry) {
-        ledgerEntry.description = description;
-        ledgerEntry.amount = amount;
-        ledgerEntry.category = category;
-        await ledgerEntry.save();
+    }
+
+    await balanceRecord.save();
+    await transaction.save();
+
+    res.status(200).json({ message: "Transaction updated", transaction });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating transaction", error });
+    console.error(error);
+  }
+};
+
+
+
+export const DeletePettycash = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const transaction = await Pettycash.findById(id);
+
+    if (!transaction) {
+      return res.status(404).json({ message: "No Petty Cash transaction found" });
+    }
+
+    const balanceRecord = await pettycashbal.findOne();
+    if (!balanceRecord) {
+      return res.status(400).json({ message: "No balance found" });
+    }
+
+    const latestCashEntry = await CashBook.findOne().sort({ date: -1 });
+    const currentCashBalance = latestCashEntry ? latestCashEntry.balance : 0;
+
+    if (transaction.type === "initial") {
+      const initialCount = await Pettycash.countDocuments({ type: "initial" });
+      if (initialCount <= 1 && (await Pettycash.countDocuments({ type: { $ne: "initial" } })) > 0) {
+        return res.status(400).json({ message: "Cannot delete the only initial transaction with existing expenses/reimbursements" });
       }
-  
-      res.status(200).json({ message: "Transaction updated", transaction });
-    } catch (error) {
-      res.status(500).json({ message: "Error updating transaction", error });
-      console.error(error);
-    }
-  };
+      if (balanceRecord.balance < transaction.amount) {
+        return res.status(400).json({ message: "Insufficient balance for initial transaction deletion" });
+      }
+      balanceRecord.balance -= transaction.amount;
+    } else if (transaction.type === "expense") {
+      const newBalance = balanceRecord.balance + transaction.amount;
+      if (newBalance > balanceRecord.initialAmount) {
+        const excess = newBalance - balanceRecord.initialAmount;
+        balanceRecord.balance = balanceRecord.initialAmount;
 
-
-
-
-export const DeletePettycash = async (req,res) => {
-    
-    try {
-        const {id} = req.params;
-        const transaction = await Pettycash.findById(id);
-      
-
-       if(!transaction){
-        return res.status(400).json({message:'No Petty Cash transactions are found'});
-       }
-
-       const BalanceRecord = await pettycashbal.findOne();
-
-       if(!BalanceRecord){
-        return res.status(400).json({message:'No balance found.'});  
-       }
-
-       //cash book took the last entry 
-       const latestCashEntry = await CashBook.findOne().sort({date:-1});
-       const currentCashBalance = latestCashEntry ? latestCashEntry.balance : 0;
-
-
-       if(transaction.type==='initial'){
-        if(BalanceRecord.balance<transaction.amount){
-            return res.status(400).json({message:'Insufficient balance for initial transaction deletion'});
-        }
-        BalanceRecord.balance-=transaction.amount;
-
-       }
-       else if (transaction.type=='expense'){
-        const Newbalance = BalanceRecord.balance+transaction.amount;
-        if(Newbalance>BalanceRecord.initialAmount){
-            const excess = Newbalance - BalanceRecord.initialAmount;
-            BalanceRecord.balance=BalanceRecord.initialAmount;//stops at the initial amount excess is sent to the cash book
-        
-
-        const CashBookEntry = new CashBook({
-
-            description:'Excess deleted petty cash',
-            amount:excess,
-            type:'inflow',
-            category:"pettyCashExcess",
-            referenceId:transaction._id,
-            balance:currentCashBalance+excess,
+        const cashBookEntry = new CashBook({
+          description: "Excess from deleted petty cash expense",
+          amount: excess,
+          type: "inflow",
+          category: "pettyCashExcess",
+          referenceId: transaction._id,
+          balance: currentCashBalance + excess,
         });
+        await cashBookEntry.save();
 
-       
+        const ledgerEntry = new Ledger({
+          description: "Excess from deleted petty cash expense",
+          amount: excess,
+          category: "Petty Cash Fund Adjustment",
+          source: "Petty Cash",
+          transactionId: cashBookEntry._id,
+          transactiontype: "CashBook",
+        });
+        await ledgerEntry.save();
+      } else {
+        balanceRecord.balance = newBalance;
+      }
+    } else if (transaction.type === "reimbursement") {
+      if (balanceRecord.balance < transaction.amount) {
+        return res.status(400).json({ message: "Insufficient balance for reimbursement deletion" });
+      }
+      balanceRecord.balance -= transaction.amount;
 
-         const excessLedger = new Ledger({
-            description:'Excess from deleted petty cash',
-            amount:excess,
-            category:'Petty Cash Fund adjustment',
-            source:'Petty Cash',
-            transactionId:CashBookEntry._id,
-            transactiontype:'CashBook'
-          });
-            try {
-                await CashBookEntry.save();
-                await excessLedger.save();
-            } catch (error) {
-                return res.status(500).json({message:'Error saving transaction to CashBook or Ledger entry', error});
-            }
-                
-
-
-
-        }
-    else{
-        BalanceRecord.balance=Newbalance;
+      // Optionally delete related CashBook entry
+      await CashBook.findOneAndDelete({ referenceId: transaction._id });
+      await Ledger.findOneAndDelete({ transactionId: { $in: (await CashBook.find({ referenceId: transaction._id })).map(e => e._id) } });
     }
-    
-       }
 
-       else if(transaction.type==='reimbursement') {
-        if(BalanceRecord.balance<transaction.amount){
-            return res.status(400).json({ message: 'Insufficient balance for reimbursement deletion' });
-        }
-        BalanceRecord.balance-=transaction.amount;
-       }
-       
-       await BalanceRecord.save();
+    await balanceRecord.save();
+    await Pettycash.findByIdAndDelete(id);
 
-       await Pettycash.findByIdAndDelete(id);
-       await Ledger.findOneAndDelete({ transactionId:id,transactiontype:'Pettycash'});
-
-       res.status(200).json({message:'Transaction deleted'});
-
-
-    } catch (error) {
-        res.status(500).json({message:'Error deleting transaction', error});
-    }
+    res.status(200).json({ message: "Transaction deleted" });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting transaction", error });
+    console.error(error);
+  }
 };
