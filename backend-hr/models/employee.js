@@ -24,14 +24,6 @@ const employeeSchema = new Schema({
         type: Number,
         default: 200 
     },
-    epfPercentage: { 
-        type: Number, 
-        default: 8 
-    },
-    etfPercentage: { 
-        type: Number, 
-        default: 3 
-    },
     image: { 
         type: Buffer, 
         required: true 
@@ -55,6 +47,10 @@ const employeeSchema = new Schema({
     medicalRecordsType: { 
         type: String, 
         required: false 
+    },
+    totalOvertimePay: { 
+        type: Number, 
+        default: 0 // New field to store cumulative overtime pay
     }
 });
 
