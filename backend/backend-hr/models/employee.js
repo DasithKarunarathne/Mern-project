@@ -1,62 +1,50 @@
 import mongoose from "mongoose";
 
 const Schema = mongoose.Schema;
+
 const employeeSchema = new Schema({
     empID: {
         type: String,
         required: true,
         unique: true,
-        index: true // Index is already applied here
+        index: true,
     },
     empname: {
         type: String,
         required: true,
-        index: true // Add index to empname if needed
+        index: true,
     },
-    role: { 
-        type: String, 
-        required: true 
-    },
-    basicSalary: { 
-        type: Number, 
-        required: true
-    },
-    overtimeRate: { 
-        type: Number,
-        default: 200 
-    },
-    epfPercentage: { 
-        type: Number, 
-        default: 8 
-    },
-    etfPercentage: { 
-        type: Number, 
-        default: 3 
-    },
-    image: { 
-        type: Buffer, 
-        required: true 
-    },
-    imageType: { 
-        type: String, 
-        required: true 
-    },
-    birthCertificate: { 
-        type: Buffer,
-        required: true 
-    },
-    birthCertificateType: { 
+    role: {
         type: String,
-        required: true
+        required: true,
     },
-    medicalRecords: { 
-        type: Buffer,
-        required: false 
+    basicSalary: {
+        type: Number,
+        required: true,
     },
-    medicalRecordsType: { 
-        type: String, 
-        required: false 
-    }
+    overtimeRate: {
+        type: Number,
+        default: 200,
+    },
+    epfPercentage: {
+        type: Number,
+        default: 8,
+    },
+    etfPercentage: {
+        type: Number,
+        default: 3,
+    },
+    imageUrl: {
+        type: String, // URL to the image file
+        required: true,
+    },
+    birthCertificateUrl: {
+        type: String, // URL to the birth certificate file
+        required: true,
+    },
+    medicalRecordsUrl: {
+        type: String, // URL to the medical records file (optional)
+    },
 });
 
 // Compound index example (if needed)
