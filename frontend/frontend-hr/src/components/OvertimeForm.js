@@ -9,8 +9,10 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Alert,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import Header from "./Header"; // Import the Header component
 
 // Use the same BACKEND_URL as in other components
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
@@ -24,7 +26,7 @@ const OvertimeForm = ({ employees }) => {
 
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
-
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -68,25 +70,48 @@ const OvertimeForm = ({ employees }) => {
         date: "",
       });
       setErrors({});
+      setErrorMessage("");
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (error) {
       console.error("Error adding overtime record:", error);
-      const errorMessage = error.response?.data?.details
+      const errorMsg = error.response?.data?.details
         ? `Error adding overtime record: ${error.response.data.error} - ${error.response.data.details}`
         : `Error adding overtime record: ${error.response?.data?.error || error.message}`;
-      alert(errorMessage);
+      setErrorMessage(errorMsg);
     }
   };
 
   return (
-    <Box sx={{ mb: 4 }}>
-      <Typography variant="h5" gutterBottom>
+    <Box sx={{ mb: 4, px: 3, width: "100%", maxWidth: "100%" }}>
+      <Header /> {/* Handicraft Store header */}
+      <Typography variant="h5" gutterBottom sx={{ mt: 2 }}>
         Add Daily Overtime Record
       </Typography>
+      <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={() => navigate("/list")}
+        >
+          Back to Employee List
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => navigate("/overtime/monthly")}
+        >
+          View Monthly Overtime Report
+        </Button>
+      </Box>
       {successMessage && (
-        <Typography variant="body1" color="success.main" sx={{ mb: 2 }}>
+        <Alert severity="success" sx={{ mb: 2 }}>
           {successMessage}
-        </Typography>
+        </Alert>
+      )}
+      {errorMessage && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {errorMessage}
+        </Alert>
       )}
       <form onSubmit={handleSubmit}>
         <FormControl fullWidth margin="normal">
@@ -98,6 +123,7 @@ const OvertimeForm = ({ employees }) => {
             required
             error={!!errors.employeeId}
           >
+            <MenuItem value="">Select Employee</MenuItem>
             {employees.map((employee) => (
               <MenuItem key={employee._id} value={employee._id}>
                 {employee.empname} (ID: {employee.empID})
@@ -138,9 +164,6 @@ const OvertimeForm = ({ employees }) => {
         <Box sx={{ mt: 2, display: "flex", gap: 2 }}>
           <Button type="submit" variant="contained" color="primary">
             Add Overtime Record
-          </Button>
-          <Button variant="outlined" color="primary" onClick={() => navigate("/list")}>
-            Back to Employee List
           </Button>
         </Box>
       </form>

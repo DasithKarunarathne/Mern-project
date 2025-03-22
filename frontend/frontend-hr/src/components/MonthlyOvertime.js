@@ -16,6 +16,7 @@ import {
   Alert,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
+import Header from "./Header"; // Import the Header component
 
 // Use the same BACKEND_URL as in other components
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
@@ -68,13 +69,35 @@ const MonthlyOvertime = () => {
 
   return (
     <Box sx={{ mb: 4, p: 3, maxWidth: 1200, margin: "0 auto" }}>
-      <Typography variant="h4" gutterBottom>
+      <Header /> {/* Add the Handicraft Store header */}
+      <Typography variant="h4" gutterBottom sx={{ mt: 2 }}>
         Employee Management
       </Typography>
       <Typography variant="h5" gutterBottom>
         Monthly Overtime Report
       </Typography>
       <Box sx={{ display: "flex", gap: 2, mb: 2, alignItems: "center" }}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => navigate("/")}
+        >
+          Add New Employee
+        </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => navigate("/list")}
+        >
+          Employee List
+        </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => navigate("/overtime")}
+        >
+          Add Overtime
+        </Button>
         <TextField
           label="Year (YYYY)"
           value={year}
@@ -89,9 +112,6 @@ const MonthlyOvertime = () => {
         />
         <Button variant="contained" color="primary" onClick={fetchMonthlyOvertime}>
           Fetch Report
-        </Button>
-        <Button variant="outlined" color="primary" onClick={() => navigate("/list")}>
-          Back to Employee List
         </Button>
       </Box>
       {loading && (

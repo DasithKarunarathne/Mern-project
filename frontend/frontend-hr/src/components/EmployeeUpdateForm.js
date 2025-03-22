@@ -22,8 +22,6 @@ const EmployeeUpdateForm = ({ employee, onUpdate, onCancel }) => {
     role: employee.role,
     basicSalary: employee.basicSalary,
     overtimeRate: employee.overtimeRate,
-    epfPercentage: employee.epfPercentage,
-    etfPercentage: employee.etfPercentage,
     image: null,
     birthCertificate: null,
     medicalRecords: null,
@@ -55,8 +53,6 @@ const EmployeeUpdateForm = ({ employee, onUpdate, onCancel }) => {
     data.append("role", formData.role);
     data.append("basicSalary", formData.basicSalary);
     data.append("overtimeRate", formData.overtimeRate || "200");
-    data.append("epfPercentage", formData.epfPercentage || "8");
-    data.append("etfPercentage", formData.etfPercentage || "3");
     if (formData.image) data.append("image", formData.image);
     if (formData.birthCertificate) data.append("birthCertificate", formData.birthCertificate);
     if (formData.medicalRecords) data.append("medicalRecords", formData.medicalRecords);
@@ -134,24 +130,6 @@ const EmployeeUpdateForm = ({ employee, onUpdate, onCancel }) => {
           name="overtimeRate"
           type="number"
           value={formData.overtimeRate}
-          onChange={handleChange}
-          fullWidth
-          disabled={loading}
-        />
-        <TextField
-          label="EPF Percentage (optional)"
-          name="epfPercentage"
-          type="number"
-          value={formData.epfPercentage}
-          onChange={handleChange}
-          fullWidth
-          disabled={loading}
-        />
-        <TextField
-          label="ETF Percentage (optional)"
-          name="etfPercentage"
-          type="number"
-          value={formData.etfPercentage}
           onChange={handleChange}
           fullWidth
           disabled={loading}
