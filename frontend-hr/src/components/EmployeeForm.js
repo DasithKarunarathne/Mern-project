@@ -9,14 +9,9 @@ import {
   InputLabel,
   CircularProgress,
   Alert,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Select,
-  MenuItem,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import Header from "./Header"; // Import the Header component
 
 // Use an environment variable for the backend URL
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
@@ -37,31 +32,7 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [employees, setEmployees] = useState([]);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [overtimeData, setOvertimeData] = useState({
-    employeeId: "",
-    overtimeHours: "",
-    date: "",
-  });
-  const [overtimeSuccessMessage, setOvertimeSuccessMessage] = useState("");
-  const [overtimeErrorMessage, setOvertimeErrorMessage] = useState("");
-
   const navigate = useNavigate();
-
-  // Fetch employees for the overtime dialog dropdown
-  const fetchEmployees = async () => {
-    try {
-      const response = await axios.get(`${BACKEND_URL}/api/employee/`);
-      setEmployees(response.data);
-    } catch (error) {
-      console.error("Error fetching employees:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchEmployees();
-  }, []);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -201,51 +172,38 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
     navigate("/list");
   };
 
-  const handleOpenDialog = () => {
-    setOpenDialog(true);
-    setOvertimeData({ employeeId: "", overtimeHours: "", date: "" });
-    setOvertimeSuccessMessage("");
-    setOvertimeErrorMessage("");
-  };
-
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-  };
-
-  const handleOvertimeChange = (e) => {
-    const { name, value } = e.target;
-    setOvertimeData({ ...overtimeData, [name]: value });
-  };
-
-  const handleOvertimeSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!overtimeData.employeeId || !overtimeData.overtimeHours || !overtimeData.date) {
-      setOvertimeErrorMessage("All fields are required");
-      return;
-    }
-
-    try {
-      const response = await axios.post(`${BACKEND_URL}/api/employee/overtime/add`, overtimeData);
-      setOvertimeSuccessMessage("Overtime added successfully");
-      setTimeout(() => {
-        setOvertimeSuccessMessage("");
-        handleCloseDialog();
-      }, 2000);
-    } catch (err) {
-      console.error("Error adding overtime:", err);
-      setOvertimeErrorMessage(err.response?.data?.error || "Failed to add overtime");
-    }
-  };
-
   return (
-    <Box sx={{ mb: 4, p: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        Employee Management
-      </Typography>
-      <Typography variant="h5" gutterBottom>
+    <Box sx={{ mb: 4, px: 3, width: "100%", maxWidth: "100%" }}>
+      <Header /> {/* Handicraft Store header */}
+      <Typography variant="h5" gutterBottom sx={{ mt: 2 }}>
         Add Employee
       </Typography>
+      <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleViewList}
+          disabled={loading}
+        >
+          Employee List
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => navigate("/overtime/monthly")}
+          disabled={loading}
+        >
+          View Monthly Overtime Report
+        </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => navigate("/overtime")} // Navigate to the Add Daily Overtime Record page
+          disabled={loading}
+        >
+          Add Overtime
+        </Button>
+      </Box>
       {successMessage && (
         <Alert severity="success" sx={{ mb: 2 }}>
           {successMessage}
@@ -371,94 +329,8 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
           >
             {loading ? "Adding Employee..." : "Add Employee"}
           </Button>
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={handleViewList}
-            disabled={loading}
-          >
-            Employee List
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => navigate("/overtime/monthly")}
-            disabled={loading}
-          >
-            View Monthly Overtime Report
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleOpenDialog}
-            disabled={loading}
-          >
-            Add Overtime
-          </Button>
         </Box>
       </form>
-
-      {/* Dialog for Adding Overtime */}
-      <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>Add Overtime</DialogTitle>
-        <DialogContent>
-          {overtimeSuccessMessage && (
-            <Alert severity="success" sx={{ mb: 2 }}>
-              {overtimeSuccessMessage}
-            </Alert>
-          )}
-          {overtimeErrorMessage && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {overtimeErrorMessage}
-            </Alert>
-          )}
-          <Box component="form" onSubmit={handleOvertimeSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
-            <FormControl fullWidth>
-              <InputLabel>Employee</InputLabel>
-              <Select
-                name="employeeId"
-                value={overtimeData.employeeId}
-                onChange={handleOvertimeChange}
-                required
-              >
-                <MenuItem value="">Select Employee</MenuItem>
-                {employees.map((employee) => (
-                  <MenuItem key={employee._id} value={employee._id}>
-                    {employee.empname} (ID: {employee.empID})
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <TextField
-              label="Overtime Hours"
-              name="overtimeHours"
-              type="number"
-              value={overtimeData.overtimeHours}
-              onChange={handleOvertimeChange}
-              fullWidth
-              required
-            />
-            <TextField
-              label="Date"
-              name="date"
-              type="date"
-              value={overtimeData.date}
-              onChange={handleOvertimeChange}
-              fullWidth
-              required
-              InputLabelProps={{ shrink: true }}
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog} color="secondary">
-            Cancel
-          </Button>
-          <Button onClick={handleOvertimeSubmit} color="primary">
-            Add Overtime
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };

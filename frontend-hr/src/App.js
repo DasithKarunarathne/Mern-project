@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { Container, Typography } from "@mui/material";
 import EmployeeForm from "./components/EmployeeForm";
 import EmployeeList from "./components/EmployeeList";
 import OvertimeForm from "./components/OvertimeForm";
@@ -32,18 +31,13 @@ function App() {
 
   return (
     <Router>
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Typography variant="h4" gutterBottom align="center">
-          Employee Management
-        </Typography>
-        <Routes>
-          <Route path="/" element={<EmployeeForm onEmployeeAdded={handleEmployeeAdded} />} />
-          <Route path="/list" element={<EmployeeList refresh={refresh} />} />
-          <Route path="/overtime" element={<OvertimeForm employees={employees} />} />
-          <Route path="/overtime/monthly" element={<MonthlyOvertime />} />
-          <Route path="/overtime/monthly/:year/:month" element={<MonthlyOvertime />} /> {/* Add dynamic route */}
-        </Routes>
-      </Container>
+      <Routes>
+        <Route path="/" element={<EmployeeForm onEmployeeAdded={handleEmployeeAdded} />} />
+        <Route path="/list" element={<EmployeeList refresh={refresh} />} />
+        <Route path="/overtime" element={<OvertimeForm employees={employees} />} />
+        <Route path="/overtime/monthly" element={<MonthlyOvertime />} />
+        <Route path="/overtime/monthly/:year/:month" element={<MonthlyOvertime />} />
+      </Routes>
     </Router>
   );
 }

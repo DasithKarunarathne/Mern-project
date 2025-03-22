@@ -47,6 +47,10 @@ const employeeSchema = new Schema({
     medicalRecordsType: { 
         type: String, 
         required: false 
+    },
+    totalOvertimePay: { 
+        type: Number, 
+        default: 0 // New field to store cumulative overtime pay
     }
 });
 

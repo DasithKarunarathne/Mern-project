@@ -2,6 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import Employee from "../models/employee.js";
 import Overtime from "../models/overtime.js";
+import EmployeePayments from "../models/employeePayments.js";
 import multer from "multer";
 
 // Configure multer for memory storage
@@ -97,13 +98,24 @@ router.post("/add", upload, async (req, res) => {
             birthCertificate,
             birthCertificateType,
             medicalRecords,
-            medicalRecordsType
+            medicalRecordsType,
+            totalOvertimePay: 0 // Initialize the new field
         });
 
         // Save the employee to MongoDB
         console.log("Saving employee to MongoDB...");
         const savedEmployee = await newEmployee.save({ maxTimeMS: 10000 });
         console.log("Employee saved to MongoDB:", savedEmployee._id);
+
+        // Create a corresponding EmployeePayments record
+        const newEmployeePayment = new EmployeePayments({
+            empID,
+            empname,
+            basicSalary: Number(basicSalary),
+            totalOvertimePay: 0
+        });
+        await newEmployeePayment.save({ maxTimeMS: 10000 });
+        console.log("EmployeePayments record created:", newEmployeePayment);
 
         // Send the response
         console.log("Sending response...");
@@ -152,13 +164,20 @@ router.delete("/delete/:id", async (req, res) => {
             return res.status(400).json({ error: "Invalid employee ID" });
         }
 
-        // Find and delete the employee
-        const deletedEmployee = await Employee.findByIdAndDelete(id).maxTimeMS(10000);
-        if (!deletedEmployee) {
+        // Find the employee
+        const employee = await Employee.findById(id).maxTimeMS(10000);
+        if (!employee) {
             return res.status(404).json({ error: "Employee not found" });
         }
 
-        console.log(`Employee deleted: ${deletedEmployee.empID}`);
+        // Delete the employee
+        await Employee.findByIdAndDelete(id).maxTimeMS(10000);
+        console.log(`Employee deleted: ${employee.empID}`);
+
+        // Delete the corresponding EmployeePayments record
+        await EmployeePayments.deleteOne({ empID: employee.empID }).maxTimeMS(10000);
+        console.log(`EmployeePayments record deleted for empID: ${employee.empID}`);
+
         res.status(200).json({ message: "Employee deleted successfully" });
     } catch (err) {
         console.error("Error deleting employee:", err);
@@ -211,6 +230,7 @@ router.put("/update/:id", upload, async (req, res) => {
         }
 
         // Update text fields
+        const oldEmpID = employee.empID; // Store the old empID for updating EmployeePayments
         employee.empID = empID;
         employee.empname = empname;
         employee.role = role;
@@ -238,6 +258,29 @@ router.put("/update/:id", upload, async (req, res) => {
         // Save the updated employee
         const updatedEmployee = await employee.save({ maxTimeMS: 10000 });
         console.log("Employee updated in MongoDB:", updatedEmployee);
+
+        // Update the corresponding EmployeePayments record
+        const employeePayment = await EmployeePayments.findOne({ empID: oldEmpID }).maxTimeMS(10000);
+        if (employeePayment) {
+            employeePayment.empID = empID;
+            employeePayment.empname = empname;
+            employeePayment.basicSalary = Number(basicSalary);
+            employeePayment.totalOvertimePay = updatedEmployee.totalOvertimePay;
+            employeePayment.updatedAt = new Date();
+            await employeePayment.save({ maxTimeMS: 10000 });
+            console.log("EmployeePayments record updated:", employeePayment);
+        } else {
+            // If for some reason the EmployeePayments record doesn't exist, create it
+            const newEmployeePayment = new EmployeePayments({
+                empID,
+                empname,
+                basicSalary: Number(basicSalary),
+                totalOvertimePay: updatedEmployee.totalOvertimePay
+            });
+            await newEmployeePayment.save({ maxTimeMS: 10000 });
+            console.log("EmployeePayments record created during update:", newEmployeePayment);
+        }
+
         res.status(200).json({ message: "Employee updated successfully", employee: updatedEmployee });
     } catch (err) {
         console.error("Error updating employee in MongoDB:", err);
@@ -270,6 +313,16 @@ router.post("/overtime/add", async (req, res) => {
         const parsedDate = new Date(date);
         if (isNaN(parsedDate)) {
             return res.status(400).json({ error: "Invalid date format. Use YYYY-MM-DD." });
+        }
+
+        // Validate overtime hours
+        if (overtimeHours <= 0) {
+            return res.status(400).json({ error: "Overtime hours must be greater than 0" });
+        }
+
+        // Validate date is not in the future
+        if (parsedDate > new Date()) {
+            return res.status(400).json({ error: "Date cannot be in the future" });
         }
 
         // Calculate the month in YYYY-MM format
@@ -305,7 +358,6 @@ router.post("/overtime/add", async (req, res) => {
             // Save the updated record
             const updatedOvertime = await overtimeRecord.save({ maxTimeMS: 10000 });
             console.log("Overtime record updated in MongoDB:", updatedOvertime);
-            res.status(200).json({ message: "Overtime record updated", overtime: updatedOvertime });
         } else {
             // Create a new overtime record for the month
             const newOvertime = new Overtime({
@@ -324,8 +376,34 @@ router.post("/overtime/add", async (req, res) => {
             // Save the new record
             const savedOvertime = await newOvertime.save({ maxTimeMS: 10000 });
             console.log("Overtime record saved to MongoDB:", savedOvertime);
-            res.status(200).json({ message: "Overtime record added", overtime: savedOvertime });
         }
+
+        // Update the employee's totalOvertimePay
+        const allOvertimeRecords = await Overtime.find({ employeeId }).maxTimeMS(10000);
+        const totalOvertimePay = allOvertimeRecords.reduce((sum, record) => sum + record.totalOvertimePay, 0);
+        employee.totalOvertimePay = totalOvertimePay;
+        await employee.save({ maxTimeMS: 10000 });
+
+        // Update the corresponding EmployeePayments record
+        const employeePayment = await EmployeePayments.findOne({ empID: employee.empID }).maxTimeMS(10000);
+        if (employeePayment) {
+            employeePayment.totalOvertimePay = totalOvertimePay;
+            employeePayment.updatedAt = new Date();
+            await employeePayment.save({ maxTimeMS: 10000 });
+            console.log("EmployeePayments record updated with new totalOvertimePay:", employeePayment);
+        } else {
+            // If for some reason the EmployeePayments record doesn't exist, create it
+            const newEmployeePayment = new EmployeePayments({
+                empID: employee.empID,
+                empname: employee.empname,
+                basicSalary: employee.basicSalary,
+                totalOvertimePay
+            });
+            await newEmployeePayment.save({ maxTimeMS: 10000 });
+            console.log("EmployeePayments record created during overtime update:", newEmployeePayment);
+        }
+
+        res.status(200).json({ message: "Overtime record added successfully" });
     } catch (err) {
         console.error("Error adding overtime record to MongoDB:", err);
         res.status(500).json({ error: "Failed to add overtime record", details: err.message });
@@ -395,6 +473,19 @@ router.get("/overtime/monthly/:year/:month", async (req, res) => {
     } catch (err) {
         console.error("Error fetching monthly overtime:", err);
         res.status(500).json({ error: "Failed to fetch monthly overtime", details: err.message });
+    }
+});
+
+// GET /api/employee/payments
+router.get("/payments", async (req, res) => {
+    try {
+        console.log("Fetching employee payments...");
+        const employeePayments = await EmployeePayments.find().maxTimeMS(10000);
+        console.log(`Fetched ${employeePayments.length} employee payments`);
+        res.status(200).json(employeePayments);
+    } catch (err) {
+        console.error("Error fetching employee payments:", err);
+        res.status(500).json({ error: "Failed to fetch employee payments", details: err.message });
     }
 });
 
