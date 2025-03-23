@@ -11,7 +11,7 @@ import {
   Alert,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import Header from "./Header"; // Import the Header component
+import Header from "./Header";
 
 // Use an environment variable for the backend URL
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
@@ -37,9 +37,24 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (files) {
+      // File input handling
       setFormData({ ...formData, [name]: files[0] });
     } else {
-      setFormData({ ...formData, [name]: value });
+      // Text input handling
+      // For basicSalary and overtimeRate, ensure the value is a non-negative integer
+      if (name === "basicSalary" || name === "overtimeRate") {
+        // Allow empty string to let users clear the field
+        if (value === "") {
+          setFormData({ ...formData, [name]: value });
+          return;
+        }
+
+        // Remove any non-digit characters (except for validation later)
+        const cleanedValue = value.replace(/[^0-9]/g, "");
+        setFormData({ ...formData, [name]: cleanedValue });
+      } else {
+        setFormData({ ...formData, [name]: value });
+      }
     }
   };
 
@@ -48,7 +63,24 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
     if (!formData.empID) newErrors.empID = "Employee ID is required";
     if (!formData.empname) newErrors.empname = "Name is required";
     if (!formData.role) newErrors.role = "Role is required";
-    if (!formData.basicSalary) newErrors.basicSalary = "Basic Salary is required";
+    if (!formData.basicSalary) {
+      newErrors.basicSalary = "Basic Salary is required";
+    } else {
+      const basicSalaryNum = Number(formData.basicSalary);
+      if (isNaN(basicSalaryNum) || basicSalaryNum <= 0) {
+        newErrors.basicSalary = "Basic Salary must be a number greater than 0";
+      } else if (!Number.isInteger(basicSalaryNum)) {
+        newErrors.basicSalary = "Basic Salary must be a whole number";
+      }
+    }
+    if (formData.overtimeRate) {
+      const overtimeRateNum = Number(formData.overtimeRate);
+      if (isNaN(overtimeRateNum) || overtimeRateNum <= 0) {
+        newErrors.overtimeRate = "Overtime Rate must be a number greater than 0";
+      } else if (!Number.isInteger(overtimeRateNum)) {
+        newErrors.overtimeRate = "Overtime Rate must be a whole number";
+      }
+    }
     if (!formData.image) newErrors.image = "Employee Photo is required";
     if (!formData.birthCertificate) newErrors.birthCertificate = "Birth Certificate is required";
     setErrors(newErrors);
@@ -174,7 +206,7 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
 
   return (
     <Box sx={{ mb: 4, px: 3, width: "100%", maxWidth: "100%" }}>
-      <Header /> {/* Handicraft Store header */}
+      <Header />
       <Typography variant="h5" gutterBottom sx={{ mt: 2 }}>
         Add Employee
       </Typography>
@@ -198,7 +230,7 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
         <Button
           variant="contained"
           color="primary"
-          onClick={() => navigate("/overtime")} // Navigate to the Add Daily Overtime Record page
+          onClick={() => navigate("/overtime")}
           disabled={loading}
         >
           Add Overtime
@@ -263,6 +295,10 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
           error={!!errors.basicSalary}
           helperText={errors.basicSalary}
           disabled={loading}
+          inputProps={{
+            min: 1, // Prevents negative values in the input
+            step: 1, // Ensures only whole numbers can be entered
+          }}
         />
         <TextField
           label="Overtime Rate (optional)"
@@ -272,7 +308,13 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
           onChange={handleChange}
           fullWidth
           margin="normal"
+          error={!!errors.overtimeRate}
+          helperText={errors.overtimeRate}
           disabled={loading}
+          inputProps={{
+            min: 1, // Prevents negative values in the input
+            step: 1, // Ensures only whole numbers can be entered
+          }}
         />
         <FormControl fullWidth margin="normal">
           <InputLabel shrink>Employee Photo *</InputLabel>

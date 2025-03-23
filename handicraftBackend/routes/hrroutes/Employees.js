@@ -36,7 +36,6 @@ router.post("/add", upload, async (req, res) => {
             return res.status(400).json({ error: "Employee ID is required" });
         }
 
-        
         // Log the incoming request data
         console.log("Received data:", {
             empID,
@@ -61,6 +60,31 @@ router.post("/add", upload, async (req, res) => {
         if (!empID || !empname || !role || !basicSalary) {
             console.log("Validation failed: Missing required text fields");
             return res.status(400).json({ error: "empID, empname, role, and basicSalary are required" });
+        }
+
+        // Validate basicSalary
+        const basicSalaryNum = Number(basicSalary);
+        if (isNaN(basicSalaryNum) || basicSalaryNum <= 0) {
+            console.log("Validation failed: Basic Salary must be a number greater than 0");
+            return res.status(400).json({ error: "Basic Salary must be a number greater than 0" });
+        }
+        if (!Number.isInteger(basicSalaryNum)) {
+            console.log("Validation failed: Basic Salary must be a whole number");
+            return res.status(400).json({ error: "Basic Salary must be a whole number" });
+        }
+
+        // Validate overtimeRate if provided
+        let overtimeRateNum = 200; // Default value
+        if (overtimeRate) {
+            overtimeRateNum = Number(overtimeRate);
+            if (isNaN(overtimeRateNum) || overtimeRateNum <= 0) {
+                console.log("Validation failed: Overtime Rate must be a number greater than 0");
+                return res.status(400).json({ error: "Overtime Rate must be a number greater than 0" });
+            }
+            if (!Number.isInteger(overtimeRateNum)) {
+                console.log("Validation failed: Overtime Rate must be a whole number");
+                return res.status(400).json({ error: "Overtime Rate must be a whole number" });
+            }
         }
 
         // Validate required files (Employee Photo and Birth Certificate)
@@ -95,8 +119,8 @@ router.post("/add", upload, async (req, res) => {
             empID,
             empname,
             role,
-            basicSalary: Number(basicSalary),
-            overtimeRate: Number(overtimeRate) || 200,
+            basicSalary: basicSalaryNum,
+            overtimeRate: overtimeRateNum,
             image,
             imageType,
             birthCertificate,
@@ -115,7 +139,7 @@ router.post("/add", upload, async (req, res) => {
         const newEmployeePayment = new EmployeePayments({
             empID,
             empname,
-            basicSalary: Number(basicSalary),
+            basicSalary: basicSalaryNum,
             totalOvertimePay: 0
         });
         await newEmployeePayment.save({ maxTimeMS: 10000 });
@@ -224,6 +248,31 @@ router.put("/update/:id", upload, async (req, res) => {
             return res.status(400).json({ error: "empID, empname, role, and basicSalary are required" });
         }
 
+        // Validate basicSalary
+        const basicSalaryNum = Number(basicSalary);
+        if (isNaN(basicSalaryNum) || basicSalaryNum <= 0) {
+            console.log("Validation failed: Basic Salary must be a number greater than 0");
+            return res.status(400).json({ error: "Basic Salary must be a number greater than 0" });
+        }
+        if (!Number.isInteger(basicSalaryNum)) {
+            console.log("Validation failed: Basic Salary must be a whole number");
+            return res.status(400).json({ error: "Basic Salary must be a whole number" });
+        }
+
+        // Validate overtimeRate if provided
+        let overtimeRateNum = employee.overtimeRate; // Keep existing value if not provided
+        if (overtimeRate) {
+            overtimeRateNum = Number(overtimeRate);
+            if (isNaN(overtimeRateNum) || overtimeRateNum <= 0) {
+                console.log("Validation failed: Overtime Rate must be a number greater than 0");
+                return res.status(400).json({ error: "Overtime Rate must be a number greater than 0" });
+            }
+            if (!Number.isInteger(overtimeRateNum)) {
+                console.log("Validation failed: Overtime Rate must be a whole number");
+                return res.status(400).json({ error: "Overtime Rate must be a whole number" });
+            }
+        }
+
         // Check for duplicate empID (excluding the current employee)
         if (empID !== employee.empID) {
             const existingEmployee = await Employee.findOne({ empID }).maxTimeMS(10000);
@@ -238,8 +287,8 @@ router.put("/update/:id", upload, async (req, res) => {
         employee.empID = empID;
         employee.empname = empname;
         employee.role = role;
-        employee.basicSalary = Number(basicSalary);
-        employee.overtimeRate = Number(overtimeRate) || 200;
+        employee.basicSalary = basicSalaryNum;
+        employee.overtimeRate = overtimeRateNum;
 
         // Update files if provided (otherwise keep existing files)
         if (req.files && req.files["image"]) {
@@ -268,7 +317,7 @@ router.put("/update/:id", upload, async (req, res) => {
         if (employeePayment) {
             employeePayment.empID = empID;
             employeePayment.empname = empname;
-            employeePayment.basicSalary = Number(basicSalary);
+            employeePayment.basicSalary = basicSalaryNum;
             employeePayment.totalOvertimePay = updatedEmployee.totalOvertimePay;
             employeePayment.updatedAt = new Date();
             await employeePayment.save({ maxTimeMS: 10000 });
@@ -278,7 +327,7 @@ router.put("/update/:id", upload, async (req, res) => {
             const newEmployeePayment = new EmployeePayments({
                 empID,
                 empname,
-                basicSalary: Number(basicSalary),
+                basicSalary: basicSalaryNum,
                 totalOvertimePay: updatedEmployee.totalOvertimePay
             });
             await newEmployeePayment.save({ maxTimeMS: 10000 });
@@ -320,8 +369,12 @@ router.post("/overtime/add", async (req, res) => {
         }
 
         // Validate overtime hours
-        if (overtimeHours <= 0) {
-            return res.status(400).json({ error: "Overtime hours must be greater than 0" });
+        const overtimeHoursNum = Number(overtimeHours);
+        if (isNaN(overtimeHoursNum) || overtimeHoursNum <= 0) {
+            return res.status(400).json({ error: "Overtime hours must be a number greater than 0" });
+        }
+        if (!Number.isInteger(overtimeHoursNum)) {
+            return res.status(400).json({ error: "Overtime hours must be a whole number" });
         }
 
         // Validate date is not in the future
@@ -335,7 +388,7 @@ router.post("/overtime/add", async (req, res) => {
         const monthString = `${year}-${month}`;
 
         // Calculate overtimePay for this entry
-        const overtimePay = Number(overtimeHours) * employee.overtimeRate;
+        const overtimePay = overtimeHoursNum * employee.overtimeRate;
 
         // Check if an overtime record exists for this employee for the given month
         let overtimeRecord = await Overtime.findOne({ employeeId, month: monthString }).maxTimeMS(10000);
@@ -350,12 +403,12 @@ router.post("/overtime/add", async (req, res) => {
             // Add the new overtime entry to the details array
             overtimeRecord.details.push({
                 date: parsedDate,
-                overtimeHours: Number(overtimeHours),
+                overtimeHours: overtimeHoursNum,
                 overtimePay
             });
 
             // Update the totals
-            overtimeRecord.totalOvertimeHours += Number(overtimeHours);
+            overtimeRecord.totalOvertimeHours += overtimeHoursNum;
             overtimeRecord.totalOvertimePay += overtimePay;
             overtimeRecord.updatedAt = new Date();
 
@@ -368,11 +421,11 @@ router.post("/overtime/add", async (req, res) => {
                 employeeId,
                 empID: employee.empID,
                 month: monthString,
-                totalOvertimeHours: Number(overtimeHours),
+                totalOvertimeHours: overtimeHoursNum,
                 totalOvertimePay: overtimePay,
                 details: [{
                     date: parsedDate,
-                    overtimeHours: Number(overtimeHours),
+                    overtimeHours: overtimeHoursNum,
                     overtimePay
                 }]
             });
