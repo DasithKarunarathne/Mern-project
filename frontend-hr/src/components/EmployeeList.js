@@ -8,20 +8,12 @@ import {
   Button,
   Typography,
   IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  MenuItem,
-  Select,
-  InputLabel,
-  FormControl,
   Alert,
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import EmployeeUpdateForm from "./EmployeeUpdateForm";
+import Header from "./Header"; // Import the Header component
 
 // Use the same BACKEND_URL as in other components
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
@@ -30,14 +22,6 @@ const EmployeeList = ({ refresh }) => {
   const [employees, setEmployees] = useState([]);
   const [overtimeRecords, setOvertimeRecords] = useState({});
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [overtimeData, setOvertimeData] = useState({
-    employeeId: "",
-    overtimeHours: "",
-    date: "",
-  });
-  const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
 
   const fetchEmployees = async () => {
@@ -78,58 +62,33 @@ const EmployeeList = ({ refresh }) => {
     setSelectedEmployeeId(id === selectedEmployeeId ? null : id);
   };
 
-  const handleOpenDialog = () => {
-    setOpenDialog(true);
-    setOvertimeData({ employeeId: "", overtimeHours: "", date: "" });
-    setSuccessMessage("");
-    setErrorMessage("");
-  };
-
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-  };
-
-  const handleOvertimeChange = (e) => {
-    const { name, value } = e.target;
-    setOvertimeData({ ...overtimeData, [name]: value });
-  };
-
-  const handleOvertimeSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!overtimeData.employeeId || !overtimeData.overtimeHours || !overtimeData.date) {
-      setErrorMessage("All fields are required");
-      return;
-    }
-
-    try {
-      const response = await axios.post(`${BACKEND_URL}/api/employee/overtime/add`, overtimeData);
-      setSuccessMessage("Overtime added successfully");
-      fetchEmployees(); // Refresh the list to show the new overtime record
-      setTimeout(() => {
-        setSuccessMessage("");
-        handleCloseDialog();
-      }, 2000);
-    } catch (err) {
-      console.error("Error adding overtime:", err);
-      setErrorMessage(err.response?.data?.error || "Failed to add overtime");
-    }
-  };
-
   // Helper function to format date safely
   const formatDate = (dateString) => {
-    if (!dateString) return "Invalid Date";
+    if (!dateString) return "No date available";
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "Invalid Date";
-    return date.toISOString().split("T")[0];
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  // Helper function to format the month (e.g., "2025-03" to "Mar 2025")
+  const formatMonth = (monthString) => {
+    if (!monthString) return "Unknown Month";
+    const [year, month] = monthString.split("-");
+    const date = new Date(year, month - 1); // month is 0-based in JavaScript
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+    });
   };
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        Employee Management
-      </Typography>
-      <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
+    <Box sx={{ px: 3, width: "100%", maxWidth: "100%" }}>
+      <Header /> {/* Handicraft Store header */}
+      <Box sx={{ mb: 2, display: "flex", gap: 2, mt: 2 }}>
         <Button
           variant="contained"
           color="primary"
@@ -147,7 +106,7 @@ const EmployeeList = ({ refresh }) => {
         <Button
           variant="contained"
           color="primary"
-          onClick={handleOpenDialog}
+          onClick={() => navigate("/overtime")} // Navigate to the Add Daily Overtime Record page
         >
           Add Overtime
         </Button>
@@ -156,7 +115,7 @@ const EmployeeList = ({ refresh }) => {
         <Typography>No employees found.</Typography>
       ) : (
         employees.map((employee) => (
-          <Card key={employee._id} sx={{ maxWidth: 600, mb: 2 }}>
+          <Card key={employee._id} sx={{ mb: 2, width: "100%" }}>
             <CardContent>
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                 <Typography variant="h6">
@@ -174,11 +133,23 @@ const EmployeeList = ({ refresh }) => {
               <Typography color="textSecondary">{employee.role}</Typography>
               <Typography>Salary: ${employee.basicSalary}</Typography>
               <Typography>Overtime Rate: ${employee.overtimeRate}/hr</Typography>
+              <Typography>Total Overtime Pay: ${employee.totalOvertimePay.toLocaleString()}</Typography> {/* Display totalOvertimePay */}
               {overtimeRecords[employee._id] && overtimeRecords[employee._id].length > 0 ? (
                 overtimeRecords[employee._id].map((record) => (
-                  <Typography key={record._id}>
-                    Overtime ({formatDate(record.date)}): {record.overtimeHours} hrs (EmpID: {record.empID})
-                  </Typography>
+                  <Box key={record._id}>
+                    <Typography variant="subtitle2" sx={{ mt: 1 }}>
+                      Month: {formatMonth(record.month)}
+                    </Typography>
+                    {record.details && record.details.length > 0 ? (
+                      record.details.map((detail, index) => (
+                        <Typography key={`${record._id}-${index}`}>
+                          Overtime ({formatDate(detail.date)}): {detail.overtimeHours} hrs (EmpID: {record.empID})
+                        </Typography>
+                      ))
+                    ) : (
+                      <Typography>No overtime details found for this month.</Typography>
+                    )}
+                  </Box>
                 ))
               ) : (
                 <Typography>No overtime records found.</Typography>
@@ -193,68 +164,6 @@ const EmployeeList = ({ refresh }) => {
           </Card>
         ))
       )}
-
-      {/* Dialog for Adding Overtime */}
-      <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>Add Overtime</DialogTitle>
-        <DialogContent>
-          {successMessage && (
-            <Alert severity="success" sx={{ mb: 2 }}>
-              {successMessage}
-            </Alert>
-          )}
-          {errorMessage && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {errorMessage}
-            </Alert>
-          )}
-          <Box component="form" onSubmit={handleOvertimeSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
-            <FormControl fullWidth>
-              <InputLabel>Employee</InputLabel>
-              <Select
-                name="employeeId"
-                value={overtimeData.employeeId}
-                onChange={handleOvertimeChange}
-                required
-              >
-                <MenuItem value="">Select Employee</MenuItem>
-                {employees.map((employee) => (
-                  <MenuItem key={employee._id} value={employee._id}>
-                    {employee.empname} (ID: {employee.empID})
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <TextField
-              label="Overtime Hours"
-              name="overtimeHours"
-              type="number"
-              value={overtimeData.overtimeHours}
-              onChange={handleOvertimeChange}
-              fullWidth
-              required
-            />
-            <TextField
-              label="Date"
-              name="date"
-              type="date"
-              value={overtimeData.date}
-              onChange={handleOvertimeChange}
-              fullWidth
-              required
-              InputLabelProps={{ shrink: true }}
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog} color="secondary">
-            Cancel
-          </Button>
-          <Button onClick={handleOvertimeSubmit} color="primary">
-            Add Overtime
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };
