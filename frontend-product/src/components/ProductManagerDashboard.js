@@ -1,20 +1,27 @@
-// src/components/ProductManagerDashboard.js
 import React, { useState, useEffect } from 'react';
 import { getProducts, deleteProduct } from '../services/api';
-import { Box, Typography, Button, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
+import { Box, Typography, Button, Table, TableBody, TableCell, TableHead, TableRow, Avatar } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ProductManagerDashboard = () => {
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProducts = async () => {
+      setLoading(true);
       try {
         const response = await getProducts();
+        console.log('Products:', response.data); // Log to verify image field
         setProducts(response.data);
       } catch (error) {
         console.error('Error fetching products:', error);
+        toast.error('Failed to fetch products: ' + (error.response?.data?.error || error.message));
+      } finally {
+        setLoading(false);
       }
     };
     fetchProducts();
@@ -24,10 +31,10 @@ const ProductManagerDashboard = () => {
     try {
       await deleteProduct(id);
       setProducts(products.filter((product) => product._id !== id));
-      alert('Product deleted successfully!');
+      toast.success('Product deleted successfully!');
     } catch (error) {
       console.error('Error deleting product:', error);
-      alert('Failed to delete product: ' + (error.response?.data?.error || error.message));
+      toast.error('Failed to delete product: ' + (error.response?.data?.error || error.message));
     }
   };
 
@@ -41,6 +48,7 @@ const ProductManagerDashboard = () => {
 
   return (
     <Box sx={{ padding: 2 }}>
+      <ToastContainer />
       <Typography variant="h4" sx={{ marginBottom: 2, textAlign: 'center' }}>
         Product Manager Dashboard
       </Typography>
@@ -51,7 +59,11 @@ const ProductManagerDashboard = () => {
       >
         Add New Product
       </Button>
-      {products.length === 0 ? (
+      {loading ? (
+        <Typography variant="h6" sx={{ textAlign: 'center' }}>
+          Loading products...
+        </Typography>
+      ) : products.length === 0 ? (
         <Typography variant="h6" sx={{ textAlign: 'center' }}>
           No products available.
         </Typography>
@@ -59,6 +71,7 @@ const ProductManagerDashboard = () => {
         <Table>
           <TableHead>
             <TableRow>
+              <TableCell>Image</TableCell>
               <TableCell>Name</TableCell>
               <TableCell>Category</TableCell>
               <TableCell>Price</TableCell>
@@ -69,6 +82,20 @@ const ProductManagerDashboard = () => {
           <TableBody>
             {products.map((product) => (
               <TableRow key={product._id}>
+                <TableCell>
+                  {product.image ? (
+                    <a href={`http://localhost:8080${product.image}`} target="_blank" rel="noopener noreferrer">
+                      <Avatar
+                        src={`http://localhost:8080${product.image}`} // Updated to port 8080
+                        alt={product.name}
+                        variant="square"
+                        sx={{ width: 50, height: 50 }}
+                      />
+                    </a>
+                  ) : (
+                    <Typography variant="body2">No Image</Typography>
+                  )}
+                </TableCell>
                 <TableCell>{product.name}</TableCell>
                 <TableCell>{product.category}</TableCell>
                 <TableCell>LKR {product.price}</TableCell>

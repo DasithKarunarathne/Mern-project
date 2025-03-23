@@ -1,4 +1,3 @@
-// backend/routes/deliveryCharges.js
 const router = require('express').Router();
 const DeliveryCharge = require('../models/DeliveryCharge');
 
@@ -15,9 +14,9 @@ router.get('/:postalCode', async (req, res) => {
       return res.status(404).json({ error: 'Delivery charge not found for this postal code', defaultCharge: 700 });
     }
 
-    res.json({ deliveryCharge: deliveryCharge.deliveryCharge });
+    res.json({ province: deliveryCharge.province, deliveryCharge: deliveryCharge.deliveryCharge });
   } catch (err) {
-    console.log(err);
+    console.error('Error fetching delivery charge:', err);
     res.status(500).json({ error: `Failed to fetch delivery charge: ${err.message}` });
   }
 });

@@ -1,4 +1,3 @@
-// src/components/ProductDashboard.js
 import React, { useState, useEffect } from 'react';
 import { getProducts } from '../services/api';
 import { Box, Typography, TextField, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
@@ -11,13 +10,12 @@ const ProductDashboard = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const navigate = useNavigate();
 
-  // Fetch products on component mount
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const response = await getProducts();
         setProducts(response.data);
-        setFilteredProducts(response.data); // Initially, all products are displayed
+        setFilteredProducts(response.data);
       } catch (error) {
         console.error('Error fetching products:', error);
       }
@@ -25,21 +23,17 @@ const ProductDashboard = () => {
     fetchProducts();
   }, []);
 
-  // Get unique categories for the filter dropdown
   const categories = ['All', ...new Set(products.map((product) => product.category))];
 
-  // Filter products based on search term and selected category
   useEffect(() => {
     let filtered = products;
 
-    // Filter by search term (case-insensitive)
     if (searchTerm) {
       filtered = filtered.filter((product) =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
-    // Filter by category
     if (selectedCategory !== 'All') {
       filtered = filtered.filter((product) => product.category === selectedCategory);
     }
@@ -65,9 +59,7 @@ const ProductDashboard = () => {
         Handicraft Products
       </Typography>
 
-      {/* Search Bar and Category Filter */}
       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, marginBottom: 3 }}>
-        {/* Search Bar */}
         <TextField
           label="Search Products"
           variant="outlined"
@@ -75,8 +67,6 @@ const ProductDashboard = () => {
           onChange={handleSearchChange}
           sx={{ width: 300 }}
         />
-
-        {/* Category Filter */}
         <FormControl sx={{ width: 200 }}>
           <InputLabel>Category</InputLabel>
           <Select
@@ -93,7 +83,6 @@ const ProductDashboard = () => {
         </FormControl>
       </Box>
 
-      {/* Product Grid */}
       {filteredProducts.length === 0 ? (
         <Typography variant="h6" sx={{ textAlign: 'center' }}>
           No products available.

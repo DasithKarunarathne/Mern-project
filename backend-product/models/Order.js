@@ -14,16 +14,16 @@ const orderSchema = new mongoose.Schema({
     name: { type: String, required: true },
     address: { type: String, required: true },
     phone: { type: String, required: true },
+    email: { type: String, required: false },
     postalCode: { type: String, required: true },
     deliveryCharge: { type: Number, required: true },
-    email: { type: String }, // New field for customer email
   },
   subtotal: { type: Number, required: true },
   deliveryCharge: { type: Number, required: true },
   total: { type: Number, required: true },
   status: {
     type: String,
-    enum: ['pending', 'completed', 'pending_refund', 'refunded', 'canceled'],
+    enum: ['pending', 'completed', 'pending_refund', 'refunded', 'canceled', 'refund_denied'],
     default: 'pending',
   },
   refundReason: { type: String },
