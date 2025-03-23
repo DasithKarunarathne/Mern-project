@@ -2,6 +2,17 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:8080/api';
 
+// Add a request interceptor to log headers
+axios.interceptors.request.use(
+  (config) => {
+    console.log('Request headers:', config.headers);
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 // Add a response interceptor to handle errors globally
 axios.interceptors.response.use(
   (response) => response,
@@ -69,17 +80,17 @@ export const requestRefund = (orderId, refundReason, refundComments) =>
 export const getUserOrders = (userId) => axios.get(`${API_URL}/orders/user/${userId}`);
 export const getOrderById = (orderId) => axios.get(`${API_URL}/orders/${orderId}`);
 export const approveRefund = (orderId) =>
-  axios.put(`${API_URL}/orders/${orderId}/approve-refund`, null /*, {
-    headers: { 'x-admin-key': 'mock-admin-key' }, // Temporarily removed for debugging
-  }*/);
+  axios.put(`${API_URL}/orders/${orderId}/approve-refund`, null, {
+    headers: { 'x-admin-key': 'mock-admin-key' },
+  });
 export const denyRefund = (orderId) =>
-  axios.put(`${API_URL}/orders/${orderId}/deny-refund`, null /*, {
-    headers: { 'x-admin-key': 'mock-admin-key' }, // Temporarily removed for debugging
-  }*/);
+  axios.put(`${API_URL}/orders/${orderId}/deny-refund`, null, {
+    headers: { 'x-admin-key': 'mock-admin-key' },
+  });
 export const getPendingRefunds = () =>
-  axios.get(`${API_URL}/orders/pending-refunds` /*, {
-    headers: { 'x-admin-key': 'mock-admin-key' }, // Temporarily removed for debugging
-  }*/);
+  axios.get(`${API_URL}/orders/pending-refunds`, {
+    headers: { 'x-admin-key': 'mock-admin-key' },
+  });
 
 // Delivery-related API functions
 export const getDeliveryCharge = (postalCode) =>
