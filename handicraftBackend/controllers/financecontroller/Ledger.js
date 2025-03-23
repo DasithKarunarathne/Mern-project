@@ -1,4 +1,4 @@
-import Ledger from "../../models/financemodel/Ledger";      
+import Ledger from "../../models/financemodel/Ledger.js";      
 
 
 
@@ -21,6 +21,8 @@ export const fetchLedger = async (req, res) => {
                 $lte: endDate,
             },
         }).sort({ date: 1 });
+        res.status(200).json(ledger);
+
         } catch (error) {
             res.status(404).json({ message: error.message });
         }

@@ -1,6 +1,6 @@
 import express from "express";
 
-import { fetchLedger } from "../../controllers/financecontroller/Ledger";
+import { fetchLedger } from "../../controllers/financecontroller/Ledger.js";
 
 const router = express.Router();
 

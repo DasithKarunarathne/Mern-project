@@ -9,6 +9,7 @@ import salaryRoutes from "./routes/financeroutes/salaryRoutes.js";
 import cashBookRoutes from "./routes/financeroutes/CashBookroutes.js";
 import pettyCashRoutes from "./routes/financeroutes/PettyCashRoute.js";
 import employeeRoutes from "./routes/hrroutes/Employees.js";
+import ledgerRoutes from "./routes/financeroutes/LedgerRoutes.js";
 
 dotenv.config();
 
@@ -34,6 +35,7 @@ app.get("/", (req, res) => res.send("Hello world"));
 app.use("/api/Salary", salaryRoutes);
 app.use("/api/Pettycash", pettyCashRoutes);
 app.use("/api/cashbook", cashBookRoutes);
+app.use("/api/ledger", ledgerRoutes);	
 
 // HR routes
 app.use("/api/employee", employeeRoutes);

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Routes, Route, Link,  } from 'react-router-dom';
+import { Routes, Route, Link } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 import Salarytable from './SalaryTable.js';
+import Ledger from './ledger.jsx';
 import {
   AppBar,
   Toolbar,
@@ -16,16 +17,20 @@ import {
   IconButton,
   Grid,
   Paper,
+  Collapse,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import CalculateIcon from '@mui/icons-material/Calculate';
-import PettyCashDashboard from '../PettyCash.js/PettyCashDashboard'; // Import PettyCashDashboard component
+import DescriptionIcon from '@mui/icons-material/Description';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import PettyCashDashboard from '../PettyCash.js/PettyCashDashboard';
 import BalanceCard from '../PettyCash.js/BalanceCard.jsx';
 import CashBookPage from '../cashBook/cashBook.jsx';
-
-import { Bar } from 'react-chartjs-2'; // For graphs
+import { Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -71,31 +76,66 @@ const chartOptions = {
 
 export default function Dashboard() {
   const [drawerOpen, setDrawerOpen] = useState(false);
-  //const navigate = useNavigate();
+  const [reportsOpen, setReportsOpen] = useState(false); // State for expanding/collapsing Reports
 
   const handleDrawerOpen = () => setDrawerOpen(true);
   const handleDrawerClose = () => setDrawerOpen(false);
+
+  const handleReportsClick = () => {
+    setReportsOpen(!reportsOpen); // Toggle Reports expansion
+  };
 
   const drawerContent = (
     <Box sx={{ width: 250 }} role="presentation">
       <DrawerHeader />
       <List>
-        <ListItem component={Link} to="/dashboard" onClick={handleDrawerClose}>
+        <ListItem component={Link} to="/finance/dashboard" onClick={handleDrawerClose}>
           <ListItemIcon><DashboardIcon /></ListItemIcon>
           <ListItemText primary="Overview" />
         </ListItem>
-        <ListItem component={Link} to="/dashboard/pettycash" onClick={handleDrawerClose}>
+        <ListItem component={Link} to="/finance/dashboard/pettycash" onClick={handleDrawerClose}>
           <ListItemIcon><AccountBalanceWalletIcon /></ListItemIcon>
           <ListItemText primary="Petty Cash Management" />
         </ListItem>
-        <ListItem component={Link} to="/dashboard/salary" onClick={handleDrawerClose}>
+        <ListItem component={Link} to="/finance/dashboard/salary" onClick={handleDrawerClose}>
           <ListItemIcon><CalculateIcon /></ListItemIcon>
           <ListItemText primary="Salary Calculation" />
         </ListItem>
-        <ListItem component={Link} to="/dashboard/Cashbook" onClick={handleDrawerClose}>
+        <ListItem component={Link} to="/finance/dashboard/Cashbook" onClick={handleDrawerClose}>
           <ListItemIcon><DashboardIcon /></ListItemIcon>
           <ListItemText primary="Cash Book" />
         </ListItem>
+
+        {/* Reports Section */}
+        <ListItem button onClick={handleReportsClick}>
+          <ListItemIcon><BarChartIcon /></ListItemIcon>
+          <ListItemText primary="Reports" />
+          {reportsOpen ? <ExpandLess /> : <ExpandMore />} {/* Toggle icon */}
+        </ListItem>
+        <Collapse in={reportsOpen} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            <ListItem
+              button
+              component={Link}
+              to="/finance/dashboard/reports/ledger"
+              onClick={handleDrawerClose}
+              sx={{ pl: 4 }} // Indent sub-items
+            >
+              <ListItemIcon><DescriptionIcon /></ListItemIcon>
+              <ListItemText primary="Ledger" />
+            </ListItem>
+            <ListItem
+              button
+              component={Link}
+              to="/finance/dashboard/reports/invoices"
+              onClick={handleDrawerClose}
+              sx={{ pl: 4 }} // Indent sub-items
+            >
+              <ListItemIcon><DescriptionIcon /></ListItemIcon>
+              <ListItemText primary="Invoices" />
+            </ListItem>
+          </List>
+        </Collapse>
       </List>
     </Box>
   );
@@ -105,7 +145,7 @@ export default function Dashboard() {
       <Grid item xs={12} sm={6} md={4}>
         <Paper sx={{ p: 2 }}>
           <Typography variant="h6">Total Petty Cash</Typography>
-          <BalanceCard/>
+          <BalanceCard />
         </Paper>
       </Grid>
       <Grid item xs={12} sm={6} md={4}>
@@ -126,7 +166,6 @@ export default function Dashboard() {
     </Grid>
   );
 
- 
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
@@ -169,6 +208,8 @@ export default function Dashboard() {
           <Route path="/pettycash" element={<PettyCashDashboard />} />
           <Route path="/salary" element={<Salarytable />} />
           <Route path="/Cashbook" element={<CashBookPage />} />
+          <Route path="/reports/ledger" element={<Ledger/>} />
+          <Route path="/reports/invoices" element={<div>Invoices Report</div>} />
         </Routes>
       </Main>
     </Box>

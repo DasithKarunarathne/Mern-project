@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import {
   Table,
@@ -11,7 +11,11 @@ import {
   TextField,
   Typography,
   Box,
+  Button,
 } from "@mui/material";
+
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 const Ledger = () => {
   const [month, setMonth] = useState(new Date().getMonth() + 1); // Current month (1-12)
@@ -19,22 +23,51 @@ const Ledger = () => {
   const [ledger, setLedger] = useState([]);
   const [error, setError] = useState(null);
 
-  // Fetch ledger data
-  const fetchLedger = async () => {
+    
+
+
+  // Fetch ledger data (memoized with useCallback)
+  const fetchLedger = useCallback(async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/ledger/${month}/${year}`);
+      const response = await axios.get(`http://localhost:5000/api/ledger/fetchLedger/${month}/${year}`);
       setLedger(response.data); // Set ledger data
       setError(null); // Clear any previous errors
     } catch (error) {
       console.error("Error fetching ledger", error);
       setError("Failed to fetch ledger: " + (error.response?.data?.message || error.message));
     }
-  };
+  }, [month, year]); // Dependencies: month and year
 
   // Fetch ledger data when month or year changes
   useEffect(() => {
     fetchLedger();
-  }, [month, year]);
+  }, [fetchLedger]); // Dependency: fetchLedger
+
+
+  const downloadPDF = () => {
+    const doc = new jsPDF();
+    doc.text(`Ledger for ${month}/${year}`, 10, 10); // Add a title
+
+    // Convert table data to an array of arrays
+    const tableData = ledger.map((entry) => [
+      new Date(entry.date).toLocaleDateString(),
+      entry.description,
+      entry.amount,
+      entry.category,
+      entry.source,
+      entry.transactionId,
+      entry.transactiontype,
+    ]);
+
+    // Add the table to the PDF
+    doc.autoTable({
+      head: [["Date", "Description", "Amount", "Category", "Source", "Transaction ID", "Transaction Type"]],
+      body: tableData,
+    });
+
+    // Save the PDF
+    doc.save(`ledger_${month}_${year}.pdf`);
+  };
 
   return (
     <Paper elevation={3} sx={{ padding: 3, margin: 2 }}>
@@ -66,6 +99,11 @@ const Ledger = () => {
           {error}
         </Typography>
       )}
+
+      {/* Download Button */}
+      <Button variant="contained" onClick={downloadPDF} sx={{ marginBottom: 2 }}>
+        Download as PDF
+      </Button>
 
       {/* Ledger Table */}
       <TableContainer component={Paper}>
