@@ -37,8 +37,11 @@ const OvertimeForm = ({ employees }) => {
   const validateForm = () => {
     const newErrors = {};
     if (!formData.employeeId) newErrors.employeeId = "Employee is required";
-    if (!formData.overtimeHours) newErrors.overtimeHours = "Overtime Hours is required";
-    else if (formData.overtimeHours <= 0) newErrors.overtimeHours = "Overtime Hours must be greater than 0";
+    if (!formData.overtimeHours) {
+      newErrors.overtimeHours = "Overtime Hours is required";
+    } else if (Number(formData.overtimeHours) <= 0) {
+      newErrors.overtimeHours = "Overtime Hours must be greater than 0";
+    }
     if (!formData.date) newErrors.date = "Date is required";
     else {
       const parsedDate = new Date(formData.date);
@@ -147,6 +150,7 @@ const OvertimeForm = ({ employees }) => {
           required
           error={!!errors.overtimeHours}
           helperText={errors.overtimeHours}
+          inputProps={{ min: 0.1, step: 0.1 }} // Prevent negative values and allow decimals
         />
         <TextField
           label="Date"

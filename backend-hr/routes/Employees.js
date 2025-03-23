@@ -303,6 +303,12 @@ router.post("/overtime/add", async (req, res) => {
             return res.status(400).json({ error: "Invalid employee ID" });
         }
 
+        // Validate overtimeHours
+        const overtimeHoursNum = Number(overtimeHours);
+        if (isNaN(overtimeHoursNum) || overtimeHoursNum <= 0) {
+            return res.status(400).json({ error: "Overtime hours must be a number greater than 0" });
+        }
+
         // Check if the employee exists and fetch empID and overtimeRate
         const employee = await Employee.findById(employeeId).maxTimeMS(10000);
         if (!employee) {
@@ -313,11 +319,6 @@ router.post("/overtime/add", async (req, res) => {
         const parsedDate = new Date(date);
         if (isNaN(parsedDate)) {
             return res.status(400).json({ error: "Invalid date format. Use YYYY-MM-DD." });
-        }
-
-        // Validate overtime hours
-        if (overtimeHours <= 0) {
-            return res.status(400).json({ error: "Overtime hours must be greater than 0" });
         }
 
         // Validate date is not in the future
@@ -331,7 +332,7 @@ router.post("/overtime/add", async (req, res) => {
         const monthString = `${year}-${month}`;
 
         // Calculate overtimePay for this entry
-        const overtimePay = Number(overtimeHours) * employee.overtimeRate;
+        const overtimePay = overtimeHoursNum * employee.overtimeRate;
 
         // Check if an overtime record exists for this employee for the given month
         let overtimeRecord = await Overtime.findOne({ employeeId, month: monthString }).maxTimeMS(10000);
@@ -346,12 +347,12 @@ router.post("/overtime/add", async (req, res) => {
             // Add the new overtime entry to the details array
             overtimeRecord.details.push({
                 date: parsedDate,
-                overtimeHours: Number(overtimeHours),
+                overtimeHours: overtimeHoursNum,
                 overtimePay
             });
 
             // Update the totals
-            overtimeRecord.totalOvertimeHours += Number(overtimeHours);
+            overtimeRecord.totalOvertimeHours += overtimeHoursNum;
             overtimeRecord.totalOvertimePay += overtimePay;
             overtimeRecord.updatedAt = new Date();
 
@@ -364,11 +365,11 @@ router.post("/overtime/add", async (req, res) => {
                 employeeId,
                 empID: employee.empID,
                 month: monthString,
-                totalOvertimeHours: Number(overtimeHours),
+                totalOvertimeHours: overtimeHoursNum,
                 totalOvertimePay: overtimePay,
                 details: [{
                     date: parsedDate,
-                    overtimeHours: Number(overtimeHours),
+                    overtimeHours: overtimeHoursNum,
                     overtimePay
                 }]
             });
