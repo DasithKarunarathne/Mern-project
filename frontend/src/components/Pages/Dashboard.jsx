@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { Routes, Route, Link,  } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 import Salarytable from '../SalaryTable';
 import {
@@ -71,7 +71,7 @@ const chartOptions = {
 
 export default function Dashboard() {
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const navigate = useNavigate();
+  //const navigate = useNavigate();
 
   const handleDrawerOpen = () => setDrawerOpen(true);
   const handleDrawerClose = () => setDrawerOpen(false);
