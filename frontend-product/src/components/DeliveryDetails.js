@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { getDeliveryCharge, saveDeliveryDetails } from '../services/api'; // Removed sendOtpEmail
+import { getDeliveryCharge, saveDeliveryDetails } from '../services/api';
 import { Box, Typography, TextField, Button, CircularProgress } from '@mui/material';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -47,8 +47,8 @@ const DeliveryDetails = () => {
   const fetchDeliveryCharge = async (postalCode) => {
     try {
       const response = await getDeliveryCharge(postalCode);
-      setProvince(response.data.province || 'Unknown');
-      setDeliveryCharge(response.data.deliveryCharge || 700);
+      setProvince(response.data.province);
+      setDeliveryCharge(response.data.deliveryCharge);
     } catch (error) {
       console.error('Error fetching delivery charge:', error);
       setProvince('Unknown');
@@ -60,12 +60,20 @@ const DeliveryDetails = () => {
   useEffect(() => {
     if (deliveryData.postalCode.length === 5) {
       fetchDeliveryCharge(deliveryData.postalCode);
+    } else {
+      setProvince('');
+      setDeliveryCharge(0);
     }
   }, [deliveryData.postalCode]);
 
   const handleSubmit = async () => {
     if (!validate()) {
       toast.error('Please fill all required fields correctly.');
+      return;
+    }
+
+    if (deliveryCharge === 0) {
+      toast.error('Please wait for the delivery charge to be calculated.');
       return;
     }
 
