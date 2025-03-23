@@ -308,6 +308,9 @@ router.post("/overtime/add", async (req, res) => {
         if (isNaN(overtimeHoursNum) || overtimeHoursNum <= 0) {
             return res.status(400).json({ error: "Overtime hours must be a number greater than 0" });
         }
+        if (!Number.isInteger(overtimeHoursNum)) {
+            return res.status(400).json({ error: "Overtime hours must be a whole number" });
+        }
 
         // Check if the employee exists and fetch empID and overtimeRate
         const employee = await Employee.findById(employeeId).maxTimeMS(10000);
