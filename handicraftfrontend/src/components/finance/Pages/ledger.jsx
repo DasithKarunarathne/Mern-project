@@ -13,18 +13,14 @@ import {
   Box,
   Button,
 } from "@mui/material";
-
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable"; // Import autoTable explicitly
 
 const Ledger = () => {
   const [month, setMonth] = useState(new Date().getMonth() + 1); // Current month (1-12)
   const [year, setYear] = useState(new Date().getFullYear()); // Current year
   const [ledger, setLedger] = useState([]);
   const [error, setError] = useState(null);
-
-    
-
 
   // Fetch ledger data (memoized with useCallback)
   const fetchLedger = useCallback(async () => {
@@ -36,14 +32,14 @@ const Ledger = () => {
       console.error("Error fetching ledger", error);
       setError("Failed to fetch ledger: " + (error.response?.data?.message || error.message));
     }
-  }, [month, year]); // Dependencies: month and year
+  }, [month, year]);
 
   // Fetch ledger data when month or year changes
   useEffect(() => {
     fetchLedger();
-  }, [fetchLedger]); // Dependency: fetchLedger
+  }, [fetchLedger]);
 
-
+  // Function to download the table as PDF
   const downloadPDF = () => {
     const doc = new jsPDF();
     doc.text(`Ledger for ${month}/${year}`, 10, 10); // Add a title
@@ -60,7 +56,7 @@ const Ledger = () => {
     ]);
 
     // Add the table to the PDF
-    doc.autoTable({
+    autoTable(doc, { // Use autoTable directly
       head: [["Date", "Description", "Amount", "Category", "Source", "Transaction ID", "Transaction Type"]],
       body: tableData,
     });
