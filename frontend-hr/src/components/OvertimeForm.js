@@ -37,16 +37,8 @@ const OvertimeForm = ({ employees }) => {
   const validateForm = () => {
     const newErrors = {};
     if (!formData.employeeId) newErrors.employeeId = "Employee is required";
-    if (!formData.overtimeHours) {
-      newErrors.overtimeHours = "Overtime Hours is required";
-    } else {
-      const overtimeHoursNum = Number(formData.overtimeHours);
-      if (isNaN(overtimeHoursNum) || overtimeHoursNum <= 0) {
-        newErrors.overtimeHours = "Overtime Hours must be a number greater than 0";
-      } else if (!Number.isInteger(overtimeHoursNum)) {
-        newErrors.overtimeHours = "Overtime Hours must be a whole number";
-      }
-    }
+    if (!formData.overtimeHours) newErrors.overtimeHours = "Overtime Hours is required";
+    else if (formData.overtimeHours <= 0) newErrors.overtimeHours = "Overtime Hours must be greater than 0";
     if (!formData.date) newErrors.date = "Date is required";
     else {
       const parsedDate = new Date(formData.date);
@@ -155,7 +147,6 @@ const OvertimeForm = ({ employees }) => {
           required
           error={!!errors.overtimeHours}
           helperText={errors.overtimeHours}
-          inputProps={{ min: 1, step: 1 }} // Enforce whole numbers, minimum 1
         />
         <TextField
           label="Date"
