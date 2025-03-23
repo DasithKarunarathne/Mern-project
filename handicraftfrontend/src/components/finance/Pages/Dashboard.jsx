@@ -145,7 +145,7 @@ export default function Dashboard() {
       <Grid item xs={12} sm={6} md={4}>
         <Paper sx={{ p: 2 }}>
           <Typography variant="h6">Total Petty Cash</Typography>
-          <BalanceCard />
+          <BalanceCard  />
         </Paper>
       </Grid>
       <Grid item xs={12} sm={6} md={4}>
