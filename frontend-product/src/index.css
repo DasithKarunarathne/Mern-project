@@ -1,0 +1,11 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #F5F5DC; /* Beige */
+    color: #333333; /* Dark Gray */
+  }
+  
+  a {
+    text-decoration: none;
+    color: inherit;
+  }

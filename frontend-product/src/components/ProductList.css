@@ -1,0 +1,14 @@
+/* src/components/ProductList.css */
+.product-list-container {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .product-image {
+    border-radius: 8px;
+  }
+  
+  .action-buttons {
+    margin-top: 20px;
+  }
