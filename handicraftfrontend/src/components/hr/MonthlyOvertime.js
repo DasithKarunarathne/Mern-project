@@ -16,9 +16,8 @@ import {
   Alert,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
-import Header from "./Header"; // Import the Header component
+import Header from "./Header"; // Adjust path if needed
 
-// Use the same BACKEND_URL as in other components
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
 const MonthlyOvertime = () => {
@@ -42,7 +41,7 @@ const MonthlyOvertime = () => {
       return;
     }
 
-    navigate(`/overtime/monthly/${year}/${month}`); // Update the URL
+    navigate(`/hr/overtime/monthly/${year}/${month}`); // Updated path
     setLoading(true);
     setError(null);
     try {
@@ -57,8 +56,8 @@ const MonthlyOvertime = () => {
   };
 
   useEffect(() => {
-    fetchMonthlyOvertime();
-  }, [year, month]);
+    if (paramYear && paramMonth) fetchMonthlyOvertime(); // Only fetch if params are present
+  }, [paramYear, paramMonth]); // Depend on params instead of state
 
   const formatDate = (dateString) => {
     if (!dateString) return "Invalid Date";
@@ -69,7 +68,7 @@ const MonthlyOvertime = () => {
 
   return (
     <Box sx={{ mb: 4, p: 3, maxWidth: 1200, margin: "0 auto" }}>
-      <Header /> {/* Add the Handicraft Store header */}
+      <Header />
       <Typography variant="h4" gutterBottom sx={{ mt: 2 }}>
         Employee Management
       </Typography>
@@ -77,25 +76,13 @@ const MonthlyOvertime = () => {
         Monthly Overtime Report
       </Typography>
       <Box sx={{ display: "flex", gap: 2, mb: 2, alignItems: "center" }}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => navigate("/")}
-        >
+        <Button variant="contained" color="primary" onClick={() => navigate("/hr")}>
           Add New Employee
         </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => navigate("/list")}
-        >
+        <Button variant="contained" color="primary" onClick={() => navigate("/hr/list")}>
           Employee List
         </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => navigate("/overtime")}
-        >
+        <Button variant="contained" color="primary" onClick={() => navigate("/hr/overtime")}>
           Add Overtime
         </Button>
         <TextField
@@ -119,11 +106,7 @@ const MonthlyOvertime = () => {
           <CircularProgress />
         </Box>
       )}
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
       {!loading && !error && monthlyOvertime.length > 0 ? (
         <TableContainer component={Paper}>
           <Table>

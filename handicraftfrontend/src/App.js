@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import axios from "axios";
 
 // HR Components
 import EmployeeForm from "./components/hr/EmployeeForm";
@@ -11,42 +10,18 @@ import MonthlyOvertime from "./components/hr/MonthlyOvertime";
 // Finance Components
 import Dashboard from "./components/finance/Pages/Dashboard";
 
-// Shared Components (if any)
+// Shared Components
 import Header from "./components/common/Header";
 import Footer from "./components/common/Footer";
 
 import HomePage from "./pages/Homepage";
 
-// Styles (if any)
+// Styles
 import "./styles/common.css";
 import "./styles/hr.css";
 import "./styles/finance.css";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
-
 function App() {
-  // HR State
-  const [refresh, setRefresh] = useState(false);
-  const [employees, setEmployees] = useState([]);
-
-  // Fetch Employees for HR
-  const fetchEmployees = async () => {
-    try {
-      const response = await axios.get(`${BACKEND_URL}/api/employee/`);
-      setEmployees(response.data);
-    } catch (error) {
-      console.error("Error fetching employees:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchEmployees();
-  }, [refresh]);
-
-  const handleEmployeeAdded = () => {
-    setRefresh(!refresh); // Toggle refresh to trigger re-fetch in EmployeeList
-  };
-
   return (
     <Router>
       <div className="App">
@@ -56,15 +31,9 @@ function App() {
         {/* Main Content */}
         <Routes>
           {/* HR Routes */}
-          <Route
-            path="/hr"
-            element={<EmployeeForm onEmployeeAdded={handleEmployeeAdded} />}
-          />
-          <Route path="/hr/list" element={<EmployeeList refresh={refresh} />} />
-          <Route
-            path="/hr/overtime"
-            element={<OvertimeForm employees={employees} />}
-          />
+          <Route path="/hr" element={<EmployeeForm />} />
+          <Route path="/hr/list" element={<EmployeeList />} />
+          <Route path="/hr/overtime" element={<OvertimeForm />} />
           <Route path="/hr/overtime/monthly" element={<MonthlyOvertime />} />
           <Route
             path="/hr/overtime/monthly/:year/:month"
@@ -74,9 +43,9 @@ function App() {
           {/* Finance Routes */}
           <Route path="/finance/dashboard/*" element={<Dashboard />} />
 
-         {/* Home Route (Optional) */}
+          {/* Home Route */}
           <Route path="/" element={<HomePage />} />
-        </Routes> 
+        </Routes>
 
         {/* Shared Footer */}
         <Footer />

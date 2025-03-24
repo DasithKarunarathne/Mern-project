@@ -12,7 +12,6 @@ import {
   Alert,
 } from "@mui/material";
 
-// Use the same BACKEND_URL as in other components
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
 const EmployeeUpdateForm = ({ employee, onUpdate, onCancel }) => {
@@ -26,23 +25,18 @@ const EmployeeUpdateForm = ({ employee, onUpdate, onCancel }) => {
     birthCertificate: null,
     medicalRecords: null,
   });
-
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-    if (files) {
-      setFormData({ ...formData, [name]: files[0] });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
+    if (files) setFormData({ ...formData, [name]: files[0] });
+    else setFormData({ ...formData, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     setLoading(true);
     setSuccessMessage("");
     setErrorMessage("");
@@ -64,7 +58,7 @@ const EmployeeUpdateForm = ({ employee, onUpdate, onCancel }) => {
 
     while (attempt < maxRetries && !success) {
       try {
-        const response = await axios.put(`${BACKEND_URL}/api/employee/update/${employee._id}`, data, {
+        await axios.put(`${BACKEND_URL}/api/employee/update/${employee._id}`, data, {
           headers: { "Content-Type": "multipart/form-data" },
           timeout: 20000,
         });
@@ -80,7 +74,6 @@ const EmployeeUpdateForm = ({ employee, onUpdate, onCancel }) => {
         lastError = error;
         console.error(`Attempt ${attempt} failed:`, error);
         if (attempt === maxRetries) {
-          console.error("Max retries reached. Failing...");
           setErrorMessage(
             error.response?.data?.details
               ? `Error updating employee: ${error.response.data.error} - ${error.response.data.details}`
@@ -88,11 +81,10 @@ const EmployeeUpdateForm = ({ employee, onUpdate, onCancel }) => {
           );
         } else {
           console.log(`Retrying... (${attempt}/${maxRetries})`);
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          await new Promise((resolve) => setTimeout(resolve, 2000));
         }
       }
     }
-
     setLoading(false);
   };
 
@@ -101,16 +93,8 @@ const EmployeeUpdateForm = ({ employee, onUpdate, onCancel }) => {
       <Typography variant="h6" gutterBottom>
         Update Employee
       </Typography>
-      {successMessage && (
-        <Alert severity="success" sx={{ mb: 2 }}>
-          {successMessage}
-        </Alert>
-      )}
-      {errorMessage && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {errorMessage}
-        </Alert>
-      )}
+      {successMessage && <Alert severity="success" sx={{ mb: 2 }}>{successMessage}</Alert>}
+      {errorMessage && <Alert severity="error" sx={{ mb: 2 }}>{errorMessage}</Alert>}
       <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         <TextField label="Employee ID" name="empID" value={formData.empID} onChange={handleChange} required fullWidth disabled={loading} />
         <TextField label="Name" name="empname" value={formData.empname} onChange={handleChange} required fullWidth disabled={loading} />

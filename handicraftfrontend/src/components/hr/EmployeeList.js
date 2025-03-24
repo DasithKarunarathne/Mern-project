@@ -8,17 +8,15 @@ import {
   Button,
   Typography,
   IconButton,
-  Alert,
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import EmployeeUpdateForm from "./EmployeeUpdateForm";
-import Header from "./Header"; // Import the Header component
+import Header from "./Header"; // Adjust path if needed
 
-// Use the same BACKEND_URL as in other components
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
-const EmployeeList = ({ refresh }) => {
+const EmployeeList = () => {
   const [employees, setEmployees] = useState([]);
   const [overtimeRecords, setOvertimeRecords] = useState({});
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
@@ -29,7 +27,6 @@ const EmployeeList = ({ refresh }) => {
       const response = await axios.get(`${BACKEND_URL}/api/employee/`);
       setEmployees(response.data);
 
-      // Fetch overtime records for each employee
       const overtimeData = {};
       for (const employee of response.data) {
         const overtimeResponse = await axios.get(`${BACKEND_URL}/api/employee/overtime/${employee._id}`);
@@ -43,13 +40,13 @@ const EmployeeList = ({ refresh }) => {
 
   useEffect(() => {
     fetchEmployees();
-  }, [refresh]);
+  }, []); // No dependencies since it fetches on mount
 
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this employee?")) {
       try {
         await axios.delete(`${BACKEND_URL}/api/employee/delete/${id}`);
-        fetchEmployees(); // Refresh the list after deletion
+        fetchEmployees(); // Refresh after deletion
         alert("Employee deleted successfully");
       } catch (error) {
         console.error("Error deleting employee:", error);
@@ -62,52 +59,31 @@ const EmployeeList = ({ refresh }) => {
     setSelectedEmployeeId(id === selectedEmployeeId ? null : id);
   };
 
-  // Helper function to format date safely
   const formatDate = (dateString) => {
     if (!dateString) return "No date available";
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "Invalid Date";
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    return date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
   };
 
-  // Helper function to format the month (e.g., "2025-03" to "Mar 2025")
   const formatMonth = (monthString) => {
     if (!monthString) return "Unknown Month";
     const [year, month] = monthString.split("-");
-    const date = new Date(year, month - 1); // month is 0-based in JavaScript
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-    });
+    const date = new Date(year, month - 1);
+    return date.toLocaleDateString("en-US", { year: "numeric", month: "short" });
   };
 
   return (
     <Box sx={{ px: 3, width: "100%", maxWidth: "100%" }}>
-      <Header /> {/* Handicraft Store header */}
+      <Header />
       <Box sx={{ mb: 2, display: "flex", gap: 2, mt: 2 }}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => navigate("/")}
-        >
+        <Button variant="contained" color="primary" onClick={() => navigate("/hr")}>
           Add New Employee
         </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => navigate("/overtime/monthly")}
-        >
+        <Button variant="contained" color="secondary" onClick={() => navigate("/hr/overtime/monthly")}>
           View Monthly Overtime Report
         </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => navigate("/overtime")} // Navigate to the Add Daily Overtime Record page
-        >
+        <Button variant="contained" color="primary" onClick={() => navigate("/hr/overtime")}>
           Add Overtime
         </Button>
       </Box>
@@ -133,7 +109,7 @@ const EmployeeList = ({ refresh }) => {
               <Typography color="textSecondary">{employee.role}</Typography>
               <Typography>Salary: ${employee.basicSalary}</Typography>
               <Typography>Overtime Rate: ${employee.overtimeRate}/hr</Typography>
-              <Typography>Total Overtime Pay: ${employee.totalOvertimePay.toLocaleString()}</Typography> {/* Display totalOvertimePay */}
+              <Typography>Total Overtime Pay: ${employee.totalOvertimePay.toLocaleString()}</Typography>
               {overtimeRecords[employee._id] && overtimeRecords[employee._id].length > 0 ? (
                 overtimeRecords[employee._id].map((record) => (
                   <Box key={record._id}>
