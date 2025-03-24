@@ -201,7 +201,7 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
   };
 
   const handleViewList = () => {
-    navigate("/list");
+    navigate("/hr/list");
   };
 
   return (
@@ -222,7 +222,7 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
         <Button
           variant="contained"
           color="secondary"
-          onClick={() => navigate("/overtime/monthly")}
+          onClick={() => navigate("/hr/overtime/monthly")}
           disabled={loading}
         >
           View Monthly Overtime Report
@@ -230,7 +230,7 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
         <Button
           variant="contained"
           color="primary"
-          onClick={() => navigate("/overtime")}
+          onClick={() => navigate("/hr/overtime")}
           disabled={loading}
         >
           Add Overtime
