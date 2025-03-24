@@ -13,6 +13,9 @@ const HomePage = () => {
           <li>
             <Link to="/finance/dashboard">Go to Finance Section</Link>
           </li>
+          <li>
+            <Link to="/product">Go to Product Section</Link>
+          </li>
         </ul>
       </nav>
     </div>
