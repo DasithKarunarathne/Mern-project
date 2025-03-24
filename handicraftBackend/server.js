@@ -14,6 +14,9 @@ import pettyCashRoutes from "./routes/financeroutes/PettyCashRoute.js";
 import employeeRoutes from "./routes/hrroutes/Employees.js";
 import ledgerRoutes from "./routes/financeroutes/ledgerRoutes.js";
 
+//customer
+import authRoutes from "./routes/customerroutes/auth.js"; // Add customer auth routes
+
 dotenv.config();
 
 const app = express();
@@ -33,7 +36,7 @@ app.use(cors({
   origin: ["http://localhost:3000", "http://localhost:3001"],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "x-admin-key", "Authorization"],
+  allowedHeaders: ["Content-Type", "x-admin-key", "Authorization","Authorization", "x-auth-token"],
 }));
 
 // Database connection
@@ -56,6 +59,10 @@ app.use("/api/employee", employeeRoutes);
 
 // Product routes
 app.use("/api/product", productRoutes);
+
+
+//customer
+app.use("/api/auth", authRoutes); // Add customer auth routes
 
 // Start server
 const startServer = async () => {

@@ -23,6 +23,15 @@ import RefundRequest from "./components/products/RefundRequest"; // Adjusted pat
 import ProductManager from "./components/products/ProductManager"; // Adjusted path
 import RefundManagement from "./components/products/RefundManagement"; // Adjusted path
 
+
+//customer
+// Customer Components
+import CustHome from "./components/customer/CustomerHome.js"; // New customer homepage
+import Register from "./components/customer/Register"; // Adjusted path
+import Login from "./components/customer/Login"; // Adjusted path
+import Profile from "./components/customer/Profile"; // Adjusted path
+import AdminDashboard from "./components/customer/AdminDashboard"; // Adjusted path
+
 // Shared Components
 import Header from "./components/common/Header";
 import Footer from "./components/common/Footer";
@@ -49,7 +58,20 @@ function App() {
         </Routes> 
 
         {/* Main Content */}
+       
+       
+       
         <Routes>
+
+           {/* Customer Routes (prefixed with /customer) */}
+          <Route path="/customer" element={<CustHome />} /> {/* Added /customer route */}
+          <Route path="/customer/register" element={<Register />} />
+          <Route path="/customer/login" element={<Login />} />
+          <Route path="/customer/profile" element={<Profile />} />
+          <Route path="/customer/admin" element={<AdminDashboard />} />
+
+
+
           {/* HR Routes */}
           <Route path="/hr" element={<EmployeeForm />} />
           <Route path="/hr/list" element={<EmployeeList />} />
@@ -74,6 +96,8 @@ function App() {
           <Route path="/product/refund-request/:orderId" element={<RefundRequest />} />
           <Route path="/product/manager" element={<ProductManager />} />
           <Route path="/product/admin/refund-management" element={<RefundManagement />} />
+
+          
 
           {/* Home Route */}
           <Route path="/" element={<HomePage />} />

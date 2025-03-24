@@ -16,6 +16,10 @@ const HomePage = () => {
           <li>
             <Link to="/product">Go to Product Section</Link>
           </li>
+
+          <li>
+            <Link to="/customer">Go to Customer Section</Link>
+          </li>
         </ul>
       </nav>
     </div>

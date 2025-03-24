@@ -1,0 +1,60 @@
+/* src/components/customer/Home.css */
+.home-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-image: url(""); /* Adjusted path */
+    background-size: cover;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .home-content {
+    text-align: center;
+    padding: 40px;
+    max-width: 600px;
+  }
+  
+  .home-title {
+    font-size: 48px;
+    color: white;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+    margin-bottom: 10px;
+    font-weight: bold;
+  }
+  
+  .home-subtitle {
+    font-size: 24px;
+    color: white;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+    margin-bottom: 20px;
+    font-weight: normal;
+  }
+  
+  .home-description {
+    font-size: 16px;
+    color: white;
+    margin-bottom: 40px;
+    font-weight: 700;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+    line-height: 1.5;
+  }
+  
+  .home-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+  }
+  
+  .home-button {
+    padding: 10px 40px;
+    background: white;
+    color: black;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+  }
