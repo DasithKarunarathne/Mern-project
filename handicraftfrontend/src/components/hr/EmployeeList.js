@@ -8,24 +8,28 @@ import {
   Button,
   Typography,
   IconButton,
+  TextField,
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import EmployeeUpdateForm from "./EmployeeUpdateForm";
-import Header from "./Header"; // Adjust path if needed
+import Header from "./Header";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
 const EmployeeList = () => {
   const [employees, setEmployees] = useState([]);
+  const [filteredEmployees, setFilteredEmployees] = useState([]);
   const [overtimeRecords, setOvertimeRecords] = useState({});
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState(""); // Added for search
   const navigate = useNavigate();
 
   const fetchEmployees = async () => {
     try {
       const response = await axios.get(`${BACKEND_URL}/api/employee/`);
       setEmployees(response.data);
+      setFilteredEmployees(response.data); // Initialize filtered list
 
       const overtimeData = {};
       for (const employee of response.data) {
@@ -40,7 +44,18 @@ const EmployeeList = () => {
 
   useEffect(() => {
     fetchEmployees();
-  }, []); // No dependencies since it fetches on mount
+  }, []);
+
+  // Filter employees based on search term
+  useEffect(() => {
+    let filtered = employees;
+    if (searchTerm) {
+      filtered = filtered.filter((employee) =>
+        employee.empname.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    setFilteredEmployees(filtered);
+  }, [searchTerm, employees]);
 
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this employee?")) {
@@ -57,6 +72,10 @@ const EmployeeList = () => {
 
   const handleUpdateClick = (id) => {
     setSelectedEmployeeId(id === selectedEmployeeId ? null : id);
+  };
+
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
   };
 
   const formatDate = (dateString) => {
@@ -86,11 +105,18 @@ const EmployeeList = () => {
         <Button variant="contained" color="primary" onClick={() => navigate("/hr/overtime")}>
           Add Overtime
         </Button>
+        <TextField
+          label="Search Employees"
+          variant="outlined"
+          value={searchTerm}
+          onChange={handleSearchChange}
+          sx={{ width: 300 }}
+        />
       </Box>
-      {employees.length === 0 ? (
+      {filteredEmployees.length === 0 ? (
         <Typography>No employees found.</Typography>
       ) : (
-        employees.map((employee) => (
+        filteredEmployees.map((employee) => (
           <Card key={employee._id} sx={{ mb: 2, width: "100%" }}>
             <CardContent>
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>

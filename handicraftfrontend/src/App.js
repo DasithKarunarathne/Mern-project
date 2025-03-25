@@ -107,7 +107,7 @@ function App() {
           <Route path="/product/admin/refund-management" element={<RefundManagement />} />
 
           {/* Inventory Routes (prefixed with /inventory) */}
-          <Route path="/inventory" element={<Navigate to="/inventory/display" />} />
+          <Route path="/inventory" element={<Navigate to="/inventory/add" />} />
           <Route path="/inventory/add" element={<AddInventories />} />
           <Route path="/inventory/display" element={<ReadInventories />} />
           <Route path="/inventory/update/:id" element={<UpdateInventories />} />

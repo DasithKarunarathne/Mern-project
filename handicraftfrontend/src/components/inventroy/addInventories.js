@@ -56,8 +56,8 @@ export default function AddInventories() {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      if (selectedDate < today) {
-        newErrors.inventorydate = "Inventory date must be a future date";
+      if (selectedDate > today) {
+        newErrors.inventorydate = "Inventory date must be a previous date";
       }
     }
 
