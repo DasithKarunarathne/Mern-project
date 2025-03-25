@@ -38,76 +38,88 @@ const HomePage = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   return (
-    <HeroSection>
-      <Container>
-        <Typography
-          variant={isMobile ? "h4" : "h2"}
-          component="h1"
-          gutterBottom
-          sx={{ fontWeight: 700, textShadow: "2px 2px 4px rgba(0,0,0,0.3)" }}
-        >
-          Welcome to Heritage Hands
-        </Typography>
-        <Typography variant={isMobile ? "h6" : "h5"} gutterBottom sx={{ mb: 4 }}>
-          Crafting Excellence in Handicraft Management
-        </Typography>
-        <Box sx={{ mb: 4 }}>
-          <Button
-            variant="contained"
-            color="secondary"
-            size="large"
-            component={RouterLink}
-            to="/product"
-            sx={{ backgroundColor: "#FFD700", color: "#3E2723", "&:hover": { backgroundColor: "#FFC107" }, mr: 2 }}
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh",
+        backgroundImage: "url('/background.jpg')", // Ensure the image exists in the public directory
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
+      <HeroSection>
+        <Container>
+          <Typography
+            variant={isMobile ? "h4" : "h2"}
+            component="h1"
+            gutterBottom
+            sx={{ fontWeight: 700, textShadow: "2px 2px 4px rgba(0,0,0,0.3)" }}
           >
-            Explore Products
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            size="large"
-            component={RouterLink}
-            to="/customer"
-            sx={{ backgroundColor: "#FFD700", color: "#3E2723", "&:hover": { backgroundColor: "#FFC107" } }}
-          >
-            Customer Home
-          </Button>
-        </Box>
-        <Typography variant={isMobile ? "h6" : "h5"} gutterBottom sx={{ mb: 2 }}>
-          Manager Functions
-        </Typography>
-        <Box>
-          <ManagerButton
-            variant="contained"
-            component={RouterLink}
-            to="/hr"
-          >
-            HR Manager
-          </ManagerButton>
-          <ManagerButton
-            variant="contained"
-            component={RouterLink}
-            to="/finance/dashboard"
-          >
-            Finance Manager
-          </ManagerButton>
-          <ManagerButton
-            variant="contained"
-            component={RouterLink}
-            to="/product/manager"
-          >
-            Product Manager
-          </ManagerButton>
-          <ManagerButton
-            variant="contained"
-            component={RouterLink}
-            to="/inventory"
-          >
-            Inventory Manager
-          </ManagerButton>
-        </Box>
-      </Container>
-    </HeroSection>
+            Welcome to Heritage Hands
+          </Typography>
+          <Typography variant={isMobile ? "h6" : "h5"} gutterBottom sx={{ mb: 4 }}>
+            Crafting Excellence in Handicraft Management
+          </Typography>
+          <Box sx={{ mb: 4 }}>
+            <Button
+              variant="contained"
+              color="secondary"
+              size="large"
+              component={RouterLink}
+              to="/product"
+              sx={{ backgroundColor: "#FFD700", color: "#3E2723", "&:hover": { backgroundColor: "#FFC107" }, mr: 2 }}
+            >
+              Explore Products
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              size="large"
+              component={RouterLink}
+              to="/customer"
+              sx={{ backgroundColor: "#FFD700", color: "#3E2723", "&:hover": { backgroundColor: "#FFC107" } }}
+            >
+              Customer Home
+            </Button>
+          </Box>
+          <Typography variant={isMobile ? "h6" : "h5"} gutterBottom sx={{ mb: 2 }}>
+            Manager Functions
+          </Typography>
+          <Box>
+            <ManagerButton
+              variant="contained"
+              component={RouterLink}
+              to="/hr"
+            >
+              HR Manager
+            </ManagerButton>
+            <ManagerButton
+              variant="contained"
+              component={RouterLink}
+              to="/finance/dashboard"
+            >
+              Finance Manager
+            </ManagerButton>
+            <ManagerButton
+              variant="contained"
+              component={RouterLink}
+              to="/product/manager"
+            >
+              Product Manager
+            </ManagerButton>
+            <ManagerButton
+              variant="contained"
+              component={RouterLink}
+              to="/inventory"
+            >
+              Inventory Manager
+            </ManagerButton>
+          </Box>
+        </Container>
+      </HeroSection>
+    </div>
   );
 };
 
