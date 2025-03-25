@@ -13,6 +13,7 @@ import cashBookRoutes from "./routes/financeroutes/CashBookroutes.js";
 import pettyCashRoutes from "./routes/financeroutes/PettyCashRoute.js";
 import employeeRoutes from "./routes/hrroutes/Employees.js";
 import ledgerRoutes from "./routes/financeroutes/ledgerRoutes.js";
+import financialsRoutes from "./routes/financeroutes/financialstatementsRoutes.js";
 
 //customer
 import authRoutes from "./routes/customerroutes/auth.js"; // Add customer auth routes
@@ -57,6 +58,7 @@ app.use("/api/Salary", salaryRoutes);
 app.use("/api/Pettycash", pettyCashRoutes);
 app.use("/api/cashbook", cashBookRoutes);
 app.use("/api/ledger", ledgerRoutes);
+app.use('/api/financialStatements', financialsRoutes);
 
 // HR routes
 app.use("/api/employee", employeeRoutes);

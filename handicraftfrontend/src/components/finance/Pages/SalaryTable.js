@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import {
-    Box,
+  Box,
   Table,
   TableBody,
   TableCell,
@@ -17,12 +17,18 @@ import {
 } from "@mui/material";
 
 const Salarytable = () => {
-  const [month, setMonth] = useState("2025-02");
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = (currentDate.getMonth() + 1).toString().padStart(2, "0");
+  const currentMonthString = `${currentYear}-${currentMonth}`;
+
+  const [month, setMonth] = useState(currentMonthString);
   const [salaries, setSalaries] = useState([]);
+  const [filteredSalaries, setFilteredSalaries] = useState([]); // New state for filtered results
+  const [searchEmpId, setSearchEmpId] = useState(""); // State for search input
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
-  // Memoize fetchSalaries to prevent recreation on every render
   const fetchSalaries = useCallback(async () => {
     if (!month) {
       setError("Please select a month");
@@ -30,17 +36,32 @@ const Salarytable = () => {
     }
     try {
       const response = await axios.get(`http://localhost:5000/api/salary/${month}`);
-      setSalaries(response.data); // Array directly from getsalaries
+      setSalaries(response.data);
+      setFilteredSalaries(response.data); // Initialize filteredSalaries with full data
       setError(null);
     } catch (error) {
       console.error("Error fetching salaries", error);
       setError("Failed to fetch salaries: " + (error.response?.data?.message || error.message));
     }
-  }, [month]); // month is a dependency of fetchSalaries
+  }, [month]);
 
   useEffect(() => {
     fetchSalaries();
-  }, [fetchSalaries]); // Now fetchSalaries is stable and a valid dependency
+  }, [fetchSalaries]);
+
+  // Filter salaries based on searchEmpId
+  const handleSearch = (e) => {
+    const empId = e.target.value;
+    setSearchEmpId(empId);
+    if (empId.trim() === "") {
+      setFilteredSalaries(salaries); // Reset to full list if search is empty
+    } else {
+      const filtered = salaries.filter((salary) =>
+        salary.employeeId.toLowerCase().includes(empId.toLowerCase())
+      );
+      setFilteredSalaries(filtered);
+    }
+  };
 
   const genSalaries = async () => {
     if (!month) {
@@ -50,6 +71,7 @@ const Salarytable = () => {
     try {
       const response = await axios.post("http://localhost:5000/api/salary/calculate", { month });
       setSalaries(response.data.salaries || []);
+      setFilteredSalaries(response.data.salaries || []); // Update filteredSalaries too
       setSuccess(response.data.message);
       setError(null);
     } catch (error) {
@@ -63,7 +85,7 @@ const Salarytable = () => {
       await axios.put(`http://localhost:5000/api/salary/markPaid/${salaryId}`);
       setSuccess("Salary marked as paid");
       setError(null);
-      fetchSalaries();
+      fetchSalaries(); // Refetch to update both salaries and filteredSalaries
     } catch (error) {
       console.error("Error marking salary as paid", error);
       setError("Failed to mark salary as paid: " + (error.response?.data?.message || error.message));
@@ -81,8 +103,8 @@ const Salarytable = () => {
         Salary Management
       </Typography>
 
-      {/* Month Selection and Buttons */}
-      <Box sx={{ display: "flex", gap: 2, marginBottom: 3 }}>
+      {/* Month Selection, Search, and Buttons */}
+      <Box sx={{ display: "flex", gap: 2, marginBottom: 3, alignItems: "center" }}>
         <TextField
           type="month"
           label="Select Month"
@@ -91,6 +113,13 @@ const Salarytable = () => {
           InputLabelProps={{
             shrink: true,
           }}
+        />
+        <TextField
+          label="Search by Employee ID"
+          value={searchEmpId}
+          onChange={handleSearch}
+          placeholder="Enter Employee ID"
+          sx={{ width: "200px" }}
         />
         <Button variant="contained" color="primary" onClick={fetchSalaries}>
           Fetch Salaries
@@ -128,25 +157,27 @@ const Salarytable = () => {
               <TableCell>Overtime Hours</TableCell>
               <TableCell>Overtime Rate</TableCell>
               <TableCell>Total Overtime</TableCell>
-              <TableCell>EPF</TableCell>
-              <TableCell>ETF</TableCell>
+              <TableCell>EPF 8%</TableCell>
+              <TableCell>ETF 3%</TableCell>
+              <TableCell>EPF 12%</TableCell>
               <TableCell>Net Salary</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Action</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {salaries.map((salary) => (
+            {filteredSalaries.map((salary) => (
               <TableRow key={salary._id}>
                 <TableCell>{salary.employeeId}</TableCell>
                 <TableCell>{salary.employeeName}</TableCell>
                 <TableCell>{salary.month}</TableCell>
                 <TableCell>{salary.basicSalary}</TableCell>
-                <TableCell>{(salary.overtimeHours)}</TableCell>
-                <TableCell>{salary.overtimeRate}</TableCell>
-                <TableCell>{salary.totalOvertime}</TableCell>
+                <TableCell>{salary.overtimeHours || 0}</TableCell>
+                <TableCell>{salary.overtimeRate || 0}</TableCell>
+                <TableCell>{salary.totalOvertime.toFixed(2)}</TableCell>
                 <TableCell>{salary.epf.toFixed(2)}</TableCell>
                 <TableCell>{salary.etf.toFixed(2)}</TableCell>
+                <TableCell>{salary.epf12.toFixed(2)}</TableCell>
                 <TableCell>{salary.netSalary.toFixed(2)}</TableCell>
                 <TableCell>{salary.status}</TableCell>
                 <TableCell>

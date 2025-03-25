@@ -4,6 +4,7 @@ import CashBalance from "../../models/financemodel/CashBalance.js";
 
 export const addCashBookEntry = async (req, res) => {
   try {
+    console.log("Request body:", req.body); // Log the request body
     const { description, amount, type, category } = req.body;
 
     // Input validation
@@ -12,17 +13,20 @@ export const addCashBookEntry = async (req, res) => {
     }
 
     // Get the latest cash balance
+    console.log("Fetching CashBalance...");
     let cashBalanceRecord = await CashBalance.findOne();
     if (!cashBalanceRecord) {
-      // Initialize cash balance if it doesn't exist
+      console.log("No CashBalance found, initializing...");
       cashBalanceRecord = new CashBalance({
         balance: amount && type === "inflow" ? amount : 0,
-        initialAmount: amount && type === "inflow" ? amount : 0
+        initialAmount: amount && type === "inflow" ? amount : 0,
       });
       await cashBalanceRecord.save();
+      console.log("CashBalance initialized:", cashBalanceRecord);
     } else {
       // Calculate new balance
-      let newBalance = Number(cashBalanceRecord.balance); // Ensure numeric value
+      let newBalance = Number(cashBalanceRecord.balance);
+      console.log("Current balance:", newBalance);
       if (type === "inflow") {
         newBalance += Number(amount);
       } else if (type === "outflow") {
@@ -36,9 +40,11 @@ export const addCashBookEntry = async (req, res) => {
       
       // Update balance before creating new entry
       cashBalanceRecord.balance = newBalance;
+      console.log("New balance:", newBalance);
     }
 
     // Create CashBook entry
+    console.log("Creating CashBook entry...");
     const cashBookEntry = new CashBook({
       description,
       amount,
@@ -48,12 +54,16 @@ export const addCashBookEntry = async (req, res) => {
       date: new Date(),
     });
     await cashBookEntry.save();
+    console.log("CashBook entry created:", cashBookEntry);
 
     // Update CashBalance
     cashBalanceRecord.lastUpdated = Date.now();
+    console.log("Updating CashBalance...");
     await cashBalanceRecord.save();
+    console.log("CashBalance updated:", cashBalanceRecord);
 
     // Create Ledger entry
+    console.log("Creating Ledger entry...");
     const ledgerEntry = new Ledger({
       description,
       amount,
@@ -61,17 +71,16 @@ export const addCashBookEntry = async (req, res) => {
       source: "Cash Book",
       transactionId: cashBookEntry._id,
       transactiontype: "CashBook",
-      
     });
     await ledgerEntry.save();
+    console.log("Ledger entry created:", ledgerEntry);
 
     res.status(201).json({ message: "Cash book entry added successfully", cashBookEntry });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error adding cash book entry", error });
+    console.error("Error in addCashBookEntry:", error);
+    res.status(500).json({ message: "Error adding cash book entry", error: error.message });
   }
 };
-
 
 
 
