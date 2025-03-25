@@ -213,8 +213,7 @@ export default function InventoryTable() {
     };
 
     const handleGenerateReport = () => {
-        // Implement report generation logic here
-        alert("Report generation functionality would go here");
+        navigate("/report"); // Navigate to the report page
     };
 
     const handleSearchChange = (e) => {
