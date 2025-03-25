@@ -68,7 +68,7 @@ export default function UpdateInventories() {
         setErrorMessage("");
 
         try {
-            const response = await fetch(`http://localhost:5000/inventory/update/${id}`, {
+            const response = await fetch(`http://localhost:5000/inventory/update/${id}`, { // Ensure correct endpoint
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -255,7 +255,7 @@ export default function UpdateInventories() {
                         <button 
                             type="button" 
                             style={{...styles.button, ...styles.cancelButton}}
-                            onClick={() => navigate("/display")}
+                            onClick={() => navigate("/inventory/display")} // Fixed: Correct navigation path
                         >
                             Cancel
                         </button>

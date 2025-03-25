@@ -187,7 +187,7 @@ export default function InventoryTable() {
     };
 
     const handleEdit = (id) => {
-        navigate(`/inventory/edit/${id}`);
+        navigate(`/inventory/update/${id}`);
     };
 
     const handleDelete = async (id) => {
