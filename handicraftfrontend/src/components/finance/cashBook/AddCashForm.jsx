@@ -103,9 +103,9 @@ const AddCashBookEntryForm = () => {
         >
           <MenuItem value="salary">Salary</MenuItem>
           <MenuItem value="reimbursement">Reimbursement</MenuItem>
-          <MenuItem value="order_income">Order Income</MenuItem>
+          <MenuItem value="order income">Order Income</MenuItem>
           <MenuItem value="pettyCashExcess">Petty Cash Excess</MenuItem>
-          <MenuItem value="initial_cash">Initial Cash</MenuItem>
+          <MenuItem value="initial cash">Initial Cash</MenuItem>
         </Select>
       </FormControl>
 
