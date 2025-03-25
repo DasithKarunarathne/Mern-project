@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 
 // HR Components
 import EmployeeForm from "./components/hr/EmployeeForm";
@@ -31,6 +31,15 @@ import Register from "./components/customer/Register"; // Adjusted path
 import Login from "./components/customer/Login"; // Adjusted path
 import Profile from "./components/customer/Profile"; // Adjusted path
 import AdminDashboard from "./components/customer/AdminDashboard"; // Adjusted path
+
+
+//iventory components
+import AddInventories from "./components/inventroy/addInventories.js"; // Adjusted path
+import ReadInventories from "./components/inventroy/readinventories"; // Corrected path
+import UpdateInventories from "./components/inventroy/updateinventories"; // Corrected path
+import DeleteInventories from "./components/inventroy/deleteinventories"; // Corrected path
+import InventoryReport from "./components/inventroy/inventoryreports"; // Corrected path
+import RestockPage from "./components/inventroy/restockPage"; // Corrected path
 
 // Shared Components
 import Header from "./components/common/Header";
@@ -96,6 +105,15 @@ function App() {
           <Route path="/product/refund-request/:orderId" element={<RefundRequest />} />
           <Route path="/product/manager" element={<ProductManager />} />
           <Route path="/product/admin/refund-management" element={<RefundManagement />} />
+
+          {/* Inventory Routes (prefixed with /inventory) */}
+          <Route path="/inventory" element={<Navigate to="/inventory/display" />} />
+          <Route path="/inventory/add" element={<AddInventories />} />
+          <Route path="/inventory/display" element={<ReadInventories />} />
+          <Route path="/inventory/update/:id" element={<UpdateInventories />} />
+          <Route path="/inventory/delete/:id" element={<DeleteInventories />} />
+          <Route path="/inventory/restock/:id" element={<RestockPage />} />
+          <Route path="/inventory/report" element={<InventoryReport />} />
 
           
 

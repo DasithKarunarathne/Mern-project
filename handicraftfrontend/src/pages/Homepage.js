@@ -20,6 +20,9 @@ const HomePage = () => {
           <li>
             <Link to="/customer">Go to Customer Section</Link>
           </li>
+          <li>
+            <Link to="/inventory">Go to Inventory Section</Link></li>
+            
         </ul>
       </nav>
     </div>

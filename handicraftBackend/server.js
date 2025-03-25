@@ -17,6 +17,10 @@ import ledgerRoutes from "./routes/financeroutes/ledgerRoutes.js";
 //customer
 import authRoutes from "./routes/customerroutes/auth.js"; // Add customer auth routes
 
+//inventory routes
+import inventoryroute from "./routes/inventoryroutes/inventories.js"; // Import from backend-inventory
+
+
 dotenv.config();
 
 const app = express();
@@ -63,6 +67,9 @@ app.use("/api/product", productRoutes);
 
 //customer
 app.use("/api/auth", authRoutes); // Add customer auth routes
+
+//inventory routes
+app.use("/inventory", inventoryroute); // Add inventory routes
 
 // Start server
 const startServer = async () => {
