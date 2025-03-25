@@ -125,7 +125,9 @@ const Salarytable = () => {
               <TableCell>Employee Name</TableCell>
               <TableCell>Month</TableCell>
               <TableCell>Basic Salary</TableCell>
-              <TableCell>Overtime Pay</TableCell>
+              <TableCell>Overtime Hours</TableCell>
+              <TableCell>Overtime Rate</TableCell>
+              <TableCell>Total Overtime</TableCell>
               <TableCell>EPF</TableCell>
               <TableCell>ETF</TableCell>
               <TableCell>Net Salary</TableCell>
@@ -140,7 +142,9 @@ const Salarytable = () => {
                 <TableCell>{salary.employeeName}</TableCell>
                 <TableCell>{salary.month}</TableCell>
                 <TableCell>{salary.basicSalary}</TableCell>
-                <TableCell>{(salary.overtimeHours * salary.overtimeRate).toFixed(2)}</TableCell>
+                <TableCell>{(salary.overtimeHours)}</TableCell>
+                <TableCell>{salary.overtimeRate}</TableCell>
+                <TableCell>{salary.totalOvertime}</TableCell>
                 <TableCell>{salary.epf.toFixed(2)}</TableCell>
                 <TableCell>{salary.etf.toFixed(2)}</TableCell>
                 <TableCell>{salary.netSalary.toFixed(2)}</TableCell>

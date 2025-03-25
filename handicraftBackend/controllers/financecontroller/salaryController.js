@@ -3,6 +3,7 @@ import EmployeePayments from "../../models/hrmodels/employeePayments.js";
 import CashBook from "../../models/financemodel/CashBook.js";
 import Ledger from "../../models/financemodel/Ledger.js";
 import CashBalance from "../../models/financemodel/CashBalance.js";
+import overtime from "../../models/hrmodels/overtime.js";
 //wenas unadaaaaaaaaaaaaaaa balapan
 
  
@@ -25,6 +26,19 @@ export const salarycalculation = async (req, res) => {
             console.log("No existing salaries found for this month.");
         }
 
+
+
+        // Fetch overtime details for the given month
+        console.log("Fetching overtime details for month:", month);
+        const overtimedetails = await overtime.find({ month });
+        console.log("Overtime details fetched:", overtimedetails.length);
+        if (overtimedetails.length === 0) {
+            console.log("No overtime details found for this month, proceeding with basic salaries.");
+        } else {
+            // Log the fetched overtime records for debugging
+            console.log("Overtime records:", JSON.stringify(overtimedetails, null, 2));
+        }
+
         // Fetch all employee payments
         console.log("Fetching all employee payments...");
         const employeePayments = await EmployeePayments.find().maxTimeMS(80000);
@@ -43,8 +57,30 @@ export const salarycalculation = async (req, res) => {
                 continue;
             }
 
+            // Validate empID
+            if (!employee.empID) {
+                console.error(`Employee ID is missing for employee: ${employee.empname}`);
+                continue;
+            }
+
+            // Fetch overtime details for this employee using empID
+            const overtimeRecord = overtimedetails.find(ot => ot.empID === employee.empID);
+            let totalOvertimeHours = 0;
+            let totalOvertimePay = 0;
+
+            if (overtimeRecord) {
+                totalOvertimeHours = overtimeRecord.totalOvertimeHours || 0;
+                totalOvertimePay = overtimeRecord.totalOvertimePay || 0;
+                console.log(`Overtime details found for employee ${employee.empID}: Hours = ${totalOvertimeHours}, Pay = ${totalOvertimePay}`);
+            } else {
+                console.log(`No overtime details found for employee: ${employee.empID}`);
+            }
+            
+
+
+            
+
             // Get overtime pay from the EmployeePayments model
-            const totalOvertimePay = employee.totalOvertimePay || 0; // Default to 0 if not provided
 
             // Calculate EPF (8%) and ETF (3%)
             const epf = employee.basicSalary * 0.08; // 8% of basic salary
@@ -55,13 +91,13 @@ export const salarycalculation = async (req, res) => {
 
             // Create a new salary record
             const salary = new Salary({
-                employeeId: employee.empID,
+                employeeId: employee.empID, // Ensure empID is assigned to employeeId
                 employeeName: employee.empname,
                 month,
                 basicSalary: employee.basicSalary,
-                overtimeHours: employee.totalOvertimeHours || 0, // Default to 0 if not provided
-                overtimeRate: employee.overtimeRate || 0, // Default to 0 if not provided
-                totalOvertime: totalOvertimePay,
+                overtimeHours: totalOvertimeHours , // Default to 0 if not provided
+                overtimeRate: employee.overtimeRate , // Default to 0 if not provided
+                totalOvertime: totalOvertimePay, // Default to 0 if not provided
                 epf,
                 etf,
                 netSalary,
@@ -119,7 +155,12 @@ export const markSalPaid = async (req, res) => {
             return res.status(404).json({ message: "Salary record not found" });
         }
 
-        
+        //first need to check the balance of the cash balance
+
+        const cashbal = await CashBalance.findOne();
+        if (!cashBalance) {
+            return res.status(500).json({ message: "Cash balance not initialized" });
+        }//HADANNA BALAPAN
 
         // Update salary status
         salary.status = "Completed";
@@ -167,4 +208,3 @@ export const markSalPaid = async (req, res) => {
         res.status(500).json({ success: false, message: "Error marking salary as paid", error: error.message });
     }
 };
- 

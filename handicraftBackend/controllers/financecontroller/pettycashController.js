@@ -3,18 +3,21 @@ import pettycashbal from "../../models/financemodel/PettycashBalance.js";
 import Ledger from "../../models/financemodel/Ledger.js";
 import CashBook from "../../models/financemodel/CashBook.js";
 
-
 export const addPettyCash = async (req, res) => {
   try {
     const { description, amount, type, category } = req.body;
 
+    // Validate input
     if (!description || !amount || amount <= 0) {
       return res.status(400).json({ message: "Invalid input: description and positive amount required" });
+    }
+    if (!["initial", "expense", "reimbursement"].includes(type)) {
+      return res.status(400).json({ message: "Invalid transaction type" });
     }
 
     let balanceRecord = await pettycashbal.findOne();
 
-    // Create Pettycash transaction (all types go here)
+    // Create Pettycash transaction
     const transaction = new Pettycash({
       description,
       amount,
@@ -36,21 +39,19 @@ export const addPettyCash = async (req, res) => {
         return res.status(400).json({ message: "Insufficient cash book balance to fund petty cash" });
       }
 
-      
-
       const cashBookEntry = new CashBook({
         description: "Initial funding for petty cash",
-        amount: amount,
+        amount,
         type: "outflow",
         category: "Petty Cash Initial",
-        referenceId: transaction._id, // Link to Pettycash transaction
+        referenceId: transaction._id,
         balance: currentCashBalance - amount,
       });
       await cashBookEntry.save();
 
       const ledgerEntry = new Ledger({
         description: "Initial funding for petty cash",
-        amount: amount,
+        amount,
         category: "Petty Cash Initial Funding",
         source: "Cash Book",
         transactionId: cashBookEntry._id,
@@ -65,7 +66,7 @@ export const addPettyCash = async (req, res) => {
       }
     }
 
-    // Save the transaction to Pettycash first
+    // Save the transaction to Pettycash
     await transaction.save();
 
     // Handle Expense
@@ -75,16 +76,13 @@ export const addPettyCash = async (req, res) => {
       }
       balanceRecord.balance -= amount;
     }
-    
+
     // Handle Reimbursement
     else if (type === "reimbursement") {
-      // Calculate total expenses
       const totalExpenses = await Pettycash.aggregate([
         { $match: { type: "expense" } },
         { $group: { _id: null, total: { $sum: "$amount" } } },
       ]);
-
-      // Calculate total existing reimbursements
       const totalReimbursements = await Pettycash.aggregate([
         { $match: { type: "reimbursement" } },
         { $group: { _id: null, total: { $sum: "$amount" } } },
@@ -92,13 +90,11 @@ export const addPettyCash = async (req, res) => {
 
       const totalExpensesAmount = totalExpenses.length > 0 ? totalExpenses[0].total : 0;
       const existingReimbursements = totalReimbursements.length > 0 ? totalReimbursements[0].total : 0;
-      
-      // Calculate maximum allowed reimbursement
       const maxReimbursement = totalExpensesAmount - existingReimbursements;
 
       if (amount > maxReimbursement) {
-        return res.status(400).json({ 
-          message: `Reimbursement exceeds allowable amount. Maximum allowed: ${maxReimbursement}` 
+        return res.status(400).json({
+          message: `Reimbursement exceeds allowable amount. Maximum allowed: ${maxReimbursement}`,
         });
       }
 
@@ -113,17 +109,17 @@ export const addPettyCash = async (req, res) => {
 
       const cashBookEntry = new CashBook({
         description: "Reimbursement for petty cash",
-        amount: amount,
+        amount,
         type: "outflow",
         category: "reimbursement",
-        referenceId: transaction._id, // Link to Pettycash transaction
+        referenceId: transaction._id,
         balance: currentCashBalance - amount,
       });
       await cashBookEntry.save();
 
       const ledgerEntry = new Ledger({
         description: "Reimbursement for petty cash",
-        amount: amount,
+        amount,
         category: "Petty Cash Reimbursement",
         source: "Cash Book",
         transactionId: cashBookEntry._id,
@@ -273,8 +269,6 @@ export const UpdatepettyCash = async (req, res) => {
     console.error(error);
   }
 };
-
-
 
 export const DeletePettycash = async (req, res) => {
   try {

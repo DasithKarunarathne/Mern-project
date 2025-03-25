@@ -186,7 +186,7 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
           setTimeout(() => {
             setSuccessMessage("");
             if (onEmployeeAdded) onEmployeeAdded();
-            navigate("/list");
+            navigate("/hr/list");
           }, 3000);
         } else {
           setErrorMessage("Error adding employee: " + (lastError.response?.data?.error || lastError.message));
