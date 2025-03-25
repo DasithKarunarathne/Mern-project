@@ -198,6 +198,10 @@ router.delete("/delete/:id", async (req, res) => {
             return res.status(404).json({ error: "Employee not found" });
         }
 
+        // Delete associated overtime records
+        await Overtime.deleteMany({ employeeId: id }).maxTimeMS(10000);
+        console.log(`Deleted overtime records for employee: ${employee.empID}`);
+
         // Delete the employee
         await Employee.findByIdAndDelete(id).maxTimeMS(10000);
         console.log(`Employee deleted: ${employee.empID}`);
@@ -501,20 +505,50 @@ router.get("/overtime/monthly/:year/:month", async (req, res) => {
 
         // Construct the month string (e.g., "2025-03")
         const monthString = `${parsedYear}-${parsedMonth.toString().padStart(2, "0")}`;
+        console.log(`Fetching overtime records for month: ${monthString}`);
 
         // Fetch all employees
         const employees = await Employee.find().maxTimeMS(10000);
+        console.log(`Fetched ${employees.length} employees:`, employees.map(emp => ({ _id: emp._id.toString(), empID: emp.empID })));
 
         // Fetch overtime records for the given month
         const overtimeRecords = await Overtime.find({ month: monthString }).maxTimeMS(10000);
+        console.log(`Fetched ${overtimeRecords.length} overtime records:`, overtimeRecords.map(record => ({
+            _id: record._id.toString(),
+            employeeId: record.employeeId.toString(),
+            empID: record.empID,
+            month: record.month
+        })));
+
+        // Check for orphaned overtime records
+        const orphanedRecords = [];
+        for (const record of overtimeRecords) {
+            const employeeExists = employees.some(emp => emp._id.toString() === record.employeeId.toString());
+            if (!employeeExists) {
+                orphanedRecords.push({
+                    overtimeId: record._id.toString(),
+                    employeeId: record.employeeId.toString(),
+                    empID: record.empID,
+                    month: record.month
+                });
+            }
+        }
+        if (orphanedRecords.length > 0) {
+            console.log("Orphaned overtime records found:", orphanedRecords);
+        }
 
         // Map the overtime records to the required format
         const monthlyOvertime = employees.map(employee => {
             const employeeOvertime = overtimeRecords.find(record => record.employeeId.toString() === employee._id.toString());
             if (!employeeOvertime) {
+                console.log(`No overtime record found for employee: ${employee.empID} (${employee._id.toString()})`);
                 return null; // Skip employees with no overtime in this month
             }
 
+            console.log(`Found overtime record for employee: ${employee.empID} (${employee._id.toString()})`, {
+                totalOvertimeHours: employeeOvertime.totalOvertimeHours,
+                totalOvertimePay: employeeOvertime.totalOvertimePay
+            });
             return {
                 employeeId: employee._id,
                 empID: employee.empID,
@@ -526,6 +560,17 @@ router.get("/overtime/monthly/:year/:month", async (req, res) => {
             };
         }).filter(record => record !== null);
 
+        // If there are overtime records but no matches with employees, inform the client
+        if (overtimeRecords.length > 0 && monthlyOvertime.length === 0) {
+            console.warn("Overtime records exist but no matching employees found. Possible orphaned records.");
+            return res.status(200).json({
+                message: "Overtime records exist for this month, but no matching employees were found. There may be orphaned records in the database.",
+                data: [],
+                orphanedRecords
+            });
+        }
+
+        console.log(`Returning ${monthlyOvertime.length} overtime records:`, monthlyOvertime);
         res.status(200).json(monthlyOvertime);
     } catch (err) {
         console.error("Error fetching monthly overtime:", err);

@@ -54,7 +54,6 @@ const EmployeeUpdateForm = ({ employee, onUpdate, onCancel }) => {
     const maxRetries = 3;
     let attempt = 0;
     let success = false;
-    let lastError = null;
 
     while (attempt < maxRetries && !success) {
       try {
@@ -71,7 +70,6 @@ const EmployeeUpdateForm = ({ employee, onUpdate, onCancel }) => {
         }, 3000);
       } catch (error) {
         attempt++;
-        lastError = error;
         console.error(`Attempt ${attempt} failed:`, error);
         if (attempt === maxRetries) {
           setErrorMessage(
