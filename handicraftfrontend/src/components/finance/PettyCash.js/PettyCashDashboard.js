@@ -3,7 +3,7 @@ import BalanceCard from "./BalanceCard";
 import TransactionTable from "./TransactionTable";
 import AddTransactionsForm from "./AddTransactionForm";
 import { getPettyCash } from "../services/api";
-import { Box, Typography, TextField, Button } from "@mui/material";
+import { Box, Typography, TextField } from "@mui/material";
 
 const PettyCashDashboard = () => {
   const [transactions, setTransactions] = useState([]);
@@ -39,16 +39,20 @@ const PettyCashDashboard = () => {
       </Typography>
       
       <Box sx={{ display: "flex", gap: 2, mb: 4, alignItems: "center" }}>
-        <TextField
+              <TextField
           label="Select Month"
           type="month"
           value={selectedDate}
           onChange={handleDateChange}
-          InputLabelProps={{ shrink: true }}
-          sx={{ width: 200 }}
-          inputProps={{
-            max: currentMonth // Prevent future months
+          slotProps={{
+            inputLabel: {
+              shrink: true,
+            },
+            htmlInput: {
+              max: currentMonth  // Prevent future months
+            }
           }}
+          sx={{ width: 200 }}
         />
       </Box>
 
@@ -57,7 +61,7 @@ const PettyCashDashboard = () => {
         isCurrentMonth={isCurrentMonth}
       />
       
-      {/* Only show Add form for current month */}
+      
       {isCurrentMonth && (
         <AddTransactionsForm 
           onAdd={() => fetchTransactions(selectedDate)} 
@@ -65,11 +69,11 @@ const PettyCashDashboard = () => {
         />
       )}
       
-      {/* Always show transactions table */}
+      
       <TransactionTable 
         transactions={transactions} 
         onUpdate={() => fetchTransactions(selectedDate)}
-        allowEdit={isCurrentMonth} // Pass this to conditionally show edit buttons
+       allowEdit={isCurrentMonth} 
       />
     </Box>
   );
