@@ -55,11 +55,51 @@ const ProductManager = () => {
   };
 
   const handleFileChange = (e) => {
-    setFormData({ ...formData, image: e.target.files[0] });
+    const file = e.target.files[0];
+    if (file) {
+      const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        toast.error('Please upload a valid image (JPEG, PNG, or WEBP).');
+        return;
+      }
+      if (file.size > 2 * 1024 * 1024) { // 2MB limit
+        toast.error('Image size must be less than 2MB.');
+        return;
+      }
+    }
+    setFormData({ ...formData, image: file });
+  };
+
+  const validateForm = () => {
+    if (!formData.name.trim()) {
+      return "Name is required.";
+    }
+    if (!formData.description.trim()) {
+      return "Description is required.";
+    }
+    const price = parseFloat(formData.price);
+    if (isNaN(price) || price <= 0) {
+      return "Price must be a positive number.";
+    }
+    const stock = parseInt(formData.stockQuantity, 10);
+    if (isNaN(stock) || stock < 0) {
+      return "Stock Quantity must be a non-negative number.";
+    }
+    if (!formData.category.trim()) {
+      return "Category is required.";
+    }
+    return null; // No errors
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      toast.error(validationError);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -103,6 +143,7 @@ const ProductManager = () => {
       category: product.category,
       image: null,
     });
+    setError(null); // Clear error when editing starts
   };
 
   const handleDelete = async (id) => {
@@ -140,6 +181,8 @@ const ProductManager = () => {
           onChange={handleInputChange}
           required
           disabled={loading}
+          error={!formData.name.trim() && error}
+          helperText={!formData.name.trim() && error ? "Name is required" : ""}
         />
         <TextField
           label="Description"
@@ -150,6 +193,8 @@ const ProductManager = () => {
           multiline
           rows={3}
           disabled={loading}
+          error={!formData.description.trim() && error}
+          helperText={!formData.description.trim() && error ? "Description is required" : ""}
         />
         <TextField
           label="Price"
@@ -159,6 +204,8 @@ const ProductManager = () => {
           onChange={handleInputChange}
           required
           disabled={loading}
+          error={(isNaN(parseFloat(formData.price)) || parseFloat(formData.price) <= 0) && error}
+          helperText={(isNaN(parseFloat(formData.price)) || parseFloat(formData.price) <= 0) && error ? "Price must be positive" : ""}
         />
         <TextField
           label="Stock Quantity"
@@ -168,6 +215,8 @@ const ProductManager = () => {
           onChange={handleInputChange}
           required
           disabled={loading}
+          error={(isNaN(parseInt(formData.stockQuantity, 10)) || parseInt(formData.stockQuantity, 10) < 0) && error}
+          helperText={(isNaN(parseInt(formData.stockQuantity, 10)) || parseInt(formData.stockQuantity, 10) < 0) && error ? "Stock must be non-negative" : ""}
         />
         <TextField
           label="Category"
@@ -176,6 +225,8 @@ const ProductManager = () => {
           onChange={handleInputChange}
           required
           disabled={loading}
+          error={!formData.category.trim() && error}
+          helperText={!formData.category.trim() && error ? "Category is required" : ""}
         />
         <input
           type="file"
@@ -197,6 +248,7 @@ const ProductManager = () => {
             onClick={() => {
               setEditingProduct(null);
               setFormData({ name: '', description: '', price: '', stockQuantity: '', category: '', image: null });
+              setError(null); // Clear error on cancel
             }}
             disabled={loading}
           >
