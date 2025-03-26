@@ -7,6 +7,7 @@ import Layout from "./components/Layout";
 
 // Pages
 import HomePage from "./pages/Homepage";
+import About from "./pages/About"; // Added import for About page
 
 // HR Components
 import EmployeeForm from "./components/hr/EmployeeForm";
@@ -118,7 +119,7 @@ function App() {
             <Route path="/inventory/report" element={<PrivateRoute element={<InventoryReport />} />} />
 
             {/* About and Contact Routes */}
-            <Route path="/about" element={<div>About Page (Placeholder)</div>} />
+            <Route path="/about" element={<About />} /> {/* Updated to use About component */}
             <Route path="/contact" element={<div>Contact Page (Placeholder)</div>} />
 
             {/* Home Route */}
