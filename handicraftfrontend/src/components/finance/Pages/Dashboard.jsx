@@ -162,7 +162,7 @@ export default function Dashboard() {
       <Grid item xs={12} sm={6} md={4}>
         <Paper sx={{ p: 2 }}>
           <Typography variant="h6">Total Salaries Paid</Typography>
-          <Typography variant="h4">$12,000</Typography>
+          <Typography variant="h4">Rs.N/A</Typography>
         </Paper>
       </Grid>
       <Grid item xs={12}>

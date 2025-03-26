@@ -24,8 +24,8 @@ const Salarytable = () => {
 
   const [month, setMonth] = useState(currentMonthString);
   const [salaries, setSalaries] = useState([]);
-  const [filteredSalaries, setFilteredSalaries] = useState([]); // New state for filtered results
-  const [searchEmpId, setSearchEmpId] = useState(""); // State for search input
+  const [filteredSalaries, setFilteredSalaries] = useState([]);
+  const [searchEmpId, setSearchEmpId] = useState("");
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
@@ -37,7 +37,7 @@ const Salarytable = () => {
     try {
       const response = await axios.get(`http://localhost:5000/api/salary/${month}`);
       setSalaries(response.data);
-      setFilteredSalaries(response.data); // Initialize filteredSalaries with full data
+      setFilteredSalaries(response.data);
       setError(null);
     } catch (error) {
       console.error("Error fetching salaries", error);
@@ -49,12 +49,11 @@ const Salarytable = () => {
     fetchSalaries();
   }, [fetchSalaries]);
 
-  // Filter salaries based on searchEmpId
   const handleSearch = (e) => {
     const empId = e.target.value;
     setSearchEmpId(empId);
     if (empId.trim() === "") {
-      setFilteredSalaries(salaries); // Reset to full list if search is empty
+      setFilteredSalaries(salaries);
     } else {
       const filtered = salaries.filter((salary) =>
         salary.employeeId.toLowerCase().includes(empId.toLowerCase())
@@ -68,10 +67,17 @@ const Salarytable = () => {
       setError("Please select a month to generate salaries");
       return;
     }
+    
+    // Check if selected month is current month
+    if (month !== currentMonthString) {
+      setError("You can only generate salaries for the current month");
+      return;
+    }
+    
     try {
       const response = await axios.post("http://localhost:5000/api/salary/calculate", { month });
       setSalaries(response.data.salaries || []);
-      setFilteredSalaries(response.data.salaries || []); // Update filteredSalaries too
+      setFilteredSalaries(response.data.salaries || []);
       setSuccess(response.data.message);
       setError(null);
     } catch (error) {
@@ -85,7 +91,7 @@ const Salarytable = () => {
       await axios.put(`http://localhost:5000/api/salary/markPaid/${salaryId}`);
       setSuccess("Salary marked as paid");
       setError(null);
-      fetchSalaries(); // Refetch to update both salaries and filteredSalaries
+      fetchSalaries();
     } catch (error) {
       console.error("Error marking salary as paid", error);
       setError("Failed to mark salary as paid: " + (error.response?.data?.message || error.message));
@@ -103,17 +109,21 @@ const Salarytable = () => {
         Salary Management
       </Typography>
 
-      {/* Month Selection, Search, and Buttons */}
       <Box sx={{ display: "flex", gap: 2, marginBottom: 3, alignItems: "center" }}>
-        <TextField
-          type="month"
-          label="Select Month"
-          value={month}
-          onChange={(e) => setMonth(e.target.value)}
-          InputLabelProps={{
-            shrink: true,
-          }}
-        />
+      <TextField
+      type="month"
+      label="Select Month"
+      value={month}
+      onChange={(e) => setMonth(e.target.value)}
+      slotProps={{
+        inputLabel: {
+          shrink: true,
+        },
+        htmlInput: {
+          max: currentMonthString
+        }
+      }}
+    />
         <TextField
           label="Search by Employee ID"
           value={searchEmpId}
@@ -124,12 +134,16 @@ const Salarytable = () => {
         <Button variant="contained" color="primary" onClick={fetchSalaries}>
           Fetch Salaries
         </Button>
-        <Button variant="contained" color="secondary" onClick={genSalaries}>
+        <Button 
+          variant="contained" 
+          color="secondary" 
+          onClick={genSalaries}
+          disabled={month !== currentMonthString} // Disable for past months
+        >
           Generate Salaries
         </Button>
       </Box>
 
-      {/* Error and Success Alerts */}
       {error && (
         <Snackbar open={!!error} autoHideDuration={6000} onClose={handleCloseSnackbar}>
           <Alert severity="error" onClose={handleCloseSnackbar}>
@@ -145,7 +159,6 @@ const Salarytable = () => {
         </Snackbar>
       )}
 
-      {/* Salary Table */}
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
