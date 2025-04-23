@@ -11,6 +11,7 @@ const salaryShcema = new mongoose.Schema({
     totalOvertime: { type: Number, default: 0 },
     epf: { type: Number, default: 0 },
     etf: { type: Number, default: 0 },
+    epf12: { type: Number, default: 0 },
     netSalary: { type: Number },
     status: { type: String, enum: ["Pending", "Completed"], default: "Pending" },
     paymentDate: { type: Date }

@@ -3,6 +3,7 @@ import { Routes, Route, Link } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 import Salarytable from './SalaryTable.js';
 import Ledger from './ledger.jsx';
+import FinancialStatements from './financialStatement.jsx';
 import {
   AppBar,
   Toolbar,
@@ -134,6 +135,16 @@ export default function Dashboard() {
               <ListItemIcon><DescriptionIcon /></ListItemIcon>
               <ListItemText primary="Invoices" />
             </ListItem>
+            <ListItem
+              button
+              component={Link}
+              to="/finance/dashboard/reports/financial-statements"
+              onClick={handleDrawerClose}
+              sx={{ pl: 4 }} // Indent sub-items
+            >
+              <ListItemIcon><DescriptionIcon /></ListItemIcon>
+              <ListItemText primary="Financial Statements" />
+            </ListItem>
           </List>
         </Collapse>
       </List>
@@ -151,7 +162,7 @@ export default function Dashboard() {
       <Grid item xs={12} sm={6} md={4}>
         <Paper sx={{ p: 2 }}>
           <Typography variant="h6">Total Salaries Paid</Typography>
-          <Typography variant="h4">$12,000</Typography>
+          <Typography variant="h4">Rs.N/A</Typography>
         </Paper>
       </Grid>
       <Grid item xs={12}>
@@ -210,6 +221,7 @@ export default function Dashboard() {
           <Route path="/Cashbook" element={<CashBookPage />} />
           <Route path="/reports/ledger" element={<Ledger/>} />
           <Route path="/reports/invoices" element={<div>Invoices Report</div>} />
+          <Route path="/reports/financial-statements" element={<FinancialStatements />} />
         </Routes>
       </Main>
     </Box>

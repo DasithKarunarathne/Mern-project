@@ -20,6 +20,11 @@ function Login() {
     }
   };
 
+  const handleClick = () => {
+    // Handle forget password click
+    alert("Forget password clicked");
+  };
+
   return (
     <div
       style={{
@@ -160,9 +165,19 @@ function Login() {
                 <input type="checkbox" style={{ marginRight: "5px" }} />{" "}
                 Remember me
               </label>
-              <a href="#" style={{ color: "#4a90e2", textDecoration: "none" }}>
+              <button
+                type="button"
+                onClick={handleClick}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#4a90e2",
+                  textDecoration: "none",
+                  cursor: "pointer",
+                }}
+              >
                 Forget password?
-              </a>
+              </button>
             </div>
             <button
               type="submit"

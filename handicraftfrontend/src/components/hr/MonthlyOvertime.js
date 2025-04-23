@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import {
   Box,
@@ -17,6 +17,8 @@ import {
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "./Header"; // Adjust path if needed
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable"; // Import autoTable directly
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
@@ -29,7 +31,7 @@ const MonthlyOvertime = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const fetchMonthlyOvertime = async () => {
+  const fetchMonthlyOvertime = useCallback(async () => {
     if (!year || !month) {
       setError("Please enter both year and month.");
       return;
@@ -46,24 +48,110 @@ const MonthlyOvertime = () => {
     setError(null);
     try {
       const response = await axios.get(`${BACKEND_URL}/api/employee/overtime/monthly/${year}/${month}`);
-      setMonthlyOvertime(response.data);
+      console.log("API Response:", response.data); // Log the API response
+      if (response.data.message) {
+        // Handle special messages from the backend (e.g., orphaned records)
+        setError(response.data.message);
+        setMonthlyOvertime([]);
+      } else {
+        setMonthlyOvertime(response.data);
+      }
     } catch (error) {
       console.error("Error fetching monthly overtime:", error);
       setError("Error fetching monthly overtime: " + (error.response?.data?.error || error.message));
     } finally {
       setLoading(false);
     }
-  };
+  }, [year, month, navigate]); // Added navigate to dependencies
 
   useEffect(() => {
     if (paramYear && paramMonth) fetchMonthlyOvertime(); // Only fetch if params are present
-  }, [paramYear, paramMonth]); // Depend on params instead of state
+  }, [paramYear, paramMonth, fetchMonthlyOvertime]); // Depend on params and fetchMonthlyOvertime
+
+  useEffect(() => {
+    fetchMonthlyOvertime();
+  }, [fetchMonthlyOvertime]); // Fixed missing dependency
+
+  // Log the state to debug rendering issues
+  useEffect(() => {
+    console.log("Current monthlyOvertime state:", monthlyOvertime);
+  }, [monthlyOvertime]);
 
   const formatDate = (dateString) => {
     if (!dateString) return "Invalid Date";
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "Invalid Date";
     return date.toISOString().split("T")[0];
+  };
+
+  // Generate PDF
+  const generatePDF = () => {
+    const doc = new jsPDF();
+
+    // Add title
+    doc.setFontSize(18);
+    doc.text("Employee Management - Monthly Overtime Report", 14, 20);
+
+    // Add year and month
+    const months = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+    const monthName = months[parseInt(month) - 1];
+    doc.setFontSize(12);
+    doc.text(`Year: ${year} | Month: ${monthName}`, 14, 30);
+
+    // Prepare table data
+    const tableData = monthlyOvertime.map((record) => [
+      record.empID,
+      record.empname,
+      record.totalOvertimeHours.toString(),
+      `$${record.overtimeRate.toLocaleString()}`,
+      `$${record.overtimePay.toLocaleString()}`,
+      record.details && record.details.length > 0
+        ? record.details
+            .map(
+              (detail) =>
+                `Date: ${formatDate(detail.date)}, Hours: ${detail.overtimeHours}, Pay: $${detail.overtimePay.toLocaleString()}`
+            )
+            .join("\n")
+        : "No details available",
+    ]);
+
+    // Add table to PDF using autoTable
+    autoTable(doc, {
+      startY: 40,
+      head: [
+        [
+          "Employee ID",
+          "Name",
+          "Total Overtime Hours",
+          "Overtime Rate ($/hr)",
+          "Overtime Pay ($)",
+          "Overtime Details",
+        ],
+      ],
+      body: tableData,
+      theme: "striped",
+      styles: { fontSize: 10, cellPadding: 3 },
+      headStyles: { fillColor: [94, 53, 177] }, // Deep brown color for header
+      margin: { top: 40 },
+    });
+
+    // Add footer with page numbers
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(10);
+      doc.text(
+        `Page ${i} of ${pageCount} - Heritage Hands`,
+        14,
+        doc.internal.pageSize.height - 10
+      );
+    }
+
+    // Save the PDF
+    doc.save(`Overtime_Report_${year}_${month}.pdf`);
   };
 
   return (
@@ -99,6 +187,18 @@ const MonthlyOvertime = () => {
         />
         <Button variant="contained" color="primary" onClick={fetchMonthlyOvertime}>
           Fetch Report
+        </Button>
+        <Button
+          variant="contained"
+          onClick={generatePDF}
+          sx={{
+            backgroundColor: "#FFD700",
+            color: "#3E2723",
+            "&:hover": { backgroundColor: "#FFC107" },
+          }}
+          disabled={loading || monthlyOvertime.length === 0}
+        >
+          Generate PDF
         </Button>
       </Box>
       {loading && (

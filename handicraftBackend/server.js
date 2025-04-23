@@ -2,10 +2,10 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
-import path from "path"; // Already imported
-import { fileURLToPath } from "url"; // Already imported
+import path from "path";
+import { fileURLToPath } from "url";
 
-import productRoutes from "./productServer.js"; // Assuming this is productRoutes.js
+import productRoutes from "./productServer.js";
 
 // Import routes
 import salaryRoutes from "./routes/financeroutes/salaryRoutes.js";
@@ -13,13 +13,13 @@ import cashBookRoutes from "./routes/financeroutes/CashBookroutes.js";
 import pettyCashRoutes from "./routes/financeroutes/PettyCashRoute.js";
 import employeeRoutes from "./routes/hrroutes/Employees.js";
 import ledgerRoutes from "./routes/financeroutes/ledgerRoutes.js";
+import financialsRoutes from "./routes/financeroutes/financialstatementsRoutes.js";
 
-//customer
-import authRoutes from "./routes/customerroutes/auth.js"; // Add customer auth routes
+// Customer
+import authRoutes from "./routes/customerroutes/auth.js";
 
-//inventory routes
-import inventoryroute from "./routes/inventoryroutes/inventories.js"; // Import from backend-inventory
-
+// Inventory routes
+import inventoryroute from "./routes/inventoryroutes/inventories.js";
 
 dotenv.config();
 
@@ -40,7 +40,7 @@ app.use(cors({
   origin: ["http://localhost:3000", "http://localhost:3001"],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "x-admin-key", "Authorization","Authorization", "x-auth-token"],
+  allowedHeaders: ["Content-Type", "x-admin-key", "Authorization", "x-auth-token"],
 }));
 
 // Database connection
@@ -57,6 +57,7 @@ app.use("/api/Salary", salaryRoutes);
 app.use("/api/Pettycash", pettyCashRoutes);
 app.use("/api/cashbook", cashBookRoutes);
 app.use("/api/ledger", ledgerRoutes);
+app.use('/api/financialStatements', financialsRoutes);
 
 // HR routes
 app.use("/api/employee", employeeRoutes);
@@ -64,12 +65,11 @@ app.use("/api/employee", employeeRoutes);
 // Product routes
 app.use("/api/product", productRoutes);
 
+// Customer
+app.use("/api/auth", authRoutes);
 
-//customer
-app.use("/api/auth", authRoutes); // Add customer auth routes
-
-//inventory routes
-app.use("/inventory", inventoryroute); // Add inventory routes
+// Inventory routes
+app.use("/inventory", inventoryroute);
 
 // Start server
 const startServer = async () => {
