@@ -8,6 +8,7 @@ import Layout from "./components/Layout";
 // Pages
 import HomePage from "./pages/Homepage";
 import About from "./pages/About"; // Added import for About page
+import Contact from "./components/Contact"; // Added Contact import
 
 // HR Components
 import EmployeeForm from "./components/hr/EmployeeForm";
@@ -120,7 +121,7 @@ function App() {
 
             {/* About and Contact Routes */}
             <Route path="/about" element={<About />} /> {/* Updated to use About component */}
-            <Route path="/contact" element={<div>Contact Page (Placeholder)</div>} />
+            <Route path="/contact" element={<Contact />} />
 
             {/* Home Route */}
             <Route path="/" element={<HomePage />} />
