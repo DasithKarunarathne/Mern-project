@@ -19,7 +19,6 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
-import Header from "./Header";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import PeopleIcon from "@mui/icons-material/People";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
@@ -169,7 +168,6 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
 
   return (
     <FormContainer>
-      <Header />
       <Stepper activeStep={0} alternativeLabel sx={{ mb: 4 }}>
         <Step>
           <StepLabel>Add Employee</StepLabel>

@@ -26,7 +26,6 @@ import { Edit, Delete, Search, Add, AccessTime, Description } from "@mui/icons-m
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import EmployeeUpdateForm from "./EmployeeUpdateForm";
-import Header from "./Header";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
@@ -159,7 +158,6 @@ const EmployeeList = () => {
 
   return (
     <ListContainer>
-      <Header />
       <Stepper activeStep={1} alternativeLabel sx={{ mb: 4 }}>
         <Step>
           <StepLabel>Add Employee</StepLabel>

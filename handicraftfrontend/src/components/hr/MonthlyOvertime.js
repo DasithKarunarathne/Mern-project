@@ -37,7 +37,6 @@ import {
   Refresh as RefreshIcon,
   ArrowBack as ArrowBackIcon,
 } from "@mui/icons-material";
-import Header from "./Header";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -206,7 +205,6 @@ const MonthlyOvertime = () => {
 
   return (
     <ReportContainer>
-      <Header />
       <Stepper activeStep={2} alternativeLabel sx={{ mb: 4 }}>
         <Step>
           <StepLabel>Add Employee</StepLabel>

@@ -25,7 +25,6 @@ import {
 import { styled } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
 import { AccessTime, People, CalendarToday, ArrowBack } from "@mui/icons-material";
-import Header from "./Header";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
@@ -167,7 +166,6 @@ const OvertimeForm = () => {
 
   return (
     <FormContainer>
-      <Header />
       <Stepper activeStep={2} alternativeLabel sx={{ mb: 4 }}>
         <Step>
           <StepLabel>Add Employee</StepLabel>
