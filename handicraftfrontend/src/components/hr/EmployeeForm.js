@@ -16,6 +16,7 @@ import {
   Step,
   StepLabel,
   InputAdornment,
+  Container,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
@@ -24,6 +25,7 @@ import PeopleIcon from "@mui/icons-material/People";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import DescriptionIcon from "@mui/icons-material/Description";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import ManagerHeader from "../common/ManagerHeader";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
@@ -167,225 +169,233 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
   };
 
   return (
-    <FormContainer>
-      <Stepper activeStep={0} alternativeLabel sx={{ mb: 4 }}>
-        <Step>
-          <StepLabel>Add Employee</StepLabel>
-        </Step>
-        <Step>
-          <StepLabel>Employee List</StepLabel>
-        </Step>
-        <Step>
-          <StepLabel>Overtime Management</StepLabel>
-        </Step>
-      </Stepper>
+    <Box>
+      <ManagerHeader 
+        title="Add Employee" 
+        breadcrumbs={[
+          { label: 'HR', path: '/hr' },
+        ]}
+      />
+      <FormContainer>
+        <Stepper activeStep={0} alternativeLabel sx={{ mb: 4 }}>
+          <Step>
+            <StepLabel>Add Employee</StepLabel>
+          </Step>
+          <Step>
+            <StepLabel>Employee List</StepLabel>
+          </Step>
+          <Step>
+            <StepLabel>Overtime Management</StepLabel>
+          </Step>
+        </Stepper>
 
-      <Typography
-        variant={isMobile ? "h4" : "h3"}
-        sx={{
-          fontWeight: 700,
-          marginBottom: 4,
-          textAlign: "center",
-          color: theme.palette.primary.main,
-        }}
-      >
-        Add New Employee
-      </Typography>
-
-      <Box sx={{ mb: 3, display: "flex", gap: 2, justifyContent: "center" }}>
-        <ActionButton
-          variant="contained"
-          color="primary"
-          onClick={handleViewList}
-          disabled={loading}
-          startIcon={<PeopleIcon />}
-        >
-          Employee List
-        </ActionButton>
-        <ActionButton
-          variant="contained"
-          color="secondary"
-          onClick={() => navigate("/hr/overtime/monthly")}
-          disabled={loading}
-          startIcon={<AccessTimeIcon />}
-        >
-          View Monthly Overtime Report
-        </ActionButton>
-        <ActionButton
-          variant="contained"
-          color="primary"
-          onClick={() => navigate("/hr/overtime")}
-          disabled={loading}
-          startIcon={<DescriptionIcon />}
-        >
-          Add Overtime
-        </ActionButton>
-      </Box>
-
-      {successMessage && (
-        <Alert severity="success" sx={{ mb: 3, borderRadius: '12px' }}>
-          {successMessage}
-        </Alert>
-      )}
-      {errorMessage && (
-        <Alert severity="error" sx={{ mb: 3, borderRadius: '12px' }}>
-          {errorMessage}
-        </Alert>
-      )}
-
-      <FormCard>
-        <CardContent>
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={6}>
-              <CustomTextField
-                label="Employee ID"
-                name="empID"
-                value={formData.empID}
-                onChange={handleChange}
-                fullWidth
-                required
-                error={!!errors.empID}
-                helperText={errors.empID}
-                disabled={loading}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PersonAddIcon color="primary" />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <CustomTextField
-                label="Name"
-                name="empname"
-                value={formData.empname}
-                onChange={handleChange}
-                fullWidth
-                required
-                error={!!errors.empname}
-                helperText={errors.empname}
-                disabled={loading}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <CustomTextField
-                label="Role"
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                fullWidth
-                required
-                error={!!errors.role}
-                helperText={errors.role}
-                disabled={loading}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <CustomTextField
-                label="Basic Salary"
-                name="basicSalary"
-                type="number"
-                value={formData.basicSalary}
-                onChange={handleChange}
-                fullWidth
-                required
-                error={!!errors.basicSalary}
-                helperText={errors.basicSalary}
-                disabled={loading}
-                InputProps={{
-                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <CustomTextField
-                label="Overtime Rate"
-                name="overtimeRate"
-                type="number"
-                value={formData.overtimeRate}
-                onChange={handleChange}
-                fullWidth
-                required
-                error={!!errors.overtimeRate}
-                helperText={errors.overtimeRate}
-                disabled={loading}
-                InputProps={{
-                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <CustomTextField
-                type="file"
-                name="image"
-                onChange={handleFileChange}
-                fullWidth
-                disabled={loading}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <CloudUploadIcon color="primary" />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <CustomTextField
-                type="file"
-                name="birthCertificate"
-                onChange={handleFileChange}
-                fullWidth
-                disabled={loading}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <DescriptionIcon color="primary" />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <CustomTextField
-                type="file"
-                name="medicalRecords"
-                onChange={handleFileChange}
-                fullWidth
-                disabled={loading}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <DescriptionIcon color="primary" />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Grid>
-          </Grid>
-        </CardContent>
-      </FormCard>
-
-      <Box sx={{ mt: 3, display: "flex", justifyContent: "center" }}>
-        <ActionButton
-          variant="contained"
-          color="primary"
-          onClick={handleSubmit}
-          disabled={loading}
+        <Typography
+          variant={isMobile ? "h4" : "h3"}
           sx={{
-            minWidth: 200,
-            backgroundColor: theme.palette.primary.main,
-            '&:hover': {
-              backgroundColor: theme.palette.primary.dark,
-            },
+            fontWeight: 700,
+            marginBottom: 4,
+            textAlign: "center",
+            color: theme.palette.primary.main,
           }}
         >
-          {loading ? "Adding..." : "Add Employee"}
-        </ActionButton>
-      </Box>
-    </FormContainer>
+          Add New Employee
+        </Typography>
+
+        <Box sx={{ mb: 3, display: "flex", gap: 2, justifyContent: "center" }}>
+          <ActionButton
+            variant="contained"
+            color="primary"
+            onClick={handleViewList}
+            disabled={loading}
+            startIcon={<PeopleIcon />}
+          >
+            Employee List
+          </ActionButton>
+          <ActionButton
+            variant="contained"
+            color="secondary"
+            onClick={() => navigate("/hr/overtime/monthly")}
+            disabled={loading}
+            startIcon={<AccessTimeIcon />}
+          >
+            View Monthly Overtime Report
+          </ActionButton>
+          <ActionButton
+            variant="contained"
+            color="primary"
+            onClick={() => navigate("/hr/overtime")}
+            disabled={loading}
+            startIcon={<DescriptionIcon />}
+          >
+            Add Overtime
+          </ActionButton>
+        </Box>
+
+        {successMessage && (
+          <Alert severity="success" sx={{ mb: 3, borderRadius: '12px' }}>
+            {successMessage}
+          </Alert>
+        )}
+        {errorMessage && (
+          <Alert severity="error" sx={{ mb: 3, borderRadius: '12px' }}>
+            {errorMessage}
+          </Alert>
+        )}
+
+        <FormCard>
+          <CardContent>
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6}>
+                <CustomTextField
+                  label="Employee ID"
+                  name="empID"
+                  value={formData.empID}
+                  onChange={handleChange}
+                  fullWidth
+                  required
+                  error={!!errors.empID}
+                  helperText={errors.empID}
+                  disabled={loading}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <PersonAddIcon color="primary" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <CustomTextField
+                  label="Name"
+                  name="empname"
+                  value={formData.empname}
+                  onChange={handleChange}
+                  fullWidth
+                  required
+                  error={!!errors.empname}
+                  helperText={errors.empname}
+                  disabled={loading}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <CustomTextField
+                  label="Role"
+                  name="role"
+                  value={formData.role}
+                  onChange={handleChange}
+                  fullWidth
+                  required
+                  error={!!errors.role}
+                  helperText={errors.role}
+                  disabled={loading}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <CustomTextField
+                  label="Basic Salary"
+                  name="basicSalary"
+                  type="number"
+                  value={formData.basicSalary}
+                  onChange={handleChange}
+                  fullWidth
+                  required
+                  error={!!errors.basicSalary}
+                  helperText={errors.basicSalary}
+                  disabled={loading}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <CustomTextField
+                  label="Overtime Rate"
+                  name="overtimeRate"
+                  type="number"
+                  value={formData.overtimeRate}
+                  onChange={handleChange}
+                  fullWidth
+                  required
+                  error={!!errors.overtimeRate}
+                  helperText={errors.overtimeRate}
+                  disabled={loading}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <CustomTextField
+                  type="file"
+                  name="image"
+                  onChange={handleFileChange}
+                  fullWidth
+                  disabled={loading}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <CloudUploadIcon color="primary" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <CustomTextField
+                  type="file"
+                  name="birthCertificate"
+                  onChange={handleFileChange}
+                  fullWidth
+                  disabled={loading}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <DescriptionIcon color="primary" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <CustomTextField
+                  type="file"
+                  name="medicalRecords"
+                  onChange={handleFileChange}
+                  fullWidth
+                  disabled={loading}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <DescriptionIcon color="primary" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+            </Grid>
+          </CardContent>
+        </FormCard>
+
+        <Box sx={{ mt: 3, display: "flex", justifyContent: "center" }}>
+          <ActionButton
+            variant="contained"
+            color="primary"
+            onClick={handleSubmit}
+            disabled={loading}
+            sx={{
+              minWidth: 200,
+              backgroundColor: theme.palette.primary.main,
+              '&:hover': {
+                backgroundColor: theme.palette.primary.dark,
+              },
+            }}
+          >
+            {loading ? "Adding..." : "Add Employee"}
+          </ActionButton>
+        </Box>
+      </FormContainer>
+    </Box>
   );
 };
 
