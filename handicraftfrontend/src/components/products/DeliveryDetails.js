@@ -1,15 +1,81 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getDeliveryCharge, saveDeliveryDetails } from '../../components/products/services/api.js';
-import { Box, Typography, TextField, Button, CircularProgress } from '@mui/material';
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  CircularProgress,
+  Paper,
+  Grid,
+  Stepper,
+  Step,
+  StepLabel,
+  Card,
+  CardContent,
+  useTheme,
+  useMediaQuery,
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import PaymentIcon from '@mui/icons-material/Payment';
+
+const DeliveryContainer = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(4),
+  margin: theme.spacing(4, 'auto'),
+  maxWidth: 1000,
+  borderRadius: '16px',
+  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(10px)',
+}));
+
+const CustomTextField = styled(TextField)(({ theme }) => ({
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '12px',
+    transition: 'all 0.3s ease',
+    '&:hover .MuiOutlinedInput-notchedOutline': {
+      borderColor: theme.palette.primary.main,
+    },
+    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+      borderWidth: '2px',
+    },
+  },
+}));
+
+const SubmitButton = styled(Button)(({ theme }) => ({
+  padding: theme.spacing(1.5, 3),
+  borderRadius: '12px',
+  textTransform: 'none',
+  fontWeight: 600,
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+  },
+}));
+
+const DeliveryCard = styled(Card)(({ theme }) => ({
+  borderRadius: '12px',
+  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)',
+  },
+}));
 
 const DeliveryDetails = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { cart, singleProduct } = state || {};
-  const userId = 'mock-user-id'; // Replace with actual user ID
+  const userId = 'mock-user-id';
 
   const [deliveryData, setDeliveryData] = useState({
     name: '',
@@ -145,109 +211,183 @@ const DeliveryDetails = () => {
 
   if (!cart && !singleProduct) {
     return (
-      <Box sx={{ padding: 2, textAlign: 'center' }}>
-        <Typography variant="h6">No items to deliver. Please add items to your cart or buy a product.</Typography>
-        <Button
+      <Box sx={{ padding: 4, textAlign: 'center' }}>
+        <Typography variant="h5" gutterBottom>
+          No items to deliver
+        </Typography>
+        <Typography variant="body1" sx={{ mb: 3 }}>
+          Please add items to your cart or buy a product.
+        </Typography>
+        <SubmitButton
           variant="contained"
           onClick={() => navigate('/')}
-          sx={{ marginTop: 2 }}
+          sx={{ backgroundColor: theme.palette.primary.main }}
         >
           Back to Products
-        </Button>
+        </SubmitButton>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ padding: 2, maxWidth: 800, margin: '0 auto' }}>
+    <DeliveryContainer>
       <ToastContainer />
-      <Typography variant="h4" sx={{ marginBottom: 2, textAlign: 'center' }}>
+      <Stepper activeStep={0} alternativeLabel sx={{ mb: 4 }}>
+        <Step>
+          <StepLabel>Delivery Details</StepLabel>
+        </Step>
+        <Step>
+          <StepLabel>Order Summary</StepLabel>
+        </Step>
+        <Step>
+          <StepLabel>Payment</StepLabel>
+        </Step>
+      </Stepper>
+
+      <Typography
+        variant={isMobile ? 'h4' : 'h3'}
+        sx={{
+          fontWeight: 700,
+          marginBottom: 4,
+          textAlign: 'center',
+          color: theme.palette.primary.main,
+        }}
+      >
         Delivery Details
       </Typography>
+
       {errorMessage && (
-        <Typography color="error" sx={{ marginBottom: 2, textAlign: 'center' }}>
+        <Typography
+          color="error"
+          sx={{
+            marginBottom: 3,
+            textAlign: 'center',
+            padding: 2,
+            backgroundColor: 'rgba(255, 0, 0, 0.1)',
+            borderRadius: '8px',
+          }}
+        >
           {errorMessage}
         </Typography>
       )}
-      <TextField
-        label="Name"
-        name="name"
-        value={deliveryData.name}
-        onChange={handleChange}
-        fullWidth
-        required
-        error={!!errors.name}
-        helperText={errors.name}
-        sx={{ marginBottom: 2 }}
-        disabled={loading}
-      />
-      <TextField
-        label="Address"
-        name="address"
-        value={deliveryData.address}
-        onChange={handleChange}
-        fullWidth
-        required
-        error={!!errors.address}
-        helperText={errors.address}
-        sx={{ marginBottom: 2 }}
-        disabled={loading}
-      />
-      <TextField
-        label="Phone Number"
-        name="phone"
-        value={deliveryData.phone}
-        onChange={handleChange}
-        fullWidth
-        required
-        error={!!errors.phone}
-        helperText={errors.phone}
-        sx={{ marginBottom: 2 }}
-        disabled={loading}
-      />
-      <TextField
-        label="Postal Code"
-        name="postalCode"
-        value={deliveryData.postalCode}
-        onChange={handleChange}
-        fullWidth
-        required
-        error={!!errors.postalCode}
-        helperText={errors.postalCode}
-        sx={{ marginBottom: 2 }}
-        disabled={loading}
-      />
-      <TextField
-        label="Email (for notifications)"
-        name="email"
-        value={deliveryData.email}
-        onChange={handleChange}
-        fullWidth
-        required
-        error={!!errors.email}
-        helperText={errors.email}
-        sx={{ marginBottom: 2 }}
-        disabled={loading}
-      />
-      {deliveryData.postalCode && (
-        <Box>
-          <Typography variant="body1" sx={{ marginTop: 1 }}>
-            Province: {province}
-          </Typography>
-          <Typography variant="body1" sx={{ marginTop: 1 }}>
-            Delivery Charge: LKR {deliveryCharge.toFixed(2)}
-          </Typography>
-        </Box>
-      )}
-      <Button
-        variant="contained"
-        onClick={handleSubmit}
-        sx={{ backgroundColor: '#DAA520', marginTop: 2, '&:hover': { backgroundColor: '#228B22' } }}
-        disabled={loading}
-      >
-        {loading ? <CircularProgress size={24} /> : 'Proceed to Order Summary'}
-      </Button>
-    </Box>
+
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={8}>
+          <DeliveryCard>
+            <CardContent>
+              <Grid container spacing={3}>
+                <Grid item xs={12} sm={6}>
+                  <CustomTextField
+                    label="Name"
+                    name="name"
+                    value={deliveryData.name}
+                    onChange={handleChange}
+                    fullWidth
+                    required
+                    error={!!errors.name}
+                    helperText={errors.name}
+                    disabled={loading}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <CustomTextField
+                    label="Phone Number"
+                    name="phone"
+                    value={deliveryData.phone}
+                    onChange={handleChange}
+                    fullWidth
+                    required
+                    error={!!errors.phone}
+                    helperText={errors.phone}
+                    disabled={loading}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <CustomTextField
+                    label="Address"
+                    name="address"
+                    value={deliveryData.address}
+                    onChange={handleChange}
+                    fullWidth
+                    required
+                    error={!!errors.address}
+                    helperText={errors.address}
+                    disabled={loading}
+                    multiline
+                    rows={3}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <CustomTextField
+                    label="Postal Code"
+                    name="postalCode"
+                    value={deliveryData.postalCode}
+                    onChange={handleChange}
+                    fullWidth
+                    required
+                    error={!!errors.postalCode}
+                    helperText={errors.postalCode}
+                    disabled={loading}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <CustomTextField
+                    label="Email (for notifications)"
+                    name="email"
+                    value={deliveryData.email}
+                    onChange={handleChange}
+                    fullWidth
+                    required
+                    error={!!errors.email}
+                    helperText={errors.email}
+                    disabled={loading}
+                  />
+                </Grid>
+              </Grid>
+            </CardContent>
+          </DeliveryCard>
+        </Grid>
+
+        <Grid item xs={12} md={4}>
+          <DeliveryCard>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <LocationOnIcon color="primary" sx={{ mr: 1 }} />
+                <Typography variant="h6">Delivery Information</Typography>
+              </Box>
+              {deliveryData.postalCode && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="body1" sx={{ mb: 1 }}>
+                    <strong>Province:</strong> {province}
+                  </Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>
+                    <strong>Delivery Charge:</strong> LKR {deliveryCharge.toFixed(2)}
+                  </Typography>
+                </Box>
+              )}
+              <SubmitButton
+                variant="contained"
+                onClick={handleSubmit}
+                fullWidth
+                disabled={loading}
+                sx={{
+                  backgroundColor: theme.palette.primary.main,
+                  '&:hover': {
+                    backgroundColor: theme.palette.primary.dark,
+                  },
+                }}
+              >
+                {loading ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  'Proceed to Order Summary'
+                )}
+              </SubmitButton>
+            </CardContent>
+          </DeliveryCard>
+        </Grid>
+      </Grid>
+    </DeliveryContainer>
   );
 };
 
