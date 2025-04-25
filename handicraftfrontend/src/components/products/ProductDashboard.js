@@ -16,13 +16,24 @@ import {
   Fade,
   Container,
   Chip,
-  IconButton,
+  Button,
+  Alert,
   useTheme,
   useMediaQuery,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
-import { Search, Category as CategoryIcon, Add as AddIcon } from "@mui/icons-material";
+import {
+  Search,
+  Category as CategoryIcon,
+  Login as LoginIcon,
+  HowToReg as RegisterIcon,
+  Visibility as ViewIcon,
+} from "@mui/icons-material";
 
 const StyledContainer = styled(Container)(({ theme }) => ({
   padding: theme.spacing(4),
@@ -72,19 +83,6 @@ const ProductGrid = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2),
 }));
 
-const AddButton = styled(IconButton)(({ theme }) => ({
-  position: 'fixed',
-  bottom: theme.spacing(4),
-  right: theme.spacing(4),
-  backgroundColor: theme.palette.primary.main,
-  color: theme.palette.common.white,
-  '&:hover': {
-    backgroundColor: theme.palette.primary.dark,
-  },
-  zIndex: 1000,
-  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-}));
-
 const ProductDashboard = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -92,6 +90,7 @@ const ProductDashboard = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [loginDialog, setLoginDialog] = useState(false);
   
   const navigate = useNavigate();
   const theme = useTheme();
@@ -133,6 +132,10 @@ const ProductDashboard = () => {
     navigate(`/product/${productId}`);
   };
 
+  const handleLoginPrompt = () => {
+    setLoginDialog(true);
+  };
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
@@ -162,8 +165,46 @@ const ProductDashboard = () => {
           WebkitTextFillColor: 'transparent',
         }}
       >
-        Handicraft Products
+        Heritage Hands
       </Typography>
+
+      <Alert 
+        severity="info" 
+        sx={{ 
+          mb: 3, 
+          borderRadius: 2,
+          backgroundColor: 'rgba(229, 246, 253, 0.9)',
+        }}
+      >
+        Please log in or register to purchase items. You can browse our collection as a guest.
+      </Alert>
+
+      <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mb: 4 }}>
+        <Button
+          variant="contained"
+          startIcon={<LoginIcon />}
+          onClick={() => navigate('/customer/login')}
+          sx={{
+            borderRadius: '12px',
+            textTransform: 'none',
+            fontWeight: 600,
+          }}
+        >
+          Login
+        </Button>
+        <Button
+          variant="outlined"
+          startIcon={<RegisterIcon />}
+          onClick={() => navigate('/customer/register')}
+          sx={{
+            borderRadius: '12px',
+            textTransform: 'none',
+            fontWeight: 600,
+          }}
+        >
+          Register
+        </Button>
+      </Box>
 
       <SearchContainer>
         <TextField
@@ -201,7 +242,11 @@ const ProductDashboard = () => {
         </StyledFormControl>
       </SearchContainer>
 
-      {filteredProducts.length === 0 ? (
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+          <CircularProgress size={60} thickness={4} />
+        </Box>
+      ) : filteredProducts.length === 0 ? (
         <Fade in>
           <Box sx={{ textAlign: 'center', mt: 8 }}>
             <Typography variant="h6" color="text.secondary">
@@ -218,7 +263,7 @@ const ProductDashboard = () => {
                 : "https://via.placeholder.com/280x200?text=Product+Image";
               
               return (
-                <ProductCard key={product._id} onClick={() => handleViewDetails(product._id)}>
+                <ProductCard key={product._id}>
                   <ProductImage
                     image={imageUrl}
                     title={product.name}
@@ -230,20 +275,39 @@ const ProductDashboard = () => {
                     <Typography variant="h6" noWrap sx={{ mb: 1 }}>
                       {product.name}
                     </Typography>
-                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                      <Typography variant="h6" color="primary">
+                        LKR {product.price?.toFixed(2)}
+                      </Typography>
                       <Chip
                         label={product.category}
                         size="small"
                         color="primary"
                         variant="outlined"
                       />
-                      {product.status && (
-                        <Chip
-                          label={product.status}
-                          size="small"
-                          color={product.status === 'In Stock' ? 'success' : 'error'}
-                        />
-                      )}
+                    </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Button
+                        variant="contained"
+                        startIcon={<ViewIcon />}
+                        onClick={() => handleViewDetails(product._id)}
+                        sx={{
+                          borderRadius: '8px',
+                          textTransform: 'none',
+                        }}
+                      >
+                        View Details
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        onClick={handleLoginPrompt}
+                        sx={{
+                          borderRadius: '8px',
+                          textTransform: 'none',
+                        }}
+                      >
+                        Buy Now
+                      </Button>
                     </Box>
                   </CardContent>
                 </ProductCard>
@@ -253,13 +317,29 @@ const ProductDashboard = () => {
         </Fade>
       )}
 
-      <AddButton
-        size="large"
-        onClick={() => navigate('/product/add')}
-        title="Add New Product"
-      >
-        <AddIcon />
-      </AddButton>
+      <Dialog open={loginDialog} onClose={() => setLoginDialog(false)}>
+        <DialogTitle>Login Required</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Please log in or create an account to purchase items.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setLoginDialog(false)}>Cancel</Button>
+          <Button 
+            variant="contained" 
+            onClick={() => navigate('/customer/login')}
+          >
+            Login
+          </Button>
+          <Button 
+            variant="outlined" 
+            onClick={() => navigate('/customer/register')}
+          >
+            Register
+          </Button>
+        </DialogActions>
+      </Dialog>
     </StyledContainer>
   );
 };

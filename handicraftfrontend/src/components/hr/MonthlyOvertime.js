@@ -39,6 +39,7 @@ import {
 } from "@mui/icons-material";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { HERITAGE_HANDS_LOGO } from './logo';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
@@ -142,18 +143,79 @@ const MonthlyOvertime = () => {
 
   const generatePDF = () => {
     const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
 
-    doc.setFontSize(18);
-    doc.text("Employee Management - Monthly Overtime Report", 14, 20);
+    // Define theme colors
+    const primaryColor = {
+      r: 93,
+      g: 64,
+      b: 55
+    }; // #5D4037 - Deep Brown
+    const secondaryColor = {
+      r: 255,
+      g: 215,
+      b: 0
+    }; // #FFD700 - Gold
 
+    // Add letterhead border
+    doc.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b);
+    doc.setLineWidth(0.5);
+    doc.rect(15, 15, pageWidth - 30, pageHeight - 30);
+
+    // Add company logo on the right (smaller size)
+    try {
+      const logoWidth = 35;
+      const logoHeight = 35;
+      const logoX = pageWidth - logoWidth - 25;
+      const logoY = 20;
+      doc.addImage(HERITAGE_HANDS_LOGO, 'PNG', logoX, logoY, logoWidth, logoHeight);
+    } catch (error) {
+      console.error('Error adding logo to PDF:', error);
+    }
+
+    // Add company header on the left
+    doc.setFontSize(22);
+    doc.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b);
+    doc.text('HERITAGE HANDS', 25, 35);
+    
+    // Add document title
+    doc.setFontSize(16);
+    doc.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b);
+    doc.text('MONTHLY OVERTIME REPORT', pageWidth/2, 60, { align: 'center' });
+
+    // Add horizontal line under the title
+    doc.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b);
+    doc.setLineWidth(0.5);
+    doc.line(pageWidth/2 - 50, 65, pageWidth/2 + 50, 65);
+
+    // Add reference number and date section
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    const refNumber = `REF: HH/OT/${year}/${month.padStart(2, '0')}`;
+    doc.text(refNumber, 25, 80);
+    
+    // Add date information in a more formal format
     const months = [
       "January", "February", "March", "April", "May", "June",
       "July", "August", "September", "October", "November", "December"
     ];
     const monthName = months[parseInt(month) - 1];
-    doc.setFontSize(12);
-    doc.text(`Year: ${year} | Month: ${monthName}`, 14, 30);
+    const formattedDate = new Date().toLocaleDateString('en-US', { 
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
+    
+    doc.text('Date: ' + formattedDate, 25, 87);
+    doc.text('Report Period: ' + monthName + ' ' + year, 25, 94);
 
+    // Add a subtle divider before the table
+    doc.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b);
+    doc.setLineWidth(0.2);
+    doc.line(25, 105, pageWidth - 25, 105);
+
+    // Prepare table data
     const tableData = monthlyOvertime.map((record) => [
       record.empID,
       record.empname,
@@ -170,37 +232,79 @@ const MonthlyOvertime = () => {
         : "No details available",
     ]);
 
+    // Add the main table with themed colors
     autoTable(doc, {
-      startY: 40,
+      startY: 115,
       head: [
         [
           "Employee ID",
           "Name",
-          "Total Overtime Hours",
-          "Overtime Rate ($/hr)",
-          "Overtime Pay ($)",
-          "Overtime Details",
+          "Total Hours",
+          "Rate ($/hr)",
+          "Total Pay ($)",
+          "Details",
         ],
       ],
       body: tableData,
-      theme: "striped",
-      styles: { fontSize: 10, cellPadding: 3 },
-      headStyles: { fillColor: [94, 53, 177] },
-      margin: { top: 40 },
+      theme: "grid",
+      styles: { 
+        fontSize: 9,
+        cellPadding: 3,
+        lineColor: [primaryColor.r, primaryColor.g, primaryColor.b],
+        lineWidth: 0.1,
+        font: 'helvetica',
+      },
+      headStyles: { 
+        fillColor: [primaryColor.r, primaryColor.g, primaryColor.b],
+        textColor: 255,
+        fontSize: 10,
+        fontStyle: 'bold',
+        halign: 'center',
+      },
+      alternateRowStyles: {
+        fillColor: [251, 247, 245],
+      },
+      bodyStyles: {
+        textColor: [primaryColor.r, primaryColor.g, primaryColor.b],
+      },
+      margin: { left: 25, right: 25 },
     });
 
+    // Add footer
     const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
-      doc.setFontSize(10);
+      
+      // Add footer border
+      doc.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b);
+      doc.setLineWidth(0.2);
+      doc.line(25, pageHeight - 35, pageWidth - 25, pageHeight - 35);
+
+      // Footer text
+      doc.setFontSize(8);
+      doc.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b);
+      
+      // Left side
+      doc.text('Heritage Hands Pvt Ltd.', 25, pageHeight - 25);
+      
+      // Center
       doc.text(
-        `Page ${i} of ${pageCount} - Heritage Hands`,
-        14,
-        doc.internal.pageSize.height - 10
+        `Page ${i} of ${pageCount}`,
+        pageWidth / 2,
+        pageHeight - 25,
+        { align: 'center' }
+      );
+      
+      // Right side
+      doc.text(
+        'CONFIDENTIAL',
+        pageWidth - 25,
+        pageHeight - 25,
+        { align: 'right' }
       );
     }
 
-    doc.save(`Overtime_Report_${year}_${month}.pdf`);
+    doc.save(`Heritage_Hands_Overtime_Report_${year}_${month}.pdf`);
   };
 
   return (

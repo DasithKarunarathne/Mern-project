@@ -96,22 +96,10 @@ const Layout = ({ children }) => {
                 sx={{
                   mx: 2,
                   textDecoration: "none",
-                  fontSize: "1.4rem", // Larger font size for links
-                }}
-              >
-                Home
-              </Link>
-              <Link
-                component={RouterLink}
-                to="/product"
-                color="inherit"
-                sx={{
-                  mx: 2,
-                  textDecoration: "none",
                   fontSize: "1.4rem",
                 }}
               >
-                Products
+                Home
               </Link>
               <Link
                 component={RouterLink}
@@ -137,6 +125,52 @@ const Layout = ({ children }) => {
               >
                 Contact
               </Link>
+
+              {/* Customer Home Button */}
+              <Button
+                component={RouterLink}
+                to="/customer"
+                variant="contained"
+                sx={{
+                  mx: 1,
+                  backgroundColor: "rgba(255, 215, 0, 0.9)",
+                  color: "#3E2723",
+                  borderRadius: "12px",
+                  padding: "8px 16px",
+                  fontSize: "1.2rem",
+                  textTransform: "none",
+                  "&:hover": {
+                    backgroundColor: "rgba(255, 193, 7, 0.95)",
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
+                  },
+                }}
+              >
+                Customer Home
+              </Button>
+
+              {/* Manager Access Button */}
+              <Button
+                component={RouterLink}
+                to="/manager"
+                variant="contained"
+                sx={{
+                  mx: 1,
+                  backgroundColor: "rgba(93, 64, 55, 0.9)",
+                  color: "#fff",
+                  borderRadius: "12px",
+                  padding: "8px 16px",
+                  fontSize: "1.2rem",
+                  textTransform: "none",
+                  "&:hover": {
+                    backgroundColor: "rgba(93, 64, 55, 0.95)",
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
+                  },
+                }}
+              >
+                Manager Access
+              </Button>
 
               {/* Login Button with Dropdown */}
               <LoginButton variant="contained" onClick={handleMenuOpen}>

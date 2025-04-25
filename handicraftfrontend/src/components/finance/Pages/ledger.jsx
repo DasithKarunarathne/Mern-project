@@ -42,6 +42,7 @@ import {
 } from '@mui/icons-material';
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { HERITAGE_HANDS_LOGO } from '../../hr/logo';
 
 const DashboardContainer = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -138,17 +139,79 @@ const Ledger = () => {
 
   const downloadPDF = () => {
     const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    // Define theme colors
+    const primaryColor = {
+      r: 93,
+      g: 64,
+      b: 55
+    }; // #5D4037 - Deep Brown
+    const secondaryColor = {
+      r: 255,
+      g: 215,
+      b: 0
+    }; // #FFD700 - Gold
+
+    // Add letterhead border
+    doc.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b);
+    doc.setLineWidth(0.5);
+    doc.rect(15, 15, pageWidth - 30, pageHeight - 30);
+
+    // Add company logo on the right (smaller size)
+    try {
+      const logoWidth = 35;
+      const logoHeight = 35;
+      const logoX = pageWidth - logoWidth - 25;
+      const logoY = 20;
+      doc.addImage(HERITAGE_HANDS_LOGO, 'PNG', logoX, logoY, logoWidth, logoHeight);
+    } catch (error) {
+      console.error('Error adding logo to PDF:', error);
+    }
+
+    // Add company header on the left
+    doc.setFontSize(22);
+    doc.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b);
+    doc.text('HERITAGE HANDS', 25, 35);
     
-    // Add header with styling
-    doc.setFontSize(20);
-    doc.setTextColor(44, 62, 80);
-    doc.text(`Ledger Report`, 105, 15, { align: 'center' });
+    // Add document title
+    doc.setFontSize(16);
+    doc.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b);
+    doc.text('GENERAL LEDGER REPORT', pageWidth/2, 60, { align: 'center' });
+
+    // Add horizontal line under the title
+    doc.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b);
+    doc.setLineWidth(0.5);
+    doc.line(pageWidth/2 - 50, 65, pageWidth/2 + 50, 65);
+
+    // Add reference number and date section
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    const refNumber = `REF: HH/GL/${year}/${month.toString().padStart(2, '0')}`;
+    doc.text(refNumber, 25, 80);
     
-    doc.setFontSize(12);
-    doc.setTextColor(52, 73, 94);
-    doc.text(`Period: ${month}/${year}`, 105, 25, { align: 'center' });
+    // Add date information in a more formal format
+    const months = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+    const monthName = months[parseInt(month) - 1];
+    const formattedDate = new Date().toLocaleDateString('en-US', { 
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
     
-    // Convert table data to an array of arrays
+    doc.text('Date: ' + formattedDate, 25, 87);
+    doc.text('Report Period: ' + monthName + ' ' + year, 25, 94);
+
+    // Add a subtle divider before the table
+    doc.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b);
+    doc.setLineWidth(0.2);
+    doc.line(25, 105, pageWidth - 25, 105);
+
+    // Convert table data
     const tableData = ledger.map((entry) => [
       new Date(entry.date).toLocaleDateString(),
       entry.description,
@@ -159,27 +222,70 @@ const Ledger = () => {
       entry.transactiontype,
     ]);
 
-    // Add the table to the PDF with styling
+    // Add table with themed colors
     autoTable(doc, {
+      startY: 115,
       head: [["Date", "Description", "Amount", "Category", "Source", "Transaction ID", "Type"]],
       body: tableData,
-      startY: 35,
-      styles: {
-        fontSize: 10,
+      theme: 'grid',
+      styles: { 
+        fontSize: 9,
         cellPadding: 3,
+        lineColor: [primaryColor.r, primaryColor.g, primaryColor.b],
+        lineWidth: 0.1,
+        font: 'helvetica',
       },
-      headStyles: {
-        fillColor: [41, 128, 185],
+      headStyles: { 
+        fillColor: [primaryColor.r, primaryColor.g, primaryColor.b],
         textColor: 255,
-        fontSize: 11,
+        fontSize: 10,
         fontStyle: 'bold',
+        halign: 'center',
       },
       alternateRowStyles: {
-        fillColor: [241, 245, 249],
+        fillColor: [251, 247, 245],
       },
+      bodyStyles: {
+        textColor: [primaryColor.r, primaryColor.g, primaryColor.b],
+      },
+      margin: { left: 25, right: 25 },
     });
 
-    doc.save(`ledger_${month}_${year}.pdf`);
+    // Add footer
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      
+      // Add footer border
+      doc.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b);
+      doc.setLineWidth(0.2);
+      doc.line(25, pageHeight - 35, pageWidth - 25, pageHeight - 35);
+
+      // Footer text
+      doc.setFontSize(8);
+      doc.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b);
+      
+      // Left side
+      doc.text('Heritage Hands Pvt Ltd.', 25, pageHeight - 25);
+      
+      // Center
+      doc.text(
+        `Page ${i} of ${pageCount}`,
+        pageWidth / 2,
+        pageHeight - 25,
+        { align: 'center' }
+      );
+      
+      // Right side
+      doc.text(
+        'CONFIDENTIAL',
+        pageWidth - 25,
+        pageHeight - 25,
+        { align: 'right' }
+      );
+    }
+
+    doc.save(`Heritage_Hands_Ledger_Report_${year}_${month}.pdf`);
   };
 
   const handleChangePage = (event, newPage) => {
@@ -234,7 +340,7 @@ const Ledger = () => {
               }}
             >
               General Ledger
-            </Typography>
+      </Typography>
           </Box>
         </Box>
 
@@ -248,24 +354,24 @@ const Ledger = () => {
             
             <Box sx={{ display: 'flex', gap: 2 }}>
               <StyledTextField
-                type="number"
-                label="Month"
-                value={month}
-                onChange={(e) => setMonth(parseInt(e.target.value))}
-                inputProps={{ min: 1, max: 12 }}
+          type="number"
+          label="Month"
+          value={month}
+          onChange={(e) => setMonth(parseInt(e.target.value))}
+          inputProps={{ min: 1, max: 12 }}
                 InputProps={{
                   startAdornment: <CalendarIcon color="action" sx={{ mr: 1 }} />,
                 }}
-              />
+        />
               <StyledTextField
-                type="number"
-                label="Year"
-                value={year}
-                onChange={(e) => setYear(parseInt(e.target.value))}
-                inputProps={{ min: 2000, max: 2100 }}
-              />
-            </Box>
-            
+          type="number"
+          label="Year"
+          value={year}
+          onChange={(e) => setYear(parseInt(e.target.value))}
+          inputProps={{ min: 2000, max: 2100 }}
+        />
+      </Box>
+
             <Tooltip title="Next Month">
               <IconButton onClick={handleNextMonth}>
                 <NextIcon />
@@ -289,10 +395,10 @@ const Ledger = () => {
           </ActionButton>
         </Box>
 
-        {error && (
+      {error && (
           <Snackbar open={!!error} autoHideDuration={6000} onClose={handleCloseError}>
             <Alert severity="error" onClose={handleCloseError} sx={{ borderRadius: '12px' }}>
-              {error}
+          {error}
             </Alert>
           </Snackbar>
         )}
@@ -306,26 +412,26 @@ const Ledger = () => {
             ) : (
               <>
                 <StyledTableContainer>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Date</TableCell>
-                        <TableCell>Description</TableCell>
-                        <TableCell>Amount</TableCell>
-                        <TableCell>Category</TableCell>
-                        <TableCell>Source</TableCell>
-                        <TableCell>Transaction ID</TableCell>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Date</TableCell>
+              <TableCell>Description</TableCell>
+              <TableCell>Amount</TableCell>
+              <TableCell>Category</TableCell>
+              <TableCell>Source</TableCell>
+              <TableCell>Transaction ID</TableCell>
                         <TableCell>Type</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
+            </TableRow>
+          </TableHead>
+          <TableBody>
                       {(rowsPerPage > 0
                         ? ledger.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                         : ledger
                       ).map((entry) => (
                         <TableRow key={entry._id} hover>
-                          <TableCell>{new Date(entry.date).toLocaleDateString()}</TableCell>
-                          <TableCell>{entry.description}</TableCell>
+                <TableCell>{new Date(entry.date).toLocaleDateString()}</TableCell>
+                <TableCell>{entry.description}</TableCell>
                           <TableCell>
                             <Typography
                               sx={{
@@ -354,7 +460,7 @@ const Ledger = () => {
                               size="small"
                             />
                           </TableCell>
-                          <TableCell>{entry.transactionId}</TableCell>
+                <TableCell>{entry.transactionId}</TableCell>
                           <TableCell>
                             <TransactionChip
                               icon={<PaymentIcon />}
@@ -363,10 +469,10 @@ const Ledger = () => {
                               size="small"
                             />
                           </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
                 </StyledTableContainer>
                 <TablePagination
                   component="div"

@@ -244,7 +244,7 @@ const OrderSummary = () => {
                     <Grid item xs={12} sm={6}>
                       <Typography variant="body1">
                         <strong>Email:</strong> {deliveryData.email}
-                      </Typography>
+          </Typography>
                     </Grid>
                   )}
                 </Grid>
@@ -257,7 +257,7 @@ const OrderSummary = () => {
                   <ShoppingCartIcon color="primary" sx={{ mr: 1 }} />
                   <Typography variant="h6">Order Items</Typography>
                 </Box>
-                {products.map((item, index) => (
+          {products.map((item, index) => (
                   <Box key={index} sx={{ mb: 3 }}>
                     <Grid container spacing={2} alignItems="center">
                       <Grid item xs={12} sm={3}>
@@ -275,7 +275,7 @@ const OrderSummary = () => {
                         </Typography>
                         <Typography variant="body1" color="primary" fontWeight="bold">
                           LKR {(item.price * (item.quantity || 1)).toFixed(2)}
-                        </Typography>
+                </Typography>
                       </Grid>
                     </Grid>
                     {index < products.length - 1 && <Divider sx={{ my: 2 }} />}
@@ -306,22 +306,22 @@ const OrderSummary = () => {
                     <Typography variant="h6">Total:</Typography>
                     <Typography variant="h6" color="primary">
                       LKR {total.toFixed(2)}
-                    </Typography>
-                  </Box>
-                </Box>
+                </Typography>
+              </Box>
+            </Box>
                 <ActionButton
-                  variant="contained"
-                  onClick={handleProceedToPayment}
+            variant="contained"
+            onClick={handleProceedToPayment}
                   fullWidth
-                  disabled={loading}
+            disabled={loading}
                   sx={{
                     backgroundColor: theme.palette.primary.main,
                     '&:hover': {
                       backgroundColor: theme.palette.primary.dark,
                     },
                   }}
-                >
-                  Proceed to Payment
+          >
+            Proceed to Payment
                 </ActionButton>
               </CardContent>
             </OrderCard>
