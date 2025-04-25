@@ -27,6 +27,7 @@ import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import RefundIcon from '@mui/icons-material/AssignmentReturn';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import ManagerHeader from '../../components/common/ManagerHeader';
 
 // Styled components
 const StyledPaper = styled(Paper)(({ theme }) => ({
