@@ -340,21 +340,58 @@ const ProductManager = () => {
       day: 'numeric'
     });
     
-    // Header with brown color
+    // Create brown header bar first
     doc.setFillColor(46, 19, 8); // #2E1308 Darkest Brown
-    doc.rect(0, 0, pageWidth, 40, 'F');
+    doc.rect(0, 0, pageWidth, 45, 'F');
+
+    // Load and add logo
+    const logoImg = new Image();
+    logoImg.src = '/assets/logo.jpg';
     
-    // Title and subtitle in beige
-    doc.setFontSize(24);
-    doc.setTextColor(200, 173, 127); // #C8AD7F Beige
-    doc.text('HERITAGE HANDS', pageWidth/2, 15, { align: 'center' });
-    
-    doc.setFontSize(16);
-    doc.text('Products Stock Levels Report', pageWidth/2, 25, { align: 'center' });
-    
-    // Add generation date
-    doc.setFontSize(12);
-    doc.text(`Generated on: ${currentDate}`, pageWidth/2, 35, { align: 'center' });
+    await new Promise((resolve, reject) => {
+      logoImg.onload = () => {
+        try {
+          // Calculate logo dimensions to maintain aspect ratio
+          const logoHeight = 35; // Fixed height for the header
+          const logoWidth = (logoImg.width * logoHeight) / logoImg.height;
+          
+          // Add logo at the left side of the header
+          doc.addImage(
+            logoImg, 
+            'JPEG', 
+            10, // Left margin
+            5,  // Top margin within header
+            logoWidth, 
+            logoHeight
+          );
+          
+          // Add titles next to the logo
+          doc.setTextColor(200, 173, 127); // #C8AD7F Beige
+          
+          // Company name
+          doc.setFontSize(24);
+          doc.text('HERITAGE HANDS', logoWidth + 20, 20);
+          
+          // Report title
+          doc.setFontSize(16);
+          doc.text('Products Stock Levels Report', logoWidth + 20, 35);
+          
+          // Add generation date on the right side
+          doc.setFontSize(12);
+          doc.text(
+            `Generated: ${currentDate}`,
+            pageWidth - 10,
+            35,
+            { align: 'right' }
+          );
+
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      };
+      logoImg.onerror = reject;
+    });
 
     // Create bar chart
     const canvas = document.createElement('canvas');
@@ -443,11 +480,11 @@ const ProductManager = () => {
 
     // Add chart to PDF
     const chartImage = canvas.toDataURL('image/png', 1.0);
-    doc.addImage(chartImage, 'PNG', 10, 45, 190, 90);
+    doc.addImage(chartImage, 'PNG', 10, 55, 190, 90);
 
     // Product table with updated colors
     autoTable(doc, {
-      startY: 145,
+      startY: 155,
       head: [['Product Name', 'Stock', 'Price (LKR)', 'Status', 'Action Required']],
       body: products.map(p => [
         p.name,
@@ -480,11 +517,10 @@ const ProductManager = () => {
         fillColor: [255, 255, 255], // White background
         valign: 'middle'
       },
-      theme: 'plain', // Changed from 'grid' to remove default blue borders
+      theme: 'plain',
       tableLineColor: [151, 85, 59], // Medium Brown
       tableLineWidth: 0.1,
       didParseCell: function(data) {
-        // Ensure all cells have white background by default
         data.cell.styles.fillColor = [255, 255, 255];
       },
       didDrawCell: function(data) {
