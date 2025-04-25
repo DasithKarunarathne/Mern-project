@@ -19,6 +19,7 @@ function Register() {
   const onSubmit = async (e) => {
     e.preventDefault();
     console.log("Form data being sent:", formData); // Debugging
+
     try {
       const res = await axios.post("/api/auth/register", formData);
       localStorage.setItem("token", res.data.token);

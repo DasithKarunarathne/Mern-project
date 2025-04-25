@@ -176,8 +176,7 @@ const EmployeeList = () => {
           <Button
             variant="contained"
             color="primary"
-            onClick={() => navigate("/hr")}
-            startIcon={<Add />}
+            onClick={() => navigate("/hr/add-employee")}
           >
             Add New Employee
           </Button>
@@ -254,7 +253,14 @@ const EmployeeList = () => {
             <Grid container spacing={3}>
               {filteredEmployees.map((employee) => (
                 <Grid item xs={12} sm={6} md={4} key={employee._id}>
-                  <EmployeeCard>
+                  <EmployeeCard
+                    sx={{ 
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+                      }
+                    }}
+                  >
                     <CardContent>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                         <Typography variant="h6" sx={{ fontWeight: 600 }}>
@@ -284,13 +290,13 @@ const EmployeeList = () => {
 
                       <Box sx={{ mb: 2 }}>
                         <Typography variant="body2" color="text.secondary">
-                          Basic Salary: ${employee.basicSalary}
+                          Basic Salary: LKR {employee.basicSalary}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                          Overtime Rate: ${employee.overtimeRate}/hr
+                          Overtime Rate: LKR {employee.overtimeRate}/hr
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                          Total Overtime Pay: ${employee.totalOvertimePay?.toLocaleString() || '0'}
+                          Total Overtime Pay: LKR {employee.totalOvertimePay?.toLocaleString() || '0'}
                         </Typography>
                       </Box>
 

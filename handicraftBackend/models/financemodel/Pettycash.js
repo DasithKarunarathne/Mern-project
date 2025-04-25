@@ -1,17 +1,50 @@
-import mongoose from "mongoose"; // Simplified import, no need for { mongo }
+import mongoose from 'mongoose';
 
-const PettycashSchema = new mongoose.Schema({
-  date: { type: Date, default: Date.now },
-  description: { type: String, required: true },
-  amount: { type: Number, required: true },
-  type: { type: String, enum: ["initial", "expense", "reimbursement"], required: true },
-  category: { type: String },
-  month: { type: Number, required: true, min: 1, max: 12 }, // Added for monthly scoping
-  year: { type: Number, required: true, min: 2000, max: 9999 }, // Added for monthly scoping
+const pettyCashSchema = new mongoose.Schema({
+    date: {
+        type: Date,
+        required: true
+    },
+    description: {
+        type: String,
+        required: true
+    },
+    amount: {
+        type: Number,
+        required: true
+    },
+    type: {
+        type: String,
+        enum: ['income', 'expense'],
+        required: true
+    },
+    category: {
+        type: String,
+        required: true
+    },
+    reference: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    notes: {
+        type: String
+    },
+    approvedBy: {
+        type: String,
+        required: true
+    },
+    status: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'],
+        default: 'pending'
+    }
+}, {
+    timestamps: true
 });
 
-// Optional: Add an index for faster queries by month and year
-PettycashSchema.index({ month: 1, year: 1 });
+// Add index for efficient querying by date
+pettyCashSchema.index({ date: 1 });
 
-const PettyCash = mongoose.model("Pettycash", PettycashSchema);
-export default PettyCash;
+const PettyCash = mongoose.model('PettyCash', pettyCashSchema);
+export default PettyCash; 

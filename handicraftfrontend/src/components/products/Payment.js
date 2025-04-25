@@ -123,25 +123,25 @@ const Payment = () => {
 
   const generateAndSendOtp = async () => {
     if (!validate()) {
-      toast.error('Please fill all required fields correctly.');
       return;
     }
 
     if (!deliveryData.email) {
-      toast.error('No email provided. Please go back and enter an email in the delivery details.');
+      toast.error('Email address is required for verification.');
       return;
     }
 
-    const newOtp = Math.floor(1000 + Math.random() * 9000).toString();
-    setGeneratedOtp(newOtp);
-    setOtpSent(true);
-
     try {
+      const newOtp = Math.floor(1000 + Math.random() * 9000).toString();
+      setGeneratedOtp(newOtp);
+      
       await sendOtpEmail(deliveryData.email, deliveryData.name || 'Customer', newOtp);
+      setOtpSent(true);
       toast.success('OTP sent to your email!');
     } catch (error) {
       console.error('Error sending OTP email:', error);
-      toast.error('Failed to send OTP. Please use this OTP: ' + newOtp);
+      setOtpSent(false);
+      setGeneratedOtp('');
     }
   };
 
@@ -150,7 +150,7 @@ const Payment = () => {
       setOtpVerified(true);
       toast.success('OTP verified successfully!');
     } else {
-      toast.error('Invalid OTP. Please try again.');
+      setOtp('');
     }
   };
 

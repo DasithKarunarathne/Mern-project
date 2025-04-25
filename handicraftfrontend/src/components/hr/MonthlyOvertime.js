@@ -220,13 +220,13 @@ const MonthlyOvertime = () => {
       record.empID,
       record.empname,
       record.totalOvertimeHours.toString(),
-      `$${record.overtimeRate.toLocaleString()}`,
-      `$${record.overtimePay.toLocaleString()}`,
+      `LKR ${record.overtimeRate.toLocaleString()}`,
+      `LKR ${record.overtimePay.toLocaleString()}`,
       record.details && record.details.length > 0
         ? record.details
             .map(
               (detail) =>
-                `Date: ${formatDate(detail.date)}, Hours: ${detail.overtimeHours}, Pay: $${detail.overtimePay.toLocaleString()}`
+                `Date: ${formatDate(detail.date)}, Hours: ${detail.overtimeHours}, Pay: LKR ${detail.overtimePay.toLocaleString()}`
             )
             .join("\n")
         : "No details available",
@@ -240,8 +240,8 @@ const MonthlyOvertime = () => {
           "Employee ID",
           "Name",
           "Total Hours",
-          "Rate ($/hr)",
-          "Total Pay ($)",
+          "Rate (LKR/hr)",
+          "Total Pay (LKR)",
           "Details",
         ],
       ],
@@ -365,17 +365,17 @@ const MonthlyOvertime = () => {
           <Grid container spacing={3} alignItems="center" sx={{ mb: 3 }}>
             <Grid item xs={12} sm={4}>
               <CustomTextField
-                label="Year (YYYY)"
-                value={year}
-                onChange={(e) => setYear(e.target.value)}
+          label="Year (YYYY)"
+          value={year}
+          onChange={(e) => setYear(e.target.value)}
                 fullWidth
-              />
+        />
             </Grid>
             <Grid item xs={12} sm={4}>
               <CustomTextField
-                label="Month (MM)"
-                value={month}
-                onChange={(e) => setMonth(e.target.value)}
+          label="Month (MM)"
+          value={month}
+          onChange={(e) => setMonth(e.target.value)}
                 fullWidth
               />
             </Grid>
@@ -388,32 +388,32 @@ const MonthlyOvertime = () => {
                   startIcon={<RefreshIcon />}
                   fullWidth
                 >
-                  Fetch Report
+          Fetch Report
                 </ActionButton>
                 <Tooltip title="Generate PDF Report">
                   <IconButton
-                    onClick={generatePDF}
+          onClick={generatePDF}
                     disabled={loading || monthlyOvertime.length === 0}
-                    sx={{
+          sx={{
                       backgroundColor: theme.palette.warning.main,
                       color: theme.palette.warning.contrastText,
                       '&:hover': {
                         backgroundColor: theme.palette.warning.dark,
                       },
-                    }}
+          }}
                   >
                     <PdfIcon />
                   </IconButton>
                 </Tooltip>
-              </Box>
+      </Box>
             </Grid>
           </Grid>
 
-          {loading && (
+      {loading && (
             <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
               <CircularProgress size={60} thickness={4} />
-            </Box>
-          )}
+        </Box>
+      )}
 
           {error && (
             <Alert severity="error" sx={{ mb: 3, borderRadius: '12px' }}>
@@ -423,22 +423,22 @@ const MonthlyOvertime = () => {
 
           {!loading && !error && monthlyOvertime.length > 0 && (
             <TableContainer component={Paper} sx={{ borderRadius: '12px', overflow: 'hidden' }}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Employee ID</TableCell>
-                    <TableCell>Name</TableCell>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Employee ID</TableCell>
+                <TableCell>Name</TableCell>
                     <TableCell>Total Hours</TableCell>
-                    <TableCell>Rate ($/hr)</TableCell>
-                    <TableCell>Total Pay ($)</TableCell>
+                    <TableCell>Rate (LKR/hr)</TableCell>
+                    <TableCell>Total Pay (LKR)</TableCell>
                     <TableCell>Details</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {monthlyOvertime.map((record) => (
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {monthlyOvertime.map((record) => (
                     <TableRow key={record.employeeId} hover>
-                      <TableCell>{record.empID}</TableCell>
-                      <TableCell>{record.empname}</TableCell>
+                  <TableCell>{record.empID}</TableCell>
+                  <TableCell>{record.empname}</TableCell>
                       <TableCell>
                         <Chip
                           label={record.totalOvertimeHours}
@@ -446,39 +446,39 @@ const MonthlyOvertime = () => {
                           size="small"
                         />
                       </TableCell>
-                      <TableCell>${record.overtimeRate.toLocaleString()}</TableCell>
-                      <TableCell>${record.overtimePay.toLocaleString()}</TableCell>
-                      <TableCell>
-                        {record.details && record.details.length > 0 ? (
-                          <Table size="small">
-                            <TableHead>
-                              <TableRow>
-                                <TableCell>Date</TableCell>
-                                <TableCell>Hours</TableCell>
-                                <TableCell>Pay</TableCell>
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                              {record.details.map((detail, index) => (
-                                <TableRow key={index}>
-                                  <TableCell>{formatDate(detail.date)}</TableCell>
-                                  <TableCell>{detail.overtimeHours}</TableCell>
-                                  <TableCell>${detail.overtimePay.toLocaleString()}</TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        ) : (
+                      <TableCell>LKR {record.overtimeRate.toLocaleString()}</TableCell>
+                      <TableCell>LKR {record.overtimePay.toLocaleString()}</TableCell>
+                  <TableCell>
+                    {record.details && record.details.length > 0 ? (
+                      <Table size="small">
+                        <TableHead>
+                          <TableRow>
+                            <TableCell>Date</TableCell>
+                            <TableCell>Hours</TableCell>
+                            <TableCell>Pay</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {record.details.map((detail, index) => (
+                            <TableRow key={index}>
+                              <TableCell>{formatDate(detail.date)}</TableCell>
+                              <TableCell>{detail.overtimeHours}</TableCell>
+                              <TableCell>LKR {detail.overtimePay.toLocaleString()}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    ) : (
                           <Typography variant="body2" color="text.secondary">
                             No details available
                           </Typography>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
           )}
         </CardContent>
       </ReportCard>
