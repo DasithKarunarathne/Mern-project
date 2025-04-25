@@ -81,9 +81,12 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
     role: "",
     basicSalary: "",
     overtimeRate: "",
+    gender: "",
+    contactNumber: "",
+    address: "",
+    emergencyContact: "",
     image: null,
     birthCertificate: null,
-    medicalRecords: null,
   });
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
@@ -95,7 +98,7 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+          setFormData({ ...formData, [name]: value });
     if (errors[name]) {
       setErrors({ ...errors, [name]: "" });
     }
@@ -113,6 +116,12 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
     if (!formData.role) tempErrors.role = "Role is required";
     if (!formData.basicSalary) tempErrors.basicSalary = "Basic Salary is required";
     if (!formData.overtimeRate) tempErrors.overtimeRate = "Overtime Rate is required";
+    if (!formData.gender) tempErrors.gender = "Gender is required";
+    if (!formData.contactNumber) tempErrors.contactNumber = "Contact number is required";
+    if (!formData.contactNumber.match(/^\d{10}$/)) tempErrors.contactNumber = "Contact number must be 10 digits";
+    if (!formData.address) tempErrors.address = "Home address is required";
+    if (!formData.emergencyContact) tempErrors.emergencyContact = "Emergency contact is required";
+    if (!formData.emergencyContact.match(/^\d{10}$/)) tempErrors.emergencyContact = "Emergency contact must be 10 digits";
     setErrors(tempErrors);
     return Object.keys(tempErrors).length === 0;
   };
@@ -137,30 +146,33 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-      });
-      setSuccessMessage("Employee Added Successfully");
-      setFormData({
-        empID: "",
-        empname: "",
-        role: "",
-        basicSalary: "",
-        overtimeRate: "",
-        image: null,
-        birthCertificate: null,
-        medicalRecords: null,
-      });
-      setErrors({});
+        });
+        setSuccessMessage("Employee Added Successfully");
+        setFormData({
+          empID: "",
+          empname: "",
+          role: "",
+          basicSalary: "",
+          overtimeRate: "",
+          gender: "",
+          contactNumber: "",
+          address: "",
+          emergencyContact: "",
+          image: null,
+          birthCertificate: null,
+        });
+        setErrors({});
       document.querySelectorAll("input[type=file]").forEach((input) => (input.value = ""));
-      setTimeout(() => {
-        setSuccessMessage("");
-        if (onEmployeeAdded) onEmployeeAdded();
-        navigate("/hr/list");
-      }, 3000);
+          setTimeout(() => {
+            setSuccessMessage("");
+            if (onEmployeeAdded) onEmployeeAdded();
+            navigate("/hr/list");
+          }, 3000);
     } catch (error) {
       console.error("Error adding employee:", error);
       setErrorMessage("Error adding employee: " + (error.response?.data?.error || error.message));
     } finally {
-      setLoading(false);
+    setLoading(false);
     }
   };
 
@@ -199,63 +211,63 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
           }}
         >
           Add New Employee
-        </Typography>
+      </Typography>
 
         <Box sx={{ mb: 3, display: "flex", gap: 2, justifyContent: "center" }}>
           <ActionButton
-            variant="contained"
-            color="primary"
-            onClick={handleViewList}
-            disabled={loading}
+          variant="contained"
+          color="primary"
+          onClick={handleViewList}
+          disabled={loading}
             startIcon={<PeopleIcon />}
-          >
-            Employee List
+        >
+          Employee List
           </ActionButton>
           <ActionButton
-            variant="contained"
-            color="secondary"
-            onClick={() => navigate("/hr/overtime/monthly")}
-            disabled={loading}
+          variant="contained"
+          color="secondary"
+          onClick={() => navigate("/hr/overtime/monthly")}
+          disabled={loading}
             startIcon={<AccessTimeIcon />}
-          >
-            View Monthly Overtime Report
+        >
+          View Monthly Overtime Report
           </ActionButton>
           <ActionButton
-            variant="contained"
-            color="primary"
-            onClick={() => navigate("/hr/overtime")}
-            disabled={loading}
+          variant="contained"
+          color="primary"
+          onClick={() => navigate("/hr/overtime")}
+          disabled={loading}
             startIcon={<DescriptionIcon />}
-          >
-            Add Overtime
+        >
+          Add Overtime
           </ActionButton>
-        </Box>
+      </Box>
 
-        {successMessage && (
+      {successMessage && (
           <Alert severity="success" sx={{ mb: 3, borderRadius: '12px' }}>
-            {successMessage}
-          </Alert>
-        )}
-        {errorMessage && (
+          {successMessage}
+        </Alert>
+      )}
+      {errorMessage && (
           <Alert severity="error" sx={{ mb: 3, borderRadius: '12px' }}>
-            {errorMessage}
-          </Alert>
-        )}
+          {errorMessage}
+        </Alert>
+      )}
 
         <FormCard>
           <CardContent>
             <Grid container spacing={3}>
               <Grid item xs={12} sm={6}>
                 <CustomTextField
-                  label="Employee ID"
-                  name="empID"
-                  value={formData.empID}
-                  onChange={handleChange}
-                  fullWidth
-                  required
-                  error={!!errors.empID}
-                  helperText={errors.empID}
-                  disabled={loading}
+          label="Employee ID"
+          name="empID"
+          value={formData.empID}
+          onChange={handleChange}
+          fullWidth
+          required
+          error={!!errors.empID}
+          helperText={errors.empID}
+          disabled={loading}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -263,75 +275,144 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
                       </InputAdornment>
                     ),
                   }}
-                />
+        />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <CustomTextField
-                  label="Name"
-                  name="empname"
-                  value={formData.empname}
-                  onChange={handleChange}
-                  fullWidth
-                  required
-                  error={!!errors.empname}
-                  helperText={errors.empname}
-                  disabled={loading}
-                />
+          label="Name"
+          name="empname"
+          value={formData.empname}
+          onChange={handleChange}
+          fullWidth
+          required
+          error={!!errors.empname}
+          helperText={errors.empname}
+          disabled={loading}
+        />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <CustomTextField
-                  label="Role"
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                  fullWidth
-                  required
-                  error={!!errors.role}
-                  helperText={errors.role}
-                  disabled={loading}
-                />
+          label="Role"
+          name="role"
+          value={formData.role}
+          onChange={handleChange}
+          fullWidth
+          required
+          error={!!errors.role}
+          helperText={errors.role}
+          disabled={loading}
+        />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <CustomTextField
-                  label="Basic Salary"
-                  name="basicSalary"
-                  type="number"
-                  value={formData.basicSalary}
-                  onChange={handleChange}
-                  fullWidth
-                  required
-                  error={!!errors.basicSalary}
-                  helperText={errors.basicSalary}
-                  disabled={loading}
+          label="Basic Salary"
+          name="basicSalary"
+          type="number"
+          value={formData.basicSalary}
+          onChange={handleChange}
+          fullWidth
+          required
+          error={!!errors.basicSalary}
+          helperText={errors.basicSalary}
+          disabled={loading}
                   InputProps={{
                     startAdornment: <InputAdornment position="start">$</InputAdornment>,
-                  }}
-                />
+          }}
+        />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <CustomTextField
                   label="Overtime Rate"
-                  name="overtimeRate"
-                  type="number"
-                  value={formData.overtimeRate}
+          name="overtimeRate"
+          type="number"
+          value={formData.overtimeRate}
+          onChange={handleChange}
+          fullWidth
+                  required
+          error={!!errors.overtimeRate}
+          helperText={errors.overtimeRate}
+          disabled={loading}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start">$</InputAdornment>,
+          }}
+        />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <CustomTextField
+                  select
+                  label="Gender"
+                  name="gender"
+                  value={formData.gender}
                   onChange={handleChange}
                   fullWidth
                   required
-                  error={!!errors.overtimeRate}
-                  helperText={errors.overtimeRate}
+                  error={!!errors.gender}
+                  helperText={errors.gender}
                   disabled={loading}
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                  SelectProps={{
+                    native: true,
+                  }}
+                >
+                  <option value=""></option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </CustomTextField>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <CustomTextField
+                  label="Contact Number"
+                  name="contactNumber"
+                  value={formData.contactNumber}
+                  onChange={handleChange}
+                  fullWidth
+                  required
+                  error={!!errors.contactNumber}
+                  helperText={errors.contactNumber}
+                  disabled={loading}
+                  inputProps={{
+                    maxLength: 10,
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <CustomTextField
+                  label="Home Address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  fullWidth
+                  required
+                  multiline
+                  rows={3}
+                  error={!!errors.address}
+                  helperText={errors.address}
+                  disabled={loading}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <CustomTextField
+                  label="Emergency Contact Number"
+                  name="emergencyContact"
+                  value={formData.emergencyContact}
+                  onChange={handleChange}
+                  fullWidth
+                  required
+                  error={!!errors.emergencyContact}
+                  helperText={errors.emergencyContact}
+                  disabled={loading}
+                  inputProps={{
+                    maxLength: 10,
                   }}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <CustomTextField
-                  type="file"
-                  name="image"
+            type="file"
+            name="image"
                   onChange={handleFileChange}
                   fullWidth
-                  disabled={loading}
+            disabled={loading}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -339,15 +420,16 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
                       </InputAdornment>
                     ),
                   }}
+                  label="Add Employee Image"
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <CustomTextField
-                  type="file"
-                  name="birthCertificate"
+            type="file"
+            name="birthCertificate"
                   onChange={handleFileChange}
                   fullWidth
-                  disabled={loading}
+            disabled={loading}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -355,22 +437,7 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
                       </InputAdornment>
                     ),
                   }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <CustomTextField
-                  type="file"
-                  name="medicalRecords"
-                  onChange={handleFileChange}
-                  fullWidth
-                  disabled={loading}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <DescriptionIcon color="primary" />
-                      </InputAdornment>
-                    ),
-                  }}
+                  label="Add Employee Birth Certificate"
                 />
               </Grid>
             </Grid>

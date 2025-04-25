@@ -34,6 +34,7 @@ import {
   HowToReg as RegisterIcon,
   Visibility as ViewIcon,
 } from "@mui/icons-material";
+import WhyChooseUs from './WhyChooseUs';
 
 const StyledContainer = styled(Container)(({ theme }) => ({
   padding: theme.spacing(4),
@@ -138,7 +139,7 @@ const ProductDashboard = () => {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
         <CircularProgress size={60} thickness={4} />
       </Box>
     );
@@ -317,6 +318,8 @@ const ProductDashboard = () => {
         </Fade>
       )}
 
+      <WhyChooseUs />
+
       <Dialog open={loginDialog} onClose={() => setLoginDialog(false)}>
         <DialogTitle>Login Required</DialogTitle>
         <DialogContent>
@@ -327,13 +330,13 @@ const ProductDashboard = () => {
         <DialogActions>
           <Button onClick={() => setLoginDialog(false)}>Cancel</Button>
           <Button 
-            variant="contained" 
+            variant="contained"
             onClick={() => navigate('/customer/login')}
           >
             Login
           </Button>
           <Button 
-            variant="outlined" 
+            variant="outlined"
             onClick={() => navigate('/customer/register')}
           >
             Register
