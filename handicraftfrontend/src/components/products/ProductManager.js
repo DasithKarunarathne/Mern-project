@@ -11,18 +11,115 @@ import {
   TableHead,
   TableRow,
   CircularProgress,
+  Paper,
   IconButton,
-  Container,
-  Grid,
-  Card,
-  CardContent,
+  Tooltip,
 } from '@mui/material';
-import { Edit, Delete } from '@mui/icons-material';
+import { styled } from '@mui/material/styles';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ManagerHeader from '../common/ManagerHeader';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import { Chart } from 'chart.js/auto';
+import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+import RefundIcon from '@mui/icons-material/AssignmentReturn';
+
+// Styled components
+const StyledPaper = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(3),
+  margin: theme.spacing(2),
+  borderRadius: '12px',
+  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+  background: '#ffffff',
+}));
+
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  fontWeight: 'bold',
+  backgroundColor: theme.palette.background.paper,
+  color: theme.palette.text.primary,
+}));
+
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  '&:nth-of-type(odd)': {
+    backgroundColor: 'rgba(222, 184, 135, 0.05)',
+  },
+  '&:hover': {
+    backgroundColor: 'rgba(222, 184, 135, 0.1)',
+  },
+  transition: 'background-color 0.3s ease',
+}));
+
+const ActionButton = styled(Button)(({ theme }) => ({
+  borderRadius: theme.spacing(1),
+  textTransform: 'none',
+  fontWeight: 600,
+  padding: theme.spacing(1.5, 3),
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+  },
+}));
+
+// Update validation functions
+const validateName = (name) => {
+  if (!name) return 'Product name is required';
+  if (!/^[A-Za-z\s]+$/.test(name)) return 'Only letters and spaces are allowed';
+  if (name.trim().length === 0) return 'Product name cannot be empty';
+  if (name.length > 100) return 'Product name must be less than 100 characters';
+  return '';
+};
+
+const validateDescription = (description) => {
+  if (!description) return 'Description is required';
+  if (!/^[A-Za-z0-9\s.,!?-]+$/.test(description)) {
+    return 'Description can only contain letters, numbers, and basic punctuation';
+  }
+  if (description.length > 500) return 'Description must be less than 500 characters';
+  return '';
+};
+
+const validatePrice = (price) => {
+  const numPrice = parseFloat(price);
+  if (!price) return 'Price is required';
+  if (isNaN(numPrice) || numPrice <= 0) return 'Price must be a positive number';
+  if (numPrice > 1000000) return 'Price must be less than 1,000,000';
+  return '';
+};
+
+const validateStock = (stock) => {
+  const numStock = parseInt(stock);
+  if (!stock) return 'Stock quantity is required';
+  if (isNaN(numStock) || numStock < 0) return 'Stock must be a non-negative number';
+  if (numStock > 10000) return 'Stock must be less than 10,000';
+  return '';
+};
+
+const validateCategory = (category) => {
+  if (!category) return 'Category is required';
+  if (!/^[A-Za-z\s-]+$/.test(category)) {
+    return 'Category can only contain letters, spaces, and hyphens';
+  }
+  if (category.length > 50) return 'Category must be less than 50 characters';
+  return '';
+};
+
+const validateImage = (file) => {
+  if (!file) return '';
+  const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+  if (!validTypes.includes(file.type)) {
+    return 'Please upload a valid image (JPEG, PNG, or WEBP)';
+  }
+  if (file.size > 2 * 1024 * 1024) {
+    return 'Image size must be less than 2MB';
+  }
+  return '';
+};
 
 const ProductManager = () => {
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -35,6 +132,13 @@ const ProductManager = () => {
     image: null,
   });
   const [editingProduct, setEditingProduct] = useState(null);
+  const [formErrors, setFormErrors] = useState({
+    name: '',
+    description: '',
+    price: '',
+    stockQuantity: '',
+    category: ''
+  });
 
   useEffect(() => {
     fetchProducts();
@@ -54,66 +158,117 @@ const ProductManager = () => {
     }
   };
 
+  const handleKeyDown = (e) => {
+    if (e.target.name === 'name') {
+      const key = e.key;
+      const allowedKeys = [
+        'Backspace',
+        'Delete',
+        'ArrowLeft',
+        'ArrowRight',
+        'ArrowUp',
+        'ArrowDown',
+        'Tab',
+        'Enter',
+        'Escape',
+        ' '
+      ];
+
+      if (!allowedKeys.includes(key) && !/^[A-Za-z]$/.test(key)) {
+        e.preventDefault();
+        toast.warning('Only letters and spaces are allowed');
+      }
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    
+    // Update form data
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+
+    // Validate the field
+    let validationError = '';
+    switch (name) {
+      case 'name':
+        // Remove any characters that aren't letters or spaces
+        const sanitizedValue = value.replace(/[^A-Za-z\s]/g, '');
+        if (value !== sanitizedValue) {
+          toast.warning('Only letters and spaces are allowed');
+        }
+        validationError = validateName(sanitizedValue);
+        setFormData(prev => ({
+          ...prev,
+          name: sanitizedValue
+        }));
+        break;
+      case 'description':
+        validationError = validateDescription(value);
+        break;
+      case 'price':
+        validationError = validatePrice(value);
+        break;
+      case 'stockQuantity':
+        validationError = validateStock(value);
+        break;
+      case 'category':
+        validationError = validateCategory(value);
+        break;
+      default:
+        break;
+    }
+
+    // Update form errors
+    setFormErrors(prev => ({
+      ...prev,
+      [name]: validationError
+    }));
   };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
-      if (!validTypes.includes(file.type)) {
-        toast.error('Please upload a valid image (JPEG, PNG, or WEBP).');
+      const imageError = validateImage(file);
+      if (imageError) {
+        toast.error(imageError);
+        e.target.value = '';
         return;
       }
-      if (file.size > 2 * 1024 * 1024) { // 2MB limit
-        toast.error('Image size must be less than 2MB.');
-        return;
-      }
+      setFormData(prev => ({ ...prev, image: file }));
     }
-    setFormData({ ...formData, image: file });
   };
 
   const validateForm = () => {
-    if (!formData.name.trim()) {
-      return "Name is required.";
-    }
-    if (!formData.description.trim()) {
-      return "Description is required.";
-    }
-    const price = parseFloat(formData.price);
-    if (isNaN(price) || price <= 0) {
-      return "Price must be a positive number.";
-    }
-    const stock = parseInt(formData.stockQuantity, 10);
-    if (isNaN(stock) || stock < 0) {
-      return "Stock Quantity must be a non-negative number.";
-    }
-    if (!formData.category.trim()) {
-      return "Category is required.";
-    }
-    return null; // No errors
+    const errors = {
+      name: validateName(formData.name),
+      description: validateDescription(formData.description),
+      price: validatePrice(formData.price),
+      stockQuantity: validateStock(formData.stockQuantity),
+      category: validateCategory(formData.category)
+    };
+
+    setFormErrors(errors);
+    return !Object.values(errors).some(error => error !== '');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const validationError = validateForm();
-    if (validationError) {
-      setError(validationError);
-      toast.error(validationError);
+    
+    if (!validateForm()) {
+      toast.error('Please correct all errors before submitting');
       return;
     }
 
     setLoading(true);
-    setError(null);
-
     const data = new FormData();
-    data.append('name', formData.name);
-    data.append('description', formData.description);
-    data.append('price', formData.price);
-    data.append('stockQuantity', formData.stockQuantity);
-    data.append('category', formData.category);
+    data.append('name', formData.name.trim());
+    data.append('description', formData.description.trim());
+    data.append('price', parseFloat(formData.price).toFixed(2));
+    data.append('stockQuantity', parseInt(formData.stockQuantity));
+    data.append('category', formData.category.trim());
     if (formData.image) {
       data.append('image', formData.image);
     }
@@ -126,12 +281,18 @@ const ProductManager = () => {
         await createProduct(data);
         toast.success('Product added successfully!');
       }
-      setFormData({ name: '', description: '', price: '', stockQuantity: '', category: '', image: null });
+      setFormData({
+        name: '',
+        description: '',
+        price: '',
+        stockQuantity: '',
+        category: '',
+        image: null
+      });
       setEditingProduct(null);
       fetchProducts();
     } catch (error) {
       console.error('Error saving product:', error);
-      setError('Failed to save product: ' + (error.response?.data?.error || error.message));
       toast.error('Failed to save product: ' + (error.response?.data?.error || error.message));
     } finally {
       setLoading(false);
@@ -148,7 +309,6 @@ const ProductManager = () => {
       category: product.category,
       image: null,
     });
-    setError(null); // Clear error when editing starts
   };
 
   const handleDelete = async (id) => {
@@ -167,90 +327,351 @@ const ProductManager = () => {
     }
   };
 
+  const generatePDF = async () => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.width;
+    const currentDate = new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    
+    // Header with brown color
+    doc.setFillColor(46, 19, 8); // #2E1308 Darkest Brown
+    doc.rect(0, 0, pageWidth, 40, 'F');
+    
+    // Title and subtitle in beige
+    doc.setFontSize(24);
+    doc.setTextColor(200, 173, 127); // #C8AD7F Beige
+    doc.text('HERITAGE HANDS', pageWidth/2, 15, { align: 'center' });
+    
+    doc.setFontSize(16);
+    doc.text('Products Stock Levels Report', pageWidth/2, 25, { align: 'center' });
+    
+    // Add generation date
+    doc.setFontSize(12);
+    doc.text(`Generated on: ${currentDate}`, pageWidth/2, 35, { align: 'center' });
+
+    // Create bar chart
+    const canvas = document.createElement('canvas');
+    canvas.width = 1200;
+    canvas.height = 600;
+    const ctx = canvas.getContext('2d');
+
+    const sortedProducts = [...products]
+      .sort((a, b) => b.stockQuantity - a.stockQuantity)
+      .slice(0, 8);
+
+    await new Promise((resolve) => {
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: sortedProducts.map(p => 
+            p.name.length > 15 ? p.name.substring(0, 15) + '...' : p.name
+          ),
+          datasets: [{
+            label: 'Stock Level',
+            data: sortedProducts.map(p => p.stockQuantity),
+            backgroundColor: [
+              '#2E1308',  // Darkest Brown
+              '#5E3219',  // Dark Brown
+              '#97553B',  // Medium Brown
+              '#A6755B',  // Brown
+              '#BC9773',  // Light Brown
+              '#C8AD7F',  // Beige
+              '#DEB887',  // Burlywood
+              '#D2B48C'   // Tan
+            ],
+            borderColor: '#2E1308',
+            borderWidth: 1,
+            borderRadius: 4,
+            barThickness: 40
+          }]
+        },
+        options: {
+          responsive: false,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: 'Stock Levels Overview',
+              color: '#2E1308',
+              font: {
+                size: 20,
+                weight: 'bold'
+              },
+              padding: 20
+            },
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: '#DEB887'  // Burlywood for grid lines
+              },
+              ticks: {
+                color: '#2E1308',
+                font: {
+                  size: 12,
+                  weight: 'bold'
+                }
+              }
+            },
+            x: {
+              grid: { display: false },
+              ticks: {
+                color: '#2E1308',
+                font: {
+                  size: 12,
+                  weight: 'bold'
+                },
+                maxRotation: 45,
+                minRotation: 45
+              }
+            }
+          }
+        }
+      });
+      
+      setTimeout(resolve, 100);
+    });
+
+    // Add chart to PDF
+    const chartImage = canvas.toDataURL('image/png', 1.0);
+    doc.addImage(chartImage, 'PNG', 10, 45, 190, 90);
+
+    // Product table with updated colors
+    autoTable(doc, {
+      startY: 145,
+      head: [['Product Name', 'Stock', 'Price (LKR)', 'Status', 'Action Required']],
+      body: products.map(p => [
+        p.name,
+        p.stockQuantity,
+        p.price.toFixed(2),
+        p.stockQuantity <= 10 ? 'Critical' :
+        p.stockQuantity <= 30 ? 'Low' :
+        p.stockQuantity <= 50 ? 'Moderate' : 'Good',
+        p.stockQuantity <= 10 ? 'Immediate Restock' :
+        p.stockQuantity <= 30 ? 'Plan Restock' :
+        p.stockQuantity <= 50 ? 'Monitor' : '-'
+      ]),
+      headStyles: {
+        fillColor: [46, 19, 8],     // Darkest Brown
+        textColor: [200, 173, 127], // Beige
+        fontStyle: 'bold',
+        fontSize: 12
+      },
+      bodyStyles: {
+        fontSize: 10,
+        textColor: [46, 19, 8]      // Darkest Brown
+      },
+      alternateRowStyles: {
+        fillColor: [222, 184, 135, 0.05]  // Very light brown
+      },
+      styles: {
+        cellPadding: 3,
+        lineColor: [151, 85, 59],  // Medium Brown
+        lineWidth: 0.1,
+        fillColor: [255, 255, 255], // White background
+        valign: 'middle'
+      },
+      theme: 'plain', // Changed from 'grid' to remove default blue borders
+      tableLineColor: [151, 85, 59], // Medium Brown
+      tableLineWidth: 0.1,
+      didParseCell: function(data) {
+        // Ensure all cells have white background by default
+        data.cell.styles.fillColor = [255, 255, 255];
+      },
+      didDrawCell: function(data) {
+        if (data.section === 'body' && data.column.index === 3) {
+          if (data.cell.text[0] === 'Critical') {
+            doc.setFillColor(139, 0, 0);  // Dark Red
+            doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.text(data.cell.text[0], data.cell.x + 2, data.cell.y + 5);
+          } else if (data.cell.text[0] === 'Low') {
+            doc.setFillColor(255, 140, 0);  // Dark Orange
+            doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.text(data.cell.text[0], data.cell.x + 2, data.cell.y + 5);
+          } else if (data.cell.text[0] === 'Moderate') {
+            doc.setFillColor(222, 184, 135);  // Burlywood
+            doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
+            doc.setTextColor(0, 0, 0);
+            doc.text(data.cell.text[0], data.cell.x + 2, data.cell.y + 5);
+          } else if (data.cell.text[0] === 'Good') {
+            doc.setFillColor(34, 139, 34);  // Forest Green
+            doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.text(data.cell.text[0], data.cell.x + 2, data.cell.y + 5);
+          }
+        }
+      }
+    });
+
+    // Add footer with page number
+    const pageCount = doc.internal.getNumberOfPages();
+    for(let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(10);
+      doc.setTextColor(46, 19, 8); // Darkest Brown
+      doc.text(
+        `Page ${i} of ${pageCount}`,
+        doc.internal.pageSize.width / 2,
+        doc.internal.pageSize.height - 10,
+        { align: 'center' }
+      );
+    }
+
+    // Save PDF with formatted date
+    const dateForFilename = new Date().toISOString().split('T')[0];
+    doc.save(`HERITAGE_HANDS_Stock_Report_${dateForFilename}.pdf`);
+  };
+
   return (
-    <Box>
-      <ManagerHeader 
-        title="Product Management" 
-        breadcrumbs={[
-          { label: 'Products', path: '/product/manager' },
-        ]}
-      />
-      <Box sx={{ padding: 2 }}>
-        <ToastContainer />
-        <Typography variant="h4" sx={{ marginBottom: 2, textAlign: 'center' }}>
-          Product Manager Dashboard
+    <Box sx={{ padding: 2 }}>
+      <ToastContainer />
+      
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        mb: 3
+      }}>
+        <Typography variant="h4" sx={{ fontWeight: 600 }}>
+          Product Management
         </Typography>
-        {error && (
-          <Typography color="error" sx={{ marginBottom: 2, textAlign: 'center' }}>
-            {error}
-          </Typography>
-        )}
-        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 500, margin: '0 auto' }}>
+        <ActionButton
+          variant="contained"
+          color="primary"
+          startIcon={<RefundIcon />}
+          onClick={() => navigate('/product/admin/refund-management')}
+        >
+          Manage Refunds
+        </ActionButton>
+      </Box>
+
+      <StyledPaper elevation={0}>
+        <Typography 
+          variant="h4" 
+          sx={{ 
+            mb: 4, 
+            textAlign: 'center',
+            color: '#2E1308',
+            fontWeight: 'bold',
+          }}
+        >
+          Product Management
+        </Typography>
+
+        <Button
+          variant="contained"
+          startIcon={<FileDownloadIcon />}
+          onClick={generatePDF}
+          sx={{
+            mb: 3,
+            backgroundColor: '#97553B',
+            '&:hover': { backgroundColor: '#5E3219' }
+          }}
+        >
+          Generate Report
+        </Button>
+
+        <Box component="form" onSubmit={handleSubmit} sx={{ mb: 4 }}>
           <TextField
+            fullWidth
             label="Name"
             name="name"
             value={formData.name}
             onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            margin="normal"
             required
-            disabled={loading}
-            error={!formData.name.trim() && error}
-            helperText={!formData.name.trim() && error ? "Name is required" : ""}
+            error={!!formErrors.name}
+            helperText={formErrors.name || 'Only letters and spaces are allowed'}
+            inputProps={{
+              maxLength: 100
+            }}
           />
           <TextField
+            fullWidth
             label="Description"
             name="description"
             value={formData.description}
             onChange={handleInputChange}
-            required
+            margin="normal"
             multiline
             rows={3}
-            disabled={loading}
-            error={!formData.description.trim() && error}
-            helperText={!formData.description.trim() && error ? "Description is required" : ""}
+            required
+            error={!!formErrors.description}
+            helperText={formErrors.description}
+            inputProps={{
+              maxLength: 500
+            }}
           />
           <TextField
-            label="Price"
+            fullWidth
+            label="Price (LKR)"
             name="price"
             type="number"
             value={formData.price}
             onChange={handleInputChange}
+            margin="normal"
             required
-            disabled={loading}
-            error={(isNaN(parseFloat(formData.price)) || parseFloat(formData.price) <= 0) && error}
-            helperText={(isNaN(parseFloat(formData.price)) || parseFloat(formData.price) <= 0) && error ? "Price must be positive" : ""}
+            error={!!formErrors.price}
+            helperText={formErrors.price}
+            inputProps={{
+              min: 0,
+              step: 0.01,
+              max: 1000000
+            }}
           />
           <TextField
+            fullWidth
             label="Stock Quantity"
             name="stockQuantity"
             type="number"
             value={formData.stockQuantity}
             onChange={handleInputChange}
+            margin="normal"
             required
-            disabled={loading}
-            error={(isNaN(parseInt(formData.stockQuantity, 10)) || parseInt(formData.stockQuantity, 10) < 0) && error}
-            helperText={(isNaN(parseInt(formData.stockQuantity, 10)) || parseInt(formData.stockQuantity, 10) < 0) && error ? "Stock must be non-negative" : ""}
+            error={!!formErrors.stockQuantity}
+            helperText={formErrors.stockQuantity}
+            inputProps={{
+              min: 0,
+              max: 10000
+            }}
           />
           <TextField
+            fullWidth
             label="Category"
             name="category"
             value={formData.category}
             onChange={handleInputChange}
+            margin="normal"
             required
-            disabled={loading}
-            error={!formData.category.trim() && error}
-            helperText={!formData.category.trim() && error ? "Category is required" : ""}
+            error={!!formErrors.category}
+            helperText={formErrors.category}
+            inputProps={{
+              maxLength: 50
+            }}
           />
           <input
             type="file"
             accept="image/*"
             onChange={handleFileChange}
-            disabled={loading}
+            style={{ margin: '16px 0' }}
           />
           <Button
             type="submit"
             variant="contained"
-            sx={{ backgroundColor: '#DAA520', '&:hover': { backgroundColor: '#228B22' } }}
             disabled={loading}
+            sx={{
+              mt: 2,
+              backgroundColor: '#5E3219',
+              '&:hover': { backgroundColor: '#2E1308' }
+            }}
           >
             {loading ? <CircularProgress size={24} /> : editingProduct ? 'Update Product' : 'Add Product'}
           </Button>
@@ -260,63 +681,109 @@ const ProductManager = () => {
               onClick={() => {
                 setEditingProduct(null);
                 setFormData({ name: '', description: '', price: '', stockQuantity: '', category: '', image: null });
-                setError(null); // Clear error on cancel
               }}
-              disabled={loading}
+              sx={{ ml: 2, mt: 2 }}
             >
               Cancel Edit
             </Button>
           )}
         </Box>
-        <Typography variant="h5" sx={{ marginTop: 4, marginBottom: 2 }}>
+
+        {error && (
+          <Typography color="error" sx={{ mb: 2 }}>
+            {error}
+          </Typography>
+        )}
+
+        <Typography variant="h5" sx={{ mb: 2, color: '#2E1308' }}>
           Product List
         </Typography>
+
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
             <CircularProgress />
           </Box>
-        ) : products.length === 0 ? (
-          <Typography>No products available.</Typography>
         ) : (
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Image</TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell>Category</TableCell>
-                <TableCell>Price</TableCell>
-                <TableCell>Stock</TableCell>
-                <TableCell>Actions</TableCell>
+                <StyledTableCell>Image</StyledTableCell>
+                <StyledTableCell>Name</StyledTableCell>
+                <StyledTableCell>Category</StyledTableCell>
+                <StyledTableCell>Price (LKR)</StyledTableCell>
+                <StyledTableCell>Stock</StyledTableCell>
+                <StyledTableCell>Actions</StyledTableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {products.map((product) => (
-                <TableRow key={product._id}>
+                <StyledTableRow key={product._id}>
                   <TableCell>
-                    <img
+                    <Box
+                      component="img"
                       src={product.image ? `http://localhost:5000${product.image}` : 'https://via.placeholder.com/50'}
                       alt={product.name}
-                      style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: '4px' }}
+                      sx={{
+                        width: 50,
+                        height: 50,
+                        objectFit: 'cover',
+                        borderRadius: '8px'
+                      }}
                     />
                   </TableCell>
                   <TableCell>{product.name}</TableCell>
                   <TableCell>{product.category}</TableCell>
-                  <TableCell>LKR {product.price.toFixed(2)}</TableCell>
-                  <TableCell>{product.stockQuantity}</TableCell>
+                  <TableCell>{product.price.toFixed(2)}</TableCell>
                   <TableCell>
-                    <IconButton onClick={() => handleEdit(product)} disabled={loading}>
-                      <Edit />
-                    </IconButton>
-                    <IconButton onClick={() => handleDelete(product._id)} disabled={loading}>
-                      <Delete />
-                    </IconButton>
+                    <Typography
+                      sx={{
+                        color: product.stockQuantity <= 10 ? '#dc3545' :
+                               product.stockQuantity <= 30 ? '#ffc107' :
+                               '#28a745',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      {product.stockQuantity}
+                    </Typography>
                   </TableCell>
-                </TableRow>
+                  <TableCell>
+                    <Tooltip title="Edit">
+                      <IconButton 
+                        onClick={() => handleEdit(product)}
+                        sx={{ 
+                          color: '#97553B',
+                          '&:hover': { 
+                            color: '#5E3219',
+                            transform: 'scale(1.1)'
+                          },
+                          transition: 'all 0.3s ease'
+                        }}
+                      >
+                        <EditIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Delete">
+                      <IconButton 
+                        onClick={() => handleDelete(product._id)}
+                        sx={{ 
+                          color: '#dc3545',
+                          '&:hover': { 
+                            color: '#c82333',
+                            transform: 'scale(1.1)'
+                          },
+                          transition: 'all 0.3s ease'
+                        }}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
+                </StyledTableRow>
               ))}
             </TableBody>
           </Table>
         )}
-      </Box>
+      </StyledPaper>
     </Box>
   );
 };
