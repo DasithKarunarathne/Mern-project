@@ -220,13 +220,13 @@ const MonthlyOvertime = () => {
       record.empID,
       record.empname,
       record.totalOvertimeHours.toString(),
-      `$${record.overtimeRate.toLocaleString()}`,
-      `$${record.overtimePay.toLocaleString()}`,
+      `LKR ${record.overtimeRate.toLocaleString()}`,
+      `LKR ${record.overtimePay.toLocaleString()}`,
       record.details && record.details.length > 0
         ? record.details
             .map(
               (detail) =>
-                `Date: ${formatDate(detail.date)}, Hours: ${detail.overtimeHours}, Pay: $${detail.overtimePay.toLocaleString()}`
+                `Date: ${formatDate(detail.date)}, Hours: ${detail.overtimeHours}, Pay: LKR ${detail.overtimePay.toLocaleString()}`
             )
             .join("\n")
         : "No details available",
@@ -240,8 +240,8 @@ const MonthlyOvertime = () => {
           "Employee ID",
           "Name",
           "Total Hours",
-          "Rate ($/hr)",
-          "Total Pay ($)",
+          "Rate (LKR/hr)",
+          "Total Pay (LKR)",
           "Details",
         ],
       ],
@@ -429,8 +429,8 @@ const MonthlyOvertime = () => {
                 <TableCell>Employee ID</TableCell>
                 <TableCell>Name</TableCell>
                     <TableCell>Total Hours</TableCell>
-                    <TableCell>Rate ($/hr)</TableCell>
-                    <TableCell>Total Pay ($)</TableCell>
+                    <TableCell>Rate (LKR/hr)</TableCell>
+                    <TableCell>Total Pay (LKR)</TableCell>
                     <TableCell>Details</TableCell>
               </TableRow>
             </TableHead>
@@ -446,8 +446,8 @@ const MonthlyOvertime = () => {
                           size="small"
                         />
                       </TableCell>
-                      <TableCell>${record.overtimeRate.toLocaleString()}</TableCell>
-                      <TableCell>${record.overtimePay.toLocaleString()}</TableCell>
+                      <TableCell>LKR {record.overtimeRate.toLocaleString()}</TableCell>
+                      <TableCell>LKR {record.overtimePay.toLocaleString()}</TableCell>
                   <TableCell>
                     {record.details && record.details.length > 0 ? (
                       <Table size="small">
@@ -463,7 +463,7 @@ const MonthlyOvertime = () => {
                             <TableRow key={index}>
                               <TableCell>{formatDate(detail.date)}</TableCell>
                               <TableCell>{detail.overtimeHours}</TableCell>
-                              <TableCell>${detail.overtimePay.toLocaleString()}</TableCell>
+                              <TableCell>LKR {detail.overtimePay.toLocaleString()}</TableCell>
                             </TableRow>
                           ))}
                         </TableBody>

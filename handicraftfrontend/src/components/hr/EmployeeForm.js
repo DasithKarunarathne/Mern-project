@@ -316,7 +316,7 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
           helperText={errors.basicSalary}
           disabled={loading}
                   InputProps={{
-                    startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                    startAdornment: <InputAdornment position="start">LKR</InputAdornment>,
           }}
         />
               </Grid>
@@ -333,7 +333,7 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
           helperText={errors.overtimeRate}
           disabled={loading}
                   InputProps={{
-                    startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                    startAdornment: <InputAdornment position="start">LKR</InputAdornment>,
           }}
         />
               </Grid>

@@ -290,13 +290,13 @@ const EmployeeList = () => {
 
                       <Box sx={{ mb: 2 }}>
                         <Typography variant="body2" color="text.secondary">
-                          Basic Salary: ${employee.basicSalary}
+                          Basic Salary: LKR {employee.basicSalary}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                          Overtime Rate: ${employee.overtimeRate}/hr
+                          Overtime Rate: LKR {employee.overtimeRate}/hr
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                          Total Overtime Pay: ${employee.totalOvertimePay?.toLocaleString() || '0'}
+                          Total Overtime Pay: LKR {employee.totalOvertimePay?.toLocaleString() || '0'}
                         </Typography>
                       </Box>
 
