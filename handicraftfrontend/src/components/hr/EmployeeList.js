@@ -20,12 +20,19 @@ import {
   Chip,
   CircularProgress,
   Alert,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { Edit, Delete, Search, Add, AccessTime, Description } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import EmployeeUpdateForm from "./EmployeeUpdateForm";
+import ManagerHeader from "../common/ManagerHeader";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
@@ -157,175 +164,185 @@ const EmployeeList = () => {
   };
 
   return (
-    <ListContainer>
-      <Stepper activeStep={1} alternativeLabel sx={{ mb: 4 }}>
-        <Step>
-          <StepLabel>Add Employee</StepLabel>
-        </Step>
-        <Step>
-          <StepLabel>Employee List</StepLabel>
-        </Step>
-        <Step>
-          <StepLabel>Overtime Management</StepLabel>
-        </Step>
-      </Stepper>
-
-      <Typography
-        variant={isMobile ? "h4" : "h3"}
-        sx={{
-          fontWeight: 700,
-          marginBottom: 4,
-          textAlign: "center",
-          color: theme.palette.primary.main,
-        }}
-      >
-        Employee List
-      </Typography>
-
-      <Box sx={{ mb: 3, display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center" }}>
-        <ActionButton
-          variant="contained"
-          color="primary"
-          onClick={() => navigate("/hr")}
-          startIcon={<Add />}
-        >
-          Add New Employee
-        </ActionButton>
-        <ActionButton
-          variant="contained"
-          color="secondary"
-          onClick={() => navigate("/hr/overtime/monthly")}
-          startIcon={<AccessTime />}
-        >
-          View Monthly Overtime Report
-        </ActionButton>
-        <ActionButton
-          variant="contained"
-          color="primary"
-          onClick={() => navigate("/hr/overtime")}
-          startIcon={<Description />}
-        >
-          Add Overtime
-        </ActionButton>
-        <CustomTextField
-          label="Search Employees"
-          variant="outlined"
-          value={searchTerm}
-          onChange={handleSearchChange}
-          sx={{ width: 300 }}
-          InputProps={{
-            startAdornment: (
-              <Search color="primary" sx={{ mr: 1 }} />
-            ),
-          }}
-        />
-      </Box>
-
-      {error && (
-        <Alert severity="error" sx={{ mb: 3, borderRadius: '12px' }}>
-          {error}
-        </Alert>
-      )}
-
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-          <CircularProgress size={60} thickness={4} />
+    <Box>
+      <ManagerHeader 
+        title="Employee List" 
+        breadcrumbs={[
+          { label: 'HR', path: '/hr' },
+        ]}
+      />
+      <Box sx={{ p: 3 }}>
+        <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate("/hr")}
+            startIcon={<Add />}
+          >
+            Add New Employee
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => navigate("/hr/overtime/monthly")}
+          >
+            View Monthly Overtime Report
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate("/hr/overtime")}
+          >
+            Add Overtime
+          </Button>
         </Box>
-      ) : filteredEmployees.length === 0 ? (
-        <Typography variant="h6" align="center" sx={{ my: 4 }}>
-          No employees found.
-        </Typography>
-      ) : (
-        <Grid container spacing={3}>
-          {filteredEmployees.map((employee) => (
-            <Grid item xs={12} sm={6} md={4} key={employee._id}>
-              <EmployeeCard>
-                <CardContent>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                      {employee.empname}
-                    </Typography>
-                    <Box>
-                      <IconButton color="primary" onClick={() => handleUpdateClick(employee._id)}>
-                        <Edit />
-                      </IconButton>
-                      <IconButton color="error" onClick={() => handleDelete(employee._id)}>
-                        <Delete />
-                      </IconButton>
-                    </Box>
-                  </Box>
-                  
-                  <Chip
-                    label={`ID: ${employee.empID}`}
-                    size="small"
-                    sx={{ mb: 2 }}
-                  />
-                  <Chip
-                    label={employee.role}
-                    color="primary"
-                    size="small"
-                    sx={{ mb: 2, ml: 1 }}
-                  />
+        <ListContainer>
+          <Stepper activeStep={1} alternativeLabel sx={{ mb: 4 }}>
+            <Step>
+              <StepLabel>Add Employee</StepLabel>
+            </Step>
+            <Step>
+              <StepLabel>Employee List</StepLabel>
+            </Step>
+            <Step>
+              <StepLabel>Overtime Management</StepLabel>
+            </Step>
+          </Stepper>
 
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Basic Salary: ${employee.basicSalary}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Overtime Rate: ${employee.overtimeRate}/hr
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Total Overtime Pay: ${employee.totalOvertimePay?.toLocaleString() || '0'}
-                    </Typography>
-                  </Box>
+          <Typography
+            variant={isMobile ? "h4" : "h3"}
+            sx={{
+              fontWeight: 700,
+              marginBottom: 4,
+              textAlign: "center",
+              color: theme.palette.primary.main,
+            }}
+          >
+            Employee List
+          </Typography>
 
-                  {employee.image && (
-                    <CardMedia
-                      component="img"
-                      image={employee.image}
-                      alt={employee.empname}
-                      sx={{
-                        width: '100%',
-                        height: 200,
-                        objectFit: 'cover',
-                        borderRadius: '8px',
-                        mb: 2,
-                      }}
-                    />
-                  )}
+          <Box sx={{ mb: 3, display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center" }}>
+            <CustomTextField
+              label="Search Employees"
+              variant="outlined"
+              value={searchTerm}
+              onChange={handleSearchChange}
+              sx={{ width: 300 }}
+              InputProps={{
+                startAdornment: (
+                  <Search color="primary" sx={{ mr: 1 }} />
+                ),
+              }}
+            />
+          </Box>
 
-                  {overtimeRecords[employee._id] && overtimeRecords[employee._id].length > 0 && (
-                    <Box sx={{ mt: 2 }}>
-                      <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                        Recent Overtime Records:
-                      </Typography>
-                      {overtimeRecords[employee._id].slice(0, 2).map((record) => (
-                        <Box key={record._id} sx={{ mb: 1 }}>
-                          <Typography variant="caption" color="text.secondary">
-                            {formatMonth(record.month)}: {record.totalOvertimeHours} hours
-                          </Typography>
+          {error && (
+            <Alert severity="error" sx={{ mb: 3, borderRadius: '12px' }}>
+              {error}
+            </Alert>
+          )}
+
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+              <CircularProgress size={60} thickness={4} />
+            </Box>
+          ) : filteredEmployees.length === 0 ? (
+            <Typography variant="h6" align="center" sx={{ my: 4 }}>
+              No employees found.
+            </Typography>
+          ) : (
+            <Grid container spacing={3}>
+              {filteredEmployees.map((employee) => (
+                <Grid item xs={12} sm={6} md={4} key={employee._id}>
+                  <EmployeeCard>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                          {employee.empname}
+                        </Typography>
+                        <Box>
+                          <IconButton color="primary" onClick={() => handleUpdateClick(employee._id)}>
+                            <Edit />
+                          </IconButton>
+                          <IconButton color="error" onClick={() => handleDelete(employee._id)}>
+                            <Delete />
+                          </IconButton>
                         </Box>
-                      ))}
-                    </Box>
-                  )}
-
-                  {selectedEmployeeId === employee._id && (
-                    <Box sx={{ mt: 2 }}>
-                      <Divider sx={{ my: 2 }} />
-                      <EmployeeUpdateForm
-                        employee={employee}
-                        onUpdate={fetchEmployees}
-                        onCancel={() => setSelectedEmployeeId(null)}
+                      </Box>
+                      
+                      <Chip
+                        label={`ID: ${employee.empID}`}
+                        size="small"
+                        sx={{ mb: 2 }}
                       />
-                    </Box>
-                  )}
-                </CardContent>
-              </EmployeeCard>
+                      <Chip
+                        label={employee.role}
+                        color="primary"
+                        size="small"
+                        sx={{ mb: 2, ml: 1 }}
+                      />
+
+                      <Box sx={{ mb: 2 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          Basic Salary: ${employee.basicSalary}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Overtime Rate: ${employee.overtimeRate}/hr
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Total Overtime Pay: ${employee.totalOvertimePay?.toLocaleString() || '0'}
+                        </Typography>
+                      </Box>
+
+                      {employee.image && (
+                        <CardMedia
+                          component="img"
+                          image={employee.image}
+                          alt={employee.empname}
+                          sx={{
+                            width: '100%',
+                            height: 200,
+                            objectFit: 'cover',
+                            borderRadius: '8px',
+                            mb: 2,
+                          }}
+                        />
+                      )}
+
+                      {overtimeRecords[employee._id] && overtimeRecords[employee._id].length > 0 && (
+                        <Box sx={{ mt: 2 }}>
+                          <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                            Recent Overtime Records:
+                          </Typography>
+                          {overtimeRecords[employee._id].slice(0, 2).map((record) => (
+                            <Box key={record._id} sx={{ mb: 1 }}>
+                              <Typography variant="caption" color="text.secondary">
+                                {formatMonth(record.month)}: {record.totalOvertimeHours} hours
+                              </Typography>
+                            </Box>
+                          ))}
+                        </Box>
+                      )}
+
+                      {selectedEmployeeId === employee._id && (
+                        <Box sx={{ mt: 2 }}>
+                          <Divider sx={{ my: 2 }} />
+                          <EmployeeUpdateForm
+                            employee={employee}
+                            onUpdate={fetchEmployees}
+                            onCancel={() => setSelectedEmployeeId(null)}
+                          />
+                        </Box>
+                      )}
+                    </CardContent>
+                  </EmployeeCard>
+                </Grid>
+              ))}
             </Grid>
-          ))}
-        </Grid>
-      )}
-    </ListContainer>
+          )}
+        </ListContainer>
+      </Box>
+    </Box>
   );
 };
 
