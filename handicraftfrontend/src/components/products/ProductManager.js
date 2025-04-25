@@ -15,6 +15,7 @@ import {
   IconButton,
   Tooltip,
   Alert,
+  TableContainer,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { toast, ToastContainer } from 'react-toastify';
@@ -736,6 +737,134 @@ const ProductManager = () => {
               </Button>
             </Box>
           </Box>
+        </StyledPaper>
+
+        {/* Product List Section */}
+        <StyledPaper elevation={0} sx={{ mt: 4 }}>
+          <Typography variant="h5" sx={{ mb: 3, color: '#2E1308', fontWeight: 600 }}>
+            Product List
+          </Typography>
+
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+              <CircularProgress size={40} />
+            </Box>
+          ) : products.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Typography color="textSecondary">
+                No products available. Add your first product using the form above.
+              </Typography>
+            </Box>
+          ) : (
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <StyledTableCell>Image</StyledTableCell>
+                    <StyledTableCell>Name</StyledTableCell>
+                    <StyledTableCell>Category</StyledTableCell>
+                    <StyledTableCell>Price (LKR)</StyledTableCell>
+                    <StyledTableCell>Stock</StyledTableCell>
+                    <StyledTableCell align="center">Actions</StyledTableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {products.map((product) => (
+                    <StyledTableRow key={product._id}>
+                      <TableCell>
+                        <Box
+                          component="img"
+                          src={product.image ? `http://localhost:5000${product.image}` : 'https://via.placeholder.com/50'}
+                          alt={product.name}
+                          sx={{
+                            width: 50,
+                            height: 50,
+                            objectFit: 'cover',
+                            borderRadius: '8px'
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Typography sx={{ fontWeight: 500 }}>
+                          {product.name}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ 
+                          backgroundColor: 'rgba(151, 85, 59, 0.1)', 
+                          color: '#97553B',
+                          py: 0.5,
+                          px: 1.5,
+                          borderRadius: '16px',
+                          display: 'inline-block'
+                        }}>
+                          {product.category}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography sx={{ fontWeight: 600, color: '#2E1308' }}>
+                          {product.price.toFixed(2)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography
+                          sx={{
+                            color: product.stockQuantity <= 10 ? '#dc3545' :
+                                   product.stockQuantity <= 30 ? '#ffc107' :
+                                   '#28a745',
+                            fontWeight: 'bold',
+                            backgroundColor: product.stockQuantity <= 10 ? 'rgba(220, 53, 69, 0.1)' :
+                                          product.stockQuantity <= 30 ? 'rgba(255, 193, 7, 0.1)' :
+                                          'rgba(40, 167, 69, 0.1)',
+                            py: 0.5,
+                            px: 1.5,
+                            borderRadius: '16px',
+                            display: 'inline-block'
+                          }}
+                        >
+                          {product.stockQuantity}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
+                          <Tooltip title="Edit Product">
+                            <IconButton 
+                              onClick={() => handleEdit(product)}
+                              sx={{ 
+                                color: '#97553B',
+                                '&:hover': { 
+                                  color: '#5E3219',
+                                  transform: 'scale(1.1)'
+                                },
+                                transition: 'all 0.3s ease'
+                              }}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Delete Product">
+                            <IconButton 
+                              onClick={() => handleDelete(product._id)}
+                              sx={{ 
+                                color: '#dc3545',
+                                '&:hover': { 
+                                  color: '#c82333',
+                                  transform: 'scale(1.1)'
+                                },
+                                transition: 'all 0.3s ease'
+                              }}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      </TableCell>
+                    </StyledTableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
         </StyledPaper>
       </Box>
     </Box>
