@@ -449,7 +449,7 @@ const Layout = ({ children }) => {
                 </Box>
                 <Box className="contact-item">
                   <Email />
-                  <Typography variant="body2">
+        <Typography variant="body2">
                     info@heritagehands.lk
                   </Typography>
                 </Box>
@@ -500,8 +500,8 @@ const Layout = ({ children }) => {
               fontWeight: 500,
               textShadow: '0 1px 2px rgba(0,0,0,0.2)',
             }}>
-              © {new Date().getFullYear()} Heritage Hands. All rights reserved.
-            </Typography>
+          © {new Date().getFullYear()} Heritage Hands. All rights reserved.
+        </Typography>
             <Box sx={{ 
               mt: { xs: 2, sm: 0 },
               display: 'flex',
