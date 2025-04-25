@@ -31,7 +31,7 @@ router.post("/add", upload, async (req, res) => {
     try {
         console.log("Starting /api/employee/add route...");
 
-        const { empID, empname, role, basicSalary, overtimeRate } = req.body;
+        const { empID, empname, role, basicSalary, overtimeRate, gender, contactNumber, address, emergencyContact } = req.body;
         if (!empID) {
             return res.status(400).json({ error: "Employee ID is required" });
         }
@@ -43,6 +43,10 @@ router.post("/add", upload, async (req, res) => {
             role,
             basicSalary,
             overtimeRate,
+            gender,
+            contactNumber,
+            address,
+            emergencyContact,
             image: req.files["image"] ? req.files["image"][0].originalname : null,
             birthCertificate: req.files["birthCertificate"] ? req.files["birthCertificate"][0].originalname : null,
             medicalRecords: req.files["medicalRecords"] ? req.files["medicalRecords"][0].originalname : null,
@@ -57,9 +61,23 @@ router.post("/add", upload, async (req, res) => {
 
         // Validate required text fields
         console.log("Validating required text fields...");
-        if (!empID || !empname || !role || !basicSalary) {
+        if (!empID || !empname || !role || !basicSalary || !gender || !contactNumber || !address || !emergencyContact) {
             console.log("Validation failed: Missing required text fields");
-            return res.status(400).json({ error: "empID, empname, role, and basicSalary are required" });
+            return res.status(400).json({ error: "All fields are required" });
+        }
+
+        // Validate phone numbers
+        const phoneRegex = /^\d{10}$/;
+        if (!phoneRegex.test(contactNumber)) {
+            return res.status(400).json({ error: "Contact number must be 10 digits" });
+        }
+        if (!phoneRegex.test(emergencyContact)) {
+            return res.status(400).json({ error: "Emergency contact must be 10 digits" });
+        }
+
+        // Validate gender
+        if (!['Male', 'Female', 'Other'].includes(gender)) {
+            return res.status(400).json({ error: "Invalid gender value" });
         }
 
         // Validate basicSalary
@@ -119,6 +137,10 @@ router.post("/add", upload, async (req, res) => {
             empID,
             empname,
             role,
+            gender,
+            contactNumber,
+            address,
+            emergencyContact,
             basicSalary: basicSalaryNum,
             overtimeRate: overtimeRateNum,
             image,
@@ -127,7 +149,7 @@ router.post("/add", upload, async (req, res) => {
             birthCertificateType,
             medicalRecords,
             medicalRecordsType,
-            totalOvertimePay: 0 // Initialize the new field
+            totalOvertimePay: 0
         });
 
         // Save the employee to MongoDB
@@ -221,7 +243,7 @@ router.delete("/delete/:id", async (req, res) => {
 router.put("/update/:id", upload, async (req, res) => {
     try {
         const { id } = req.params;
-        const { empID, empname, role, basicSalary, overtimeRate } = req.body;
+        const { empID, empname, role, basicSalary, overtimeRate, gender, contactNumber, address, emergencyContact } = req.body;
 
         // Validate the ID
         if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -241,15 +263,32 @@ router.put("/update/:id", upload, async (req, res) => {
             role,
             basicSalary,
             overtimeRate,
+            gender,
+            contactNumber,
+            address,
+            emergencyContact,
             image: req.files["image"] ? req.files["image"][0].originalname : null,
             birthCertificate: req.files["birthCertificate"] ? req.files["birthCertificate"][0].originalname : null,
-            medicalRecords: req.files["medicalRecords"] ? req.files["medicalRecords"][0].originalname : null,
         });
 
         // Validate required text fields
-        if (!empID || !empname || !role || !basicSalary) {
+        if (!empID || !empname || !role || !basicSalary || !gender || !contactNumber || !address || !emergencyContact) {
             console.log("Validation failed: Missing required text fields");
-            return res.status(400).json({ error: "empID, empname, role, and basicSalary are required" });
+            return res.status(400).json({ error: "All fields are required" });
+        }
+
+        // Validate phone numbers
+        const phoneRegex = /^\d{10}$/;
+        if (!phoneRegex.test(contactNumber)) {
+            return res.status(400).json({ error: "Contact number must be 10 digits" });
+        }
+        if (!phoneRegex.test(emergencyContact)) {
+            return res.status(400).json({ error: "Emergency contact must be 10 digits" });
+        }
+
+        // Validate gender
+        if (!['Male', 'Female', 'Other'].includes(gender)) {
+            return res.status(400).json({ error: "Invalid gender value" });
         }
 
         // Validate basicSalary
@@ -287,10 +326,14 @@ router.put("/update/:id", upload, async (req, res) => {
         }
 
         // Update text fields
-        const oldEmpID = employee.empID; // Store the old empID for updating EmployeePayments
+        const oldEmpID = employee.empID;
         employee.empID = empID;
         employee.empname = empname;
         employee.role = role;
+        employee.gender = gender;
+        employee.contactNumber = contactNumber;
+        employee.address = address;
+        employee.emergencyContact = emergencyContact;
         employee.basicSalary = basicSalaryNum;
         employee.overtimeRate = overtimeRateNum;
 
@@ -317,7 +360,7 @@ router.put("/update/:id", upload, async (req, res) => {
         console.log("Employee updated in MongoDB:", updatedEmployee);
 
         // Update the corresponding EmployeePayments record
-        const employeePayment = await EmployeePayments.findOne({ empID: oldEmpID }).maxTimeMS(10000);
+        const employeePayment = await EmployeePayments.findOne({ empID: employee.empID }).maxTimeMS(10000);
         if (employeePayment) {
             employeePayment.empID = empID;
             employeePayment.empname = empname;
@@ -588,6 +631,38 @@ router.get("/payments", async (req, res) => {
     } catch (err) {
         console.error("Error fetching employee payments:", err);
         res.status(500).json({ error: "Failed to fetch employee payments", details: err.message });
+    }
+});
+
+// GET /api/employee/:id
+router.get("/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Validate the ID
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ error: "Invalid employee ID" });
+        }
+
+        // Find the employee
+        const employee = await Employee.findById(id).maxTimeMS(10000);
+        if (!employee) {
+            return res.status(404).json({ error: "Employee not found" });
+        }
+
+        // Convert the employee object and handle file data
+        const employeeObj = employee.toObject();
+        if (employee.image && employee.imageType) {
+            employeeObj.image = `data:${employee.imageType};base64,${employee.image.toString("base64")}`;
+        }
+        if (employee.birthCertificate && employee.birthCertificateType) {
+            employeeObj.birthCertificate = `data:${employee.birthCertificateType};base64,${employee.birthCertificate.toString("base64")}`;
+        }
+
+        res.json(employeeObj);
+    } catch (err) {
+        console.error("Error fetching employee:", err);
+        res.status(500).json({ error: "Failed to fetch employee", details: err.message });
     }
 });
 

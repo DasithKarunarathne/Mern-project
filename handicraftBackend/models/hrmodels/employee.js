@@ -17,6 +17,35 @@ const employeeSchema = new Schema({
         type: String, 
         required: true 
     },
+    gender: {
+        type: String,
+        required: true,
+        enum: ['Male', 'Female', 'Other']
+    },
+    contactNumber: {
+        type: String,
+        required: true,
+        validate: {
+            validator: function(v) {
+                return /^\d{10}$/.test(v);
+            },
+            message: props => `${props.value} is not a valid 10-digit phone number!`
+        }
+    },
+    address: {
+        type: String,
+        required: true
+    },
+    emergencyContact: {
+        type: String,
+        required: true,
+        validate: {
+            validator: function(v) {
+                return /^\d{10}$/.test(v);
+            },
+            message: props => `${props.value} is not a valid 10-digit phone number!`
+        }
+    },
     basicSalary: { 
         type: Number, 
         required: true
@@ -27,7 +56,7 @@ const employeeSchema = new Schema({
     },
     image: { 
         type: Buffer, 
-        
+        required: true 
     },
     imageType: { 
         type: String, 
@@ -51,7 +80,7 @@ const employeeSchema = new Schema({
     },
     totalOvertimePay: { 
         type: Number, 
-        default: 0 // New field to store cumulative overtime pay
+        default: 0
     }
 });
 

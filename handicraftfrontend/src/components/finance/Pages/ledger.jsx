@@ -401,7 +401,7 @@ const Ledger = () => {
           {error}
             </Alert>
           </Snackbar>
-        )}
+      )}
 
         <StyledCard>
           <CardContent>

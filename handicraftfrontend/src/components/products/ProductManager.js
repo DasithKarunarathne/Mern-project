@@ -14,6 +14,7 @@ import {
   Paper,
   IconButton,
   Tooltip,
+  Alert,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { toast, ToastContainer } from 'react-toastify';
@@ -25,6 +26,7 @@ import { Chart } from 'chart.js/auto';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import RefundIcon from '@mui/icons-material/AssignmentReturn';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 // Styled components
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -530,260 +532,211 @@ const ProductManager = () => {
   };
 
   return (
-    <Box sx={{ padding: 2 }}>
-      <ToastContainer />
-      
-      <Box sx={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        mb: 3
-      }}>
-        <Typography variant="h4" sx={{ fontWeight: 600 }}>
-          Product Management
-        </Typography>
-        <ActionButton
-          variant="contained"
-          color="primary"
-          startIcon={<RefundIcon />}
-          onClick={() => navigate('/product/admin/refund-management')}
-        >
-          Manage Refunds
-        </ActionButton>
-      </Box>
-
-      <StyledPaper elevation={0}>
-        <Typography 
-          variant="h4" 
-          sx={{ 
-            mb: 4, 
-            textAlign: 'center',
-            color: '#2E1308',
-            fontWeight: 'bold',
-          }}
-        >
-          Product Management
-        </Typography>
-
-        <Button
-          variant="contained"
-          startIcon={<FileDownloadIcon />}
-          onClick={generatePDF}
-          sx={{
-            mb: 3,
-            backgroundColor: '#97553B',
-            '&:hover': { backgroundColor: '#5E3219' }
-          }}
-        >
-          Generate Report
-        </Button>
-
-        <Box component="form" onSubmit={handleSubmit} sx={{ mb: 4 }}>
-          <TextField
-            fullWidth
-            label="Name"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            margin="normal"
-            required
-            error={!!formErrors.name}
-            helperText={formErrors.name || 'Only letters and spaces are allowed'}
-            inputProps={{
-              maxLength: 100
-            }}
-          />
-          <TextField
-            fullWidth
-            label="Description"
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
-            margin="normal"
-            multiline
-            rows={3}
-            required
-            error={!!formErrors.description}
-            helperText={formErrors.description}
-            inputProps={{
-              maxLength: 500
-            }}
-          />
-          <TextField
-            fullWidth
-            label="Price (LKR)"
-            name="price"
-            type="number"
-            value={formData.price}
-            onChange={handleInputChange}
-            margin="normal"
-            required
-            error={!!formErrors.price}
-            helperText={formErrors.price}
-            inputProps={{
-              min: 0,
-              step: 0.01,
-              max: 1000000
-            }}
-          />
-          <TextField
-            fullWidth
-            label="Stock Quantity"
-            name="stockQuantity"
-            type="number"
-            value={formData.stockQuantity}
-            onChange={handleInputChange}
-            margin="normal"
-            required
-            error={!!formErrors.stockQuantity}
-            helperText={formErrors.stockQuantity}
-            inputProps={{
-              min: 0,
-              max: 10000
-            }}
-          />
-          <TextField
-            fullWidth
-            label="Category"
-            name="category"
-            value={formData.category}
-            onChange={handleInputChange}
-            margin="normal"
-            required
-            error={!!formErrors.category}
-            helperText={formErrors.category}
-            inputProps={{
-              maxLength: 50
-            }}
-          />
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            style={{ margin: '16px 0' }}
-          />
-          <Button
-            type="submit"
-            variant="contained"
-            disabled={loading}
-            sx={{
-              mt: 2,
-              backgroundColor: '#5E3219',
-              '&:hover': { backgroundColor: '#2E1308' }
-            }}
-          >
-            {loading ? <CircularProgress size={24} /> : editingProduct ? 'Update Product' : 'Add Product'}
-          </Button>
-          {editingProduct && (
-            <Button
-              variant="outlined"
-              onClick={() => {
-                setEditingProduct(null);
-                setFormData({ name: '', description: '', price: '', stockQuantity: '', category: '', image: null });
+    <Box>
+      <ManagerHeader 
+        title="Product Management" 
+        breadcrumbs={[
+          { label: 'Products', path: '/product/manager' },
+        ]}
+      />
+      <Box sx={{ padding: 3 }}>
+        <ToastContainer />
+        
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          mb: 3
+        }}>
+          <Typography variant="h4" sx={{ fontWeight: 600, color: '#2E1308' }}>
+            Product Management Dashboard
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <ActionButton
+              variant="contained"
+              startIcon={<FileDownloadIcon />}
+              onClick={generatePDF}
+              sx={{
+                backgroundColor: '#97553B',
+                '&:hover': { backgroundColor: '#5E3219' }
               }}
-              sx={{ ml: 2, mt: 2 }}
             >
-              Cancel Edit
-            </Button>
-          )}
+              Generate Report
+            </ActionButton>
+            <ActionButton
+              variant="contained"
+              color="primary"
+              startIcon={<RefundIcon />}
+              onClick={() => navigate('/product/admin/refund-management')}
+            >
+              Manage Refunds
+            </ActionButton>
+          </Box>
         </Box>
 
         {error && (
-          <Typography color="error" sx={{ mb: 2 }}>
+          <Alert 
+            severity="error" 
+            sx={{ 
+              mb: 3,
+              borderRadius: 2
+            }}
+            onClose={() => setError(null)}
+          >
             {error}
-          </Typography>
+          </Alert>
         )}
 
-        <Typography variant="h5" sx={{ mb: 2, color: '#2E1308' }}>
-          Product List
-        </Typography>
-
-        {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-            <CircularProgress />
+        <StyledPaper elevation={0}>
+          <Box 
+            component="form" 
+            onSubmit={handleSubmit} 
+            sx={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: 2, 
+              maxWidth: 800, 
+              margin: '0 auto',
+              p: 3 
+            }}
+          >
+            <TextField
+              fullWidth
+              label="Name"
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              required
+              disabled={loading}
+              error={!!formErrors.name}
+              helperText={formErrors.name || 'Only letters and spaces are allowed'}
+              inputProps={{
+                maxLength: 100
+              }}
+            />
+            <TextField
+              fullWidth
+              label="Description"
+              name="description"
+              value={formData.description}
+              onChange={handleInputChange}
+              margin="normal"
+              multiline
+              rows={3}
+              required
+              disabled={loading}
+              error={!!formErrors.description}
+              helperText={formErrors.description}
+              inputProps={{
+                maxLength: 500
+              }}
+            />
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <TextField
+                fullWidth
+                label="Price (LKR)"
+                name="price"
+                type="number"
+                value={formData.price}
+                onChange={handleInputChange}
+                required
+                disabled={loading}
+                error={!!formErrors.price}
+                helperText={formErrors.price}
+                inputProps={{
+                  min: 0,
+                  step: 0.01,
+                  max: 1000000
+                }}
+              />
+              <TextField
+                fullWidth
+                label="Stock Quantity"
+                name="stockQuantity"
+                type="number"
+                value={formData.stockQuantity}
+                onChange={handleInputChange}
+                required
+                disabled={loading}
+                error={!!formErrors.stockQuantity}
+                helperText={formErrors.stockQuantity}
+                inputProps={{
+                  min: 0,
+                  max: 10000
+                }}
+              />
+            </Box>
+            <TextField
+              fullWidth
+              label="Category"
+              name="category"
+              value={formData.category}
+              onChange={handleInputChange}
+              required
+              disabled={loading}
+              error={!!formErrors.category}
+              helperText={formErrors.category}
+              inputProps={{
+                maxLength: 50
+              }}
+            />
+            <Box sx={{ mt: 2 }}>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                style={{ display: 'none' }}
+                id="product-image-upload"
+              />
+              <label htmlFor="product-image-upload">
+                <Button
+                  variant="outlined"
+                  component="span"
+                  startIcon={<CloudUploadIcon />}
+                  sx={{ 
+                    mr: 2,
+                    borderColor: '#97553B',
+                    color: '#97553B',
+                    '&:hover': {
+                      borderColor: '#5E3219',
+                      backgroundColor: 'rgba(151, 85, 59, 0.04)'
+                    }
+                  }}
+                >
+                  Upload Image
+                </Button>
+              </label>
+              {formData.image && (
+                <Typography variant="body2" component="span" color="textSecondary">
+                  {typeof formData.image === 'string' 
+                    ? 'Current image: ' + formData.image.split('/').pop()
+                    : 'Selected file: ' + formData.image.name
+                  }
+                </Typography>
+              )}
+            </Box>
+            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={loading}
+                sx={{
+                  minWidth: 200,
+                  backgroundColor: '#97553B',
+                  '&:hover': { backgroundColor: '#5E3219' }
+                }}
+              >
+                {loading ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  formData._id ? 'Update Product' : 'Add Product'
+                )}
+              </Button>
+            </Box>
           </Box>
-        ) : (
-          <Table>
-            <TableHead>
-              <TableRow>
-                <StyledTableCell>Image</StyledTableCell>
-                <StyledTableCell>Name</StyledTableCell>
-                <StyledTableCell>Category</StyledTableCell>
-                <StyledTableCell>Price (LKR)</StyledTableCell>
-                <StyledTableCell>Stock</StyledTableCell>
-                <StyledTableCell>Actions</StyledTableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {products.map((product) => (
-                <StyledTableRow key={product._id}>
-                  <TableCell>
-                    <Box
-                      component="img"
-                      src={product.image ? `http://localhost:5000${product.image}` : 'https://via.placeholder.com/50'}
-                      alt={product.name}
-                      sx={{
-                        width: 50,
-                        height: 50,
-                        objectFit: 'cover',
-                        borderRadius: '8px'
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell>{product.name}</TableCell>
-                  <TableCell>{product.category}</TableCell>
-                  <TableCell>{product.price.toFixed(2)}</TableCell>
-                  <TableCell>
-                    <Typography
-                      sx={{
-                        color: product.stockQuantity <= 10 ? '#dc3545' :
-                               product.stockQuantity <= 30 ? '#ffc107' :
-                               '#28a745',
-                        fontWeight: 'bold'
-                      }}
-                    >
-                      {product.stockQuantity}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Tooltip title="Edit">
-                      <IconButton 
-                        onClick={() => handleEdit(product)}
-                        sx={{ 
-                          color: '#97553B',
-                          '&:hover': { 
-                            color: '#5E3219',
-                            transform: 'scale(1.1)'
-                          },
-                          transition: 'all 0.3s ease'
-                        }}
-                      >
-                        <EditIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Delete">
-                      <IconButton 
-                        onClick={() => handleDelete(product._id)}
-                        sx={{ 
-                          color: '#dc3545',
-                          '&:hover': { 
-                            color: '#c82333',
-                            transform: 'scale(1.1)'
-                          },
-                          transition: 'all 0.3s ease'
-                        }}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </StyledTableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </StyledPaper>
+        </StyledPaper>
+      </Box>
     </Box>
   );
 };

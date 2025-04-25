@@ -243,6 +243,12 @@ const OvertimeForm = () => {
                       employees.map((employee) => (
                         <MenuItem key={employee._id} value={employee._id}>
                           {employee.empname} (ID: {employee.empID})
+                          <Typography variant="body2" color="text.secondary">
+                            Overtime Rate: LKR {employee.overtimeRate}/hr
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Total Overtime Pay: LKR {employee.totalOvertimePay?.toLocaleString() || '0'}
+                          </Typography>
                         </MenuItem>
                       ))
                     ) : (
