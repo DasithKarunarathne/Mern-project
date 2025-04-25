@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getProducts, createProduct, updateProduct, deleteProduct } from '../../components/products/services/api.js';
+import { getProducts, createProduct, updateProduct, deleteProduct } from '../products/services/api.js';
 import {
   Box,
   Typography,
@@ -28,7 +28,8 @@ import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import RefundIcon from '@mui/icons-material/AssignmentReturn';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import ManagerHeader from '../../components/common/ManagerHeader';
+import ManagerHeader from '../common/ManagerHeader';
+import config from '../../config';
 
 // Styled components
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -120,6 +121,17 @@ const validateImage = (file) => {
     return 'Image size must be less than 2MB';
   }
   return '';
+};
+
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return config.DEFAULT_PRODUCT_IMAGE;
+  try {
+    const url = new URL(imagePath);
+    return imagePath; // If it's already a full URL, return as is
+  } catch {
+    // If it's a relative path, prepend the image base URL
+    return `${config.IMAGE_BASE_URL}${imagePath.startsWith('/') ? '' : '/'}${imagePath}`;
+  }
 };
 
 const ProductManager = () => {
@@ -808,16 +820,14 @@ const ProductManager = () => {
                   {products.map((product) => (
                     <StyledTableRow key={product._id}>
                       <TableCell>
-                        <Box
-                          component="img"
-                          src={product.image ? `http://localhost:5000${product.image}` : 'https://via.placeholder.com/50'}
+                        <img
+                          src={getImageUrl(product.image)}
                           alt={product.name}
-                          sx={{
-                            width: 50,
-                            height: 50,
-                            objectFit: 'cover',
-                            borderRadius: '8px'
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = config.DEFAULT_PRODUCT_IMAGE;
                           }}
+                          style={{ width: '280px', height: '200px', objectFit: 'cover' }}
                         />
                       </TableCell>
                       <TableCell>

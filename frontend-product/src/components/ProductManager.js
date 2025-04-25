@@ -1,9 +1,16 @@
+// src/components/ProductManager.js
 import React, { useState, useEffect } from 'react';
+<<<<<<< Updated upstream
 import { Routes, Route, Navigate } from 'react-router-dom';
+=======
+import { useLocation, useNavigate } from 'react-router-dom';
+import { createProduct, updateProduct } from '../services/api'; // Adjust path if needed
+>>>>>>> Stashed changes
 import {
   Box,
   Typography,
   Button,
+<<<<<<< Updated upstream
   Paper,
   Container,
   Grid,
@@ -36,6 +43,10 @@ import {
   Description as DescriptionIcon
 } from '@mui/icons-material';
 import { getProducts, createProduct, updateProduct, deleteProduct } from '../services/api';
+=======
+  CircularProgress,
+} from '@mui/material';
+>>>>>>> Stashed changes
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -135,6 +146,7 @@ const validateImage = (file) => {
 };
 
 const ProductManager = () => {
+<<<<<<< Updated upstream
   const theme = useTheme();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -147,14 +159,21 @@ const ProductManager = () => {
     stockQuantity: '',
     category: '',
   });
+=======
+  const navigate = useNavigate();
+  const location = useLocation();
+  const editingProduct = location.state?.editingProduct || null;
+
+>>>>>>> Stashed changes
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    stockQuantity: '',
-    category: '',
+    name: editingProduct?.name || '',
+    description: editingProduct?.description || '',
+    price: editingProduct?.price || '',
+    stockQuantity: editingProduct?.stockQuantity || '',
+    category: editingProduct?.category || '',
     image: null,
   });
+<<<<<<< Updated upstream
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   useEffect(() => {
@@ -170,8 +189,23 @@ const ProductManager = () => {
       toast.error('Failed to fetch products: ' + (error.response?.data?.error || error.message));
     } finally {
       setLoading(false);
+=======
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (editingProduct) {
+      setFormData({
+        name: editingProduct.name,
+        description: editingProduct.description,
+        price: editingProduct.price,
+        stockQuantity: editingProduct.stockQuantity,
+        category: editingProduct.category,
+        image: null,
+      });
+>>>>>>> Stashed changes
     }
-  };
+  }, [editingProduct]);
 
   const showSnackbar = (message, severity = 'success') => {
     setSnackbar({ open: true, message, severity });
@@ -351,8 +385,13 @@ const ProductManager = () => {
           severity: 'success'
         });
       }
+<<<<<<< Updated upstream
       handleCloseDialog();
       fetchProducts();
+=======
+      setFormData({ name: '', description: '', price: '', stockQuantity: '', category: '', image: null });
+      navigate('/manager'); // Updated path
+>>>>>>> Stashed changes
     } catch (error) {
       setSnackbar({
         open: true,
@@ -364,6 +403,7 @@ const ProductManager = () => {
     }
   };
 
+<<<<<<< Updated upstream
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       setLoading(true);
@@ -385,6 +425,8 @@ const ProductManager = () => {
     return theme.palette.success.main;
   };
 
+=======
+>>>>>>> Stashed changes
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <ToastContainer />
@@ -392,6 +434,7 @@ const ProductManager = () => {
         <Typography variant="h4" component="h1" fontWeight="bold">
           Product Management
         </Typography>
+<<<<<<< Updated upstream
         <Box>
           <ActionButton
             variant="contained"
@@ -625,6 +668,88 @@ const ProductManager = () => {
         </Alert>
       </Snackbar>
     </Container>
+=======
+      )}
+      <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 500, margin: '0 auto' }}>
+        <TextField
+          label="Name"
+          name="name"
+          value={formData.name}
+          onChange={handleInputChange}
+          required
+          disabled={loading}
+        />
+        <TextField
+          label="Description"
+          name="description"
+          value={formData.description}
+          onChange={handleInputChange}
+          required
+          multiline
+          rows={3}
+          disabled={loading}
+        />
+        <TextField
+          label="Price"
+          name="price"
+          type="number"
+          value={formData.price}
+          onChange={handleInputChange}
+          required
+          disabled={loading}
+        />
+        <TextField
+          label="Stock Quantity"
+          name="stockQuantity"
+          type="number"
+          value={formData.stockQuantity}
+          onChange={handleInputChange}
+          required
+          disabled={loading}
+        />
+        <TextField
+          label="Category"
+          name="category"
+          value={formData.category}
+          onChange={handleInputChange}
+          required
+          disabled={loading}
+        />
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          disabled={loading}
+        />
+        <Button
+          type="submit"
+          variant="contained"
+          sx={{ backgroundColor: '#DAA520', '&:hover': { backgroundColor: '#228B22' } }}
+          disabled={loading}
+        >
+          {loading ? <CircularProgress size={24} /> : editingProduct ? 'Update Product' : 'Add Product'}
+        </Button>
+        {editingProduct && (
+          <Button
+            variant="outlined"
+            onClick={() => navigate('/manager')} // Updated path
+            disabled={loading}
+          >
+            Cancel Edit
+          </Button>
+        )}
+      </Box>
+      <Box sx={{ marginTop: 2, textAlign: 'center' }}>
+        <Button
+          variant="contained"
+          onClick={() => navigate('/list')} // Updated path
+          sx={{ backgroundColor: '#5D4037' }}
+        >
+          View Product List
+        </Button>
+      </Box>
+    </Box>
+>>>>>>> Stashed changes
   );
 };
 
