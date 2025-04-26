@@ -1,0 +1,106 @@
+.App {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+  background-image: url(images/wallpaperflare.com_wallpaper\ \(3\).jpg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+  
+
+  .fullchatbot{
+    display: flex;
+    justify-content: center;
+  }
+  .chatbot {
+    padding: 20px;
+    width: 50%;
+    border-radius: 5px;
+  }
+
+
+
+  .chatbot_topic {
+    text-align: center;
+    color: white;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+
+}
+
+.chatbot_para {
+  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  font-size: medium;
+    font-weight: 500;
+    margin-left: 25%;
+    margin-right: 25%;
+    text-align: center;
+    color: white;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+}
+
+  
+  .messages {
+    height: 380px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    padding: 10px;
+  }
+  
+  .message {
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 5px;
+  }
+  
+  .bot {
+    background-color: #ffffff;
+    margin-right: 20%;
+  }
+  
+  .user {
+    background-color: #e0f0ff;
+    margin-left: 20%;
+  }
+  
+  form {
+    display: flex;
+    gap: 10px;
+  }
+  
+  input {
+    flex: 1;
+    padding: 5px;
+    height: 40px;
+    border-radius: 20px;
+    border-width: 0cap;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    font-size: medium;
+  }
+  
+  button {
+    padding: 10px 20px;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    font-weight: 700;
+    background-color: rgb(0, 0, 0);
+    border-radius: 5px;
+    border-width: 0cap;
+    color: white;
+  }
+
+  .clear-button{
+    padding: 10px 20px;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    font-weight: 700;
+    background-color: rgb(255, 0, 0);
+    border-radius: 5px;
+    color: white;
+    border-width: 0cap;
+    margin-top: 5px;
+  }
+
+  .placholderStyle{
+    padding-left: 40px;
+  }
