@@ -20,7 +20,6 @@ import {
 import { Edit, Delete } from '@mui/icons-material';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ManagerHeader from '../common/ManagerHeader';
 
 const ProductManager = () => {
   const [products, setProducts] = useState([]);
@@ -168,155 +167,149 @@ const ProductManager = () => {
   };
 
   return (
-    <Box>
-      <ManagerHeader 
-        title="Product Management" 
-        breadcrumbs={[
-          { label: 'Products', path: '/product/manager' },
-        ]}
-      />
-    <Box sx={{ padding: 2 }}>
-      <ToastContainer />
-      <Typography variant="h4" sx={{ marginBottom: 2, textAlign: 'center' }}>
-        Product Manager Dashboard
-      </Typography>
-      {error && (
-        <Typography color="error" sx={{ marginBottom: 2, textAlign: 'center' }}>
-          {error}
+    <Box sx={{ flexGrow: 1, p: 3 }}>
+      <Container maxWidth="lg">
+        <ToastContainer />
+        <Typography variant="h4" sx={{ marginBottom: 2, textAlign: 'center' }}>
+          Product Manager Dashboard
         </Typography>
-      )}
-      <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 500, margin: '0 auto' }}>
-        <TextField
-          label="Name"
-          name="name"
-          value={formData.name}
-          onChange={handleInputChange}
-          required
-          disabled={loading}
-          error={!formData.name.trim() && error}
-          helperText={!formData.name.trim() && error ? "Name is required" : ""}
-        />
-        <TextField
-          label="Description"
-          name="description"
-          value={formData.description}
-          onChange={handleInputChange}
-          required
-          multiline
-          rows={3}
-          disabled={loading}
-          error={!formData.description.trim() && error}
-          helperText={!formData.description.trim() && error ? "Description is required" : ""}
-        />
-        <TextField
-          label="Price"
-          name="price"
-          type="number"
-          value={formData.price}
-          onChange={handleInputChange}
-          required
-          disabled={loading}
-          error={(isNaN(parseFloat(formData.price)) || parseFloat(formData.price) <= 0) && error}
-          helperText={(isNaN(parseFloat(formData.price)) || parseFloat(formData.price) <= 0) && error ? "Price must be positive" : ""}
-        />
-        <TextField
-          label="Stock Quantity"
-          name="stockQuantity"
-          type="number"
-          value={formData.stockQuantity}
-          onChange={handleInputChange}
-          required
-          disabled={loading}
-          error={(isNaN(parseInt(formData.stockQuantity, 10)) || parseInt(formData.stockQuantity, 10) < 0) && error}
-          helperText={(isNaN(parseInt(formData.stockQuantity, 10)) || parseInt(formData.stockQuantity, 10) < 0) && error ? "Stock must be non-negative" : ""}
-        />
-        <TextField
-          label="Category"
-          name="category"
-          value={formData.category}
-          onChange={handleInputChange}
-          required
-          disabled={loading}
-          error={!formData.category.trim() && error}
-          helperText={!formData.category.trim() && error ? "Category is required" : ""}
-        />
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleFileChange}
-          disabled={loading}
-        />
-        <Button
-          type="submit"
-          variant="contained"
-          sx={{ backgroundColor: '#DAA520', '&:hover': { backgroundColor: '#228B22' } }}
-          disabled={loading}
-        >
-          {loading ? <CircularProgress size={24} /> : editingProduct ? 'Update Product' : 'Add Product'}
-        </Button>
-        {editingProduct && (
+        {error && (
+          <Typography color="error" sx={{ marginBottom: 2, textAlign: 'center' }}>
+            {error}
+          </Typography>
+        )}
+        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 500, margin: '0 auto' }}>
+          <TextField
+            label="Name"
+            name="name"
+            value={formData.name}
+            onChange={handleInputChange}
+            required
+            disabled={loading}
+            error={!formData.name.trim() && error}
+            helperText={!formData.name.trim() && error ? "Name is required" : ""}
+          />
+          <TextField
+            label="Description"
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
+            required
+            multiline
+            rows={3}
+            disabled={loading}
+            error={!formData.description.trim() && error}
+            helperText={!formData.description.trim() && error ? "Description is required" : ""}
+          />
+          <TextField
+            label="Price"
+            name="price"
+            type="number"
+            value={formData.price}
+            onChange={handleInputChange}
+            required
+            disabled={loading}
+            error={(isNaN(parseFloat(formData.price)) || parseFloat(formData.price) <= 0) && error}
+            helperText={(isNaN(parseFloat(formData.price)) || parseFloat(formData.price) <= 0) && error ? "Price must be positive" : ""}
+          />
+          <TextField
+            label="Stock Quantity"
+            name="stockQuantity"
+            type="number"
+            value={formData.stockQuantity}
+            onChange={handleInputChange}
+            required
+            disabled={loading}
+            error={(isNaN(parseInt(formData.stockQuantity, 10)) || parseInt(formData.stockQuantity, 10) < 0) && error}
+            helperText={(isNaN(parseInt(formData.stockQuantity, 10)) || parseInt(formData.stockQuantity, 10) < 0) && error ? "Stock must be non-negative" : ""}
+          />
+          <TextField
+            label="Category"
+            name="category"
+            value={formData.category}
+            onChange={handleInputChange}
+            required
+            disabled={loading}
+            error={!formData.category.trim() && error}
+            helperText={!formData.category.trim() && error ? "Category is required" : ""}
+          />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            disabled={loading}
+          />
           <Button
-            variant="outlined"
-            onClick={() => {
-              setEditingProduct(null);
-              setFormData({ name: '', description: '', price: '', stockQuantity: '', category: '', image: null });
-              setError(null); // Clear error on cancel
-            }}
+            type="submit"
+            variant="contained"
+            sx={{ backgroundColor: '#DAA520', '&:hover': { backgroundColor: '#228B22' } }}
             disabled={loading}
           >
-            Cancel Edit
+            {loading ? <CircularProgress size={24} /> : editingProduct ? 'Update Product' : 'Add Product'}
           </Button>
-        )}
-      </Box>
-      <Typography variant="h5" sx={{ marginTop: 4, marginBottom: 2 }}>
-        Product List
-      </Typography>
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-          <CircularProgress />
+          {editingProduct && (
+            <Button
+              variant="outlined"
+              onClick={() => {
+                setEditingProduct(null);
+                setFormData({ name: '', description: '', price: '', stockQuantity: '', category: '', image: null });
+                setError(null); // Clear error on cancel
+              }}
+              disabled={loading}
+            >
+              Cancel Edit
+            </Button>
+          )}
         </Box>
-      ) : products.length === 0 ? (
-        <Typography>No products available.</Typography>
-      ) : (
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Image</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Category</TableCell>
-              <TableCell>Price</TableCell>
-              <TableCell>Stock</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {products.map((product) => (
-              <TableRow key={product._id}>
-                <TableCell>
-                  <img
-                    src={product.image ? `http://localhost:5000${product.image}` : 'https://via.placeholder.com/50'}
-                    alt={product.name}
-                    style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: '4px' }}
-                  />
-                </TableCell>
-                <TableCell>{product.name}</TableCell>
-                <TableCell>{product.category}</TableCell>
-                <TableCell>LKR {product.price.toFixed(2)}</TableCell>
-                <TableCell>{product.stockQuantity}</TableCell>
-                <TableCell>
-                  <IconButton onClick={() => handleEdit(product)} disabled={loading}>
-                    <Edit />
-                  </IconButton>
-                  <IconButton onClick={() => handleDelete(product._id)} disabled={loading}>
-                    <Delete />
-                  </IconButton>
-                </TableCell>
+        <Typography variant="h5" sx={{ marginTop: 4, marginBottom: 2 }}>
+          Product List
+        </Typography>
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            <CircularProgress />
+          </Box>
+        ) : products.length === 0 ? (
+          <Typography>No products available.</Typography>
+        ) : (
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Image</TableCell>
+                <TableCell>Name</TableCell>
+                <TableCell>Category</TableCell>
+                <TableCell>Price</TableCell>
+                <TableCell>Stock</TableCell>
+                <TableCell>Actions</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
-      </Box>
+            </TableHead>
+            <TableBody>
+              {products.map((product) => (
+                <TableRow key={product._id}>
+                  <TableCell>
+                    <img
+                      src={product.image ? `http://localhost:5000${product.image}` : 'https://via.placeholder.com/50'}
+                      alt={product.name}
+                      style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: '4px' }}
+                    />
+                  </TableCell>
+                  <TableCell>{product.name}</TableCell>
+                  <TableCell>{product.category}</TableCell>
+                  <TableCell>LKR {product.price.toFixed(2)}</TableCell>
+                  <TableCell>{product.stockQuantity}</TableCell>
+                  <TableCell>
+                    <IconButton onClick={() => handleEdit(product)} disabled={loading}>
+                      <Edit />
+                    </IconButton>
+                    <IconButton onClick={() => handleDelete(product._id)} disabled={loading}>
+                      <Delete />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </Container>
     </Box>
   );
 };

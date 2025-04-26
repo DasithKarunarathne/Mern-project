@@ -11,6 +11,7 @@ import {
   Button,
   useTheme,
   useMediaQuery,
+  Paper,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import {
@@ -19,7 +20,6 @@ import {
   Inventory as InventoryIcon,
   Category as ProductIcon,
 } from '@mui/icons-material';
-import ManagerHeader from '../components/common/ManagerHeader';
 
 const DashboardContainer = styled(Container)(({ theme }) => ({
   paddingTop: theme.spacing(4),
@@ -102,15 +102,8 @@ const ManagerDashboard = () => {
   if (!section) return null;
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        background: `linear-gradient(135deg, rgba(139, 69, 19, 0.1), rgba(210, 180, 140, 0.1))`,
-      }}
-    >
-      <ManagerHeader title={section.title} />
-
-      <DashboardContainer maxWidth="lg">
+    <Box sx={{ flexGrow: 1, p: 3 }}>
+      <Container maxWidth="lg">
         <Typography
           variant={isMobile ? 'h4' : 'h3'}
           component="h1"
@@ -166,7 +159,7 @@ const ManagerDashboard = () => {
             </ManagerCard>
           </Grid>
         </Grid>
-      </DashboardContainer>
+      </Container>
     </Box>
   );
 };

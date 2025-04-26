@@ -78,6 +78,9 @@ const ManagerLogin = () => {
       // Store manager type in session storage
       sessionStorage.setItem('managerType', formData.managerType);
       
+      // Trigger storage event to update other components
+      window.dispatchEvent(new Event('storage'));
+      
       // Redirect based on manager type
       switch (formData.managerType) {
         case 'hr':

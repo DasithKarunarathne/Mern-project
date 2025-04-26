@@ -11,20 +11,15 @@ import {
   TableRow,
   Paper,
 } from '@mui/material';
-import ManagerHeader from '../common/ManagerHeader';
 
-function ReadInventories() {
+const ReadInventories = () => {
   return (
-    <Box>
-      <ManagerHeader 
-        title="Inventory Management" 
-        breadcrumbs={[
-          { label: 'Inventory', path: '/inventory' },
-        ]}
-      />
-      <div>Read Inventories Page</div>
+    <Box sx={{ flexGrow: 1, p: 3 }}>
+      <Container maxWidth="lg">
+        <div>Read Inventories Page</div>
+      </Container>
     </Box>
   );
-}
+};
 
 export default ReadInventories;
