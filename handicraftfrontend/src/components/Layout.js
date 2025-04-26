@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useLocation } from "react-router-dom";
 import {
   Box,
   AppBar,
@@ -195,10 +195,14 @@ const Layout = ({ children }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [managerType, setManagerType] = useState(sessionStorage.getItem('managerType'));
+  const location = useLocation();
 
   // State for dropdown menu
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
+
+  // Determine if we are on a finance dashboard page
+  const isFinanceDashboard = location.pathname.startsWith('/finance/dashboard');
 
   // Effect to listen for changes in session storage
   useEffect(() => {
@@ -343,78 +347,34 @@ const Layout = ({ children }) => {
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       {/* Header */}
-      <AppBar
-        position="static"
-        sx={{
-          backgroundColor: "#5D4037",
-          height: 100,
-        }}
-      >
-        <Toolbar>
-          {/* Logo */}
-          <Box
-            component="img"
-            src="/assets/logo.jpg"
-            alt="Heritage Hands Logo"
-            onError={handleLogoError}
-            sx={{
-              height: 80,
-              mr: 2,
-              objectFit: "contain",
-            }}
-          />
-
-          {/* Navigation Links */}
-          <Box sx={{ flexGrow: 1, display: "flex", alignItems: "center" }}>
-            {!managerType ? (
-              <>
-                <Button
-                  component={RouterLink}
-                  to="/"
-                  variant="text"
-                  sx={{
-                    mx: 1,
-                    color: "#fff",
-                    fontSize: "1.1rem",
-                    textTransform: "none",
-                  }}
-                >
-                  Home
-                </Button>
-                <Button
-                  component={RouterLink}
-                  to="/about"
-                  variant="text"
-                  sx={{
-                    mx: 1,
-                    color: "#fff",
-                    fontSize: "1.1rem",
-                    textTransform: "none",
-                  }}
-                >
-                  About
-                </Button>
-                <Button
-                  component={RouterLink}
-                  to="/contact"
-                  variant="text"
-                  sx={{
-                    mx: 1,
-                    color: "#fff",
-                    fontSize: "1.1rem",
-                    textTransform: "none",
-                  }}
-                >
-                  Contact
-                </Button>
-              </>
-            ) : (
-              <>
-                {getManagerNavItems().map((item, index) => (
+      {!isFinanceDashboard && (
+        <AppBar
+          position="static"
+          sx={{
+            backgroundColor: "#5D4037",
+            height: 100,
+          }}
+        >
+          <Toolbar>
+            {/* Logo */}
+            <Box
+              component="img"
+              src="/assets/logo.jpg"
+              alt="Heritage Hands Logo"
+              onError={handleLogoError}
+              sx={{
+                height: 80,
+                mr: 2,
+                objectFit: "contain",
+              }}
+            />
+            {/* Navigation Links */}
+            <Box sx={{ flexGrow: 1, display: "flex", alignItems: "center" }}>
+              {!managerType ? (
+                <>
                   <Button
-                    key={index}
                     component={RouterLink}
-                    to={item.path}
+                    to="/"
                     variant="text"
                     sx={{
                       mx: 1,
@@ -423,20 +383,106 @@ const Layout = ({ children }) => {
                       textTransform: "none",
                     }}
                   >
-                    {item.label}
+                    Home
                   </Button>
-                ))}
-              </>
-            )}
-          </Box>
-
-          {/* Right-side buttons */}
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            {!managerType ? (
-              <>
+                  <Button
+                    component={RouterLink}
+                    to="/about"
+                    variant="text"
+                    sx={{
+                      mx: 1,
+                      color: "#fff",
+                      fontSize: "1.1rem",
+                      textTransform: "none",
+                    }}
+                  >
+                    About
+                  </Button>
+                  <Button
+                    component={RouterLink}
+                    to="/contact"
+                    variant="text"
+                    sx={{
+                      mx: 1,
+                      color: "#fff",
+                      fontSize: "1.1rem",
+                      textTransform: "none",
+                    }}
+                  >
+                    Contact
+                  </Button>
+                </>
+              ) : (
+                <>
+                  {getManagerNavItems().map((item, index) => (
+                    <Button
+                      key={index}
+                      component={RouterLink}
+                      to={item.path}
+                      variant="text"
+                      sx={{
+                        mx: 1,
+                        color: "#fff",
+                        fontSize: "1.1rem",
+                        textTransform: "none",
+                      }}
+                    >
+                      {item.label}
+                    </Button>
+                  ))}
+                </>
+              )}
+            </Box>
+            {/* Right-side buttons */}
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              {!managerType ? (
+                <>
+                  <Button
+                    component={RouterLink}
+                    to="/customer"
+                    variant="contained"
+                    sx={{
+                      mx: 1,
+                      backgroundColor: "rgba(255, 215, 0, 0.9)",
+                      color: "#3E2723",
+                      borderRadius: "12px",
+                      padding: "8px 16px",
+                      fontSize: "1.2rem",
+                      textTransform: "none",
+                      "&:hover": {
+                        backgroundColor: "rgba(255, 193, 7, 0.95)",
+                        transform: "translateY(-2px)",
+                        boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
+                      },
+                    }}
+                  >
+                    Customer Home
+                  </Button>
+                  <Button
+                    component={RouterLink}
+                    to="/manager/login"
+                    variant="contained"
+                    sx={{
+                      mx: 1,
+                      backgroundColor: "rgba(93, 64, 55, 0.9)",
+                      color: "#fff",
+                      borderRadius: "12px",
+                      padding: "8px 16px",
+                      fontSize: "1.2rem",
+                      textTransform: "none",
+                      "&:hover": {
+                        backgroundColor: "rgba(93, 64, 55, 0.95)",
+                        transform: "translateY(-2px)",
+                        boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
+                      },
+                    }}
+                  >
+                    Manager Access
+                  </Button>
+                </>
+              ) : (
                 <Button
-                  component={RouterLink}
-                  to="/customer"
+                  onClick={handleLogout}
                   variant="contained"
                   sx={{
                     mx: 1,
@@ -453,228 +499,179 @@ const Layout = ({ children }) => {
                     },
                   }}
                 >
-                  Customer Home
+                  Logout
                 </Button>
-
-                <Button
-                  component={RouterLink}
-                  to="/manager/login"
-                  variant="contained"
-                  sx={{
-                    mx: 1,
-                    backgroundColor: "rgba(93, 64, 55, 0.9)",
-                    color: "#fff",
-                    borderRadius: "12px",
-                    padding: "8px 16px",
-                    fontSize: "1.2rem",
-                    textTransform: "none",
-                    "&:hover": {
-                      backgroundColor: "rgba(93, 64, 55, 0.95)",
-                      transform: "translateY(-2px)",
-                      boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
-                    },
-                  }}
-                >
-                  Manager Access
-                </Button>
-              </>
-            ) : (
-              <Button
-                onClick={handleLogout}
-                variant="contained"
-                sx={{
-                  mx: 1,
-                  backgroundColor: "rgba(255, 215, 0, 0.9)",
-                  color: "#3E2723",
-                  borderRadius: "12px",
-                  padding: "8px 16px",
-                  fontSize: "1.2rem",
-                  textTransform: "none",
-                  "&:hover": {
-                    backgroundColor: "rgba(255, 193, 7, 0.95)",
-                    transform: "translateY(-2px)",
-                    boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
-                  },
-                }}
-              >
-                Logout
-              </Button>
-            )}
-          </Box>
-        </Toolbar>
-      </AppBar>
-
+              )}
+            </Box>
+          </Toolbar>
+        </AppBar>
+      )}
       {/* Main Content */}
       <Box component="main" sx={{ flexGrow: 1 }}>
         {children}
       </Box>
-
       {/* Footer */}
-      <Footer>
-        <Container maxWidth="lg">
-          <Grid container spacing={4}>
-            {/* About Section */}
-            <Grid item xs={12} sm={6} md={3}>
-              <FooterSection>
-                <Typography variant="h6" className="section-title">
-                  {managerType ? managerFooterContent.title : "About Us"}
-                </Typography>
-                <Typography variant="body2" sx={{ 
-                  mb: 3, 
-                  opacity: 0.9, 
-                  lineHeight: 1.8,
-                  textShadow: '0 1px 2px rgba(0,0,0,0.2)',
-                }}>
-                  {managerType ? 
-                    `Welcome to the ${managerFooterContent.title} portal. Access all your management tools and reports from one central location.` :
-                    "Heritage Hands is Sri Lanka's premier handicraft marketplace, celebrating the artistry and cultural heritage of our skilled craftsmen."
-                  }
-                </Typography>
-                {!managerType && (
-                  <Stack direction="row" spacing={1.5}>
-                    <SocialButton href="https://facebook.com" target="_blank">
-                      <Facebook />
-                    </SocialButton>
-                    <SocialButton href="https://twitter.com" target="_blank">
-                      <Twitter />
-                    </SocialButton>
-                    <SocialButton href="https://instagram.com" target="_blank">
-                      <Instagram />
-                    </SocialButton>
-                    <SocialButton href="https://linkedin.com" target="_blank">
-                      <LinkedIn />
-                    </SocialButton>
-                  </Stack>
-                )}
-              </FooterSection>
-            </Grid>
-
-            {/* Quick Links */}
-            <Grid item xs={12} sm={6} md={3}>
-              <FooterSection>
-                <Typography variant="h6" className="section-title">
-                  Quick Links
-                </Typography>
-                {managerType ? (
-                  managerFooterContent.quickLinks.map((link, index) => (
-                    <Link key={index} component={RouterLink} to={link.path} className="footer-link">
-                      {link.label}
-                    </Link>
-                  ))
-                ) : (
-                  <>
-                    <Link component={RouterLink} to="/about" className="footer-link">About Us</Link>
-                    <Link component={RouterLink} to="/products" className="footer-link">Our Products</Link>
-                    <Link component={RouterLink} to="/customer" className="footer-link">Customer Portal</Link>
-                    <Link component={RouterLink} to="/manager" className="footer-link">Manager Access</Link>
-                    <Link component={RouterLink} to="/contact" className="footer-link">Contact Us</Link>
-                  </>
-                )}
-              </FooterSection>
-            </Grid>
-
-            {/* Services */}
-            <Grid item xs={12} sm={6} md={3}>
-              <FooterSection>
-                <Typography variant="h6" className="section-title">
-                  {managerType ? 'Management Tools' : 'Our Services'}
-                </Typography>
-                {managerType ? (
-                  managerFooterContent.services.map((service, index) => (
-                    <Link key={index} component={RouterLink} to={service.path} className="footer-link">
-                      {service.label}
-                    </Link>
-                  ))
-                ) : (
-                  <>
-                    <Link component={RouterLink} to="/custom-orders" className="footer-link">Custom Orders</Link>
-                    <Link component={RouterLink} to="/wholesale" className="footer-link">Wholesale</Link>
-                    <Link component={RouterLink} to="/shipping" className="footer-link">Shipping Information</Link>
-                    <Link component={RouterLink} to="/returns" className="footer-link">Returns & Refunds</Link>
-                    <Link component={RouterLink} to="/faq" className="footer-link">FAQ</Link>
-                  </>
-                )}
-              </FooterSection>
-            </Grid>
-
-            {/* Contact Info */}
-            <Grid item xs={12} sm={6} md={3}>
-              <FooterSection>
-                <Typography variant="h6" className="section-title">
-                  Contact Support
-                </Typography>
-                <Box className="contact-item">
-                  <LocationOn />
-                  <Typography variant="body2">
-                    Heritage Hands Head Office<br />123 Craft Street, Colombo 10,<br />Sri Lanka
+      {!isFinanceDashboard && (
+        <Footer>
+          <Container maxWidth="lg">
+            <Grid container spacing={4}>
+              {/* About Section */}
+              <Grid item xs={12} sm={6} md={3}>
+                <FooterSection>
+                  <Typography variant="h6" className="section-title">
+                    {managerType ? managerFooterContent.title : "About Us"}
                   </Typography>
-                </Box>
-                <Box className="contact-item">
-                  <Phone />
-                  <Typography variant="body2">
-                    +94 11 234 5678
+                  <Typography variant="body2" sx={{ 
+                    mb: 3, 
+                    opacity: 0.9, 
+                    lineHeight: 1.8,
+                    textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+                  }}>
+                    {managerType ? 
+                      `Welcome to the ${managerFooterContent.title} portal. Access all your management tools and reports from one central location.` :
+                      "Heritage Hands is Sri Lanka's premier handicraft marketplace, celebrating the artistry and cultural heritage of our skilled craftsmen."
+                    }
                   </Typography>
-                </Box>
-                <Box className="contact-item">
-                  <Email />
-                  <Typography variant="body2">
-                    {managerType ? `${managerType}support@heritagehands.lk` : 'info@heritagehands.lk'}
+                  {!managerType && (
+                    <Stack direction="row" spacing={1.5}>
+                      <SocialButton href="https://facebook.com" target="_blank">
+                        <Facebook />
+                      </SocialButton>
+                      <SocialButton href="https://twitter.com" target="_blank">
+                        <Twitter />
+                      </SocialButton>
+                      <SocialButton href="https://instagram.com" target="_blank">
+                        <Instagram />
+                      </SocialButton>
+                      <SocialButton href="https://linkedin.com" target="_blank">
+                        <LinkedIn />
+                      </SocialButton>
+                    </Stack>
+                  )}
+                </FooterSection>
+              </Grid>
+              {/* Quick Links */}
+              <Grid item xs={12} sm={6} md={3}>
+                <FooterSection>
+                  <Typography variant="h6" className="section-title">
+                    Quick Links
                   </Typography>
-                </Box>
-              </FooterSection>
+                  {managerType ? (
+                    managerFooterContent.quickLinks.map((link, index) => (
+                      <Link key={index} component={RouterLink} to={link.path} className="footer-link">
+                        {link.label}
+                      </Link>
+                    ))
+                  ) : (
+                    <>
+                      <Link component={RouterLink} to="/about" className="footer-link">About Us</Link>
+                      <Link component={RouterLink} to="/products" className="footer-link">Our Products</Link>
+                      <Link component={RouterLink} to="/customer" className="footer-link">Customer Portal</Link>
+                      <Link component={RouterLink} to="/manager" className="footer-link">Manager Access</Link>
+                      <Link component={RouterLink} to="/contact" className="footer-link">Contact Us</Link>
+                    </>
+                  )}
+                </FooterSection>
+              </Grid>
+              {/* Services */}
+              <Grid item xs={12} sm={6} md={3}>
+                <FooterSection>
+                  <Typography variant="h6" className="section-title">
+                    {managerType ? 'Management Tools' : 'Our Services'}
+                  </Typography>
+                  {managerType ? (
+                    managerFooterContent.services.map((service, index) => (
+                      <Link key={index} component={RouterLink} to={service.path} className="footer-link">
+                        {service.label}
+                      </Link>
+                    ))
+                  ) : (
+                    <>
+                      <Link component={RouterLink} to="/custom-orders" className="footer-link">Custom Orders</Link>
+                      <Link component={RouterLink} to="/wholesale" className="footer-link">Wholesale</Link>
+                      <Link component={RouterLink} to="/shipping" className="footer-link">Shipping Information</Link>
+                      <Link component={RouterLink} to="/returns" className="footer-link">Returns & Refunds</Link>
+                      <Link component={RouterLink} to="/faq" className="footer-link">FAQ</Link>
+                    </>
+                  )}
+                </FooterSection>
+              </Grid>
+              {/* Contact Info */}
+              <Grid item xs={12} sm={6} md={3}>
+                <FooterSection>
+                  <Typography variant="h6" className="section-title">
+                    Contact Support
+                  </Typography>
+                  <Box className="contact-item">
+                    <LocationOn />
+                    <Typography variant="body2">
+                      Heritage Hands Head Office<br />123 Craft Street, Colombo 10,<br />Sri Lanka
+                    </Typography>
+                  </Box>
+                  <Box className="contact-item">
+                    <Phone />
+                    <Typography variant="body2">
+                      +94 11 234 5678
+                    </Typography>
+                  </Box>
+                  <Box className="contact-item">
+                    <Email />
+                    <Typography variant="body2">
+                      {managerType ? `${managerType}support@heritagehands.lk` : 'info@heritagehands.lk'}
+                    </Typography>
+                  </Box>
+                </FooterSection>
+              </Grid>
             </Grid>
-          </Grid>
-
-          <Divider sx={{ 
-            my: 5, 
-            borderColor: 'rgba(255, 215, 0, 0.1)',
-            '&::before, &::after': {
+            <Divider sx={{ 
+              my: 5, 
               borderColor: 'rgba(255, 215, 0, 0.1)',
-            }
-          }} />
-
-          {/* Bottom Footer */}
-          <Box sx={{ 
-            display: 'flex', 
-            flexDirection: { xs: 'column', sm: 'row' }, 
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            textAlign: 'center'
-          }}>
-            <Typography variant="body2" sx={{ opacity: 0.9 }}>
-              © {new Date().getFullYear()} Heritage Hands. All rights reserved.
-            </Typography>
-            {!managerType && (
-              <Box sx={{ mt: { xs: 2, sm: 0 } }}>
-                <Link component={RouterLink} to="/privacy" className="footer-link" sx={{ mr: 3 }}>
-                  Privacy Policy
-                </Link>
-                <Link component={RouterLink} to="/terms" className="footer-link">
-                  Terms of Service
-                </Link>
-              </Box>
-            )}
-          </Box>
-        </Container>
-
-        {/* Scroll to Top Button */}
-        <IconButton
-          onClick={scrollToTop}
-          sx={{
-            position: 'absolute',
-            right: 20,
-            bottom: 20,
-            backgroundColor: '#FFD700',
-            color: '#3E2723',
-            padding: '12px',
-            '&:hover': {
-              backgroundColor: '#FFA000',
-            },
-          }}
-        >
-          <KeyboardArrowUp />
-        </IconButton>
-      </Footer>
+              '&::before, &::after': {
+                borderColor: 'rgba(255, 215, 0, 0.1)',
+              }
+            }} />
+            {/* Bottom Footer */}
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: { xs: 'column', sm: 'row' }, 
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              textAlign: 'center'
+            }}>
+              <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                © {new Date().getFullYear()} Heritage Hands. All rights reserved.
+              </Typography>
+              {!managerType && (
+                <Box sx={{ mt: { xs: 2, sm: 0 } }}>
+                  <Link component={RouterLink} to="/privacy" className="footer-link" sx={{ mr: 3 }}>
+                    Privacy Policy
+                  </Link>
+                  <Link component={RouterLink} to="/terms" className="footer-link">
+                    Terms of Service
+                  </Link>
+                </Box>
+              )}
+            </Box>
+            {/* Scroll to Top Button */}
+            <IconButton
+              onClick={scrollToTop}
+              sx={{
+                position: 'absolute',
+                right: 20,
+                bottom: 20,
+                backgroundColor: '#FFD700',
+                color: '#3E2723',
+                padding: '12px',
+                '&:hover': {
+                  backgroundColor: '#FFA000',
+                },
+              }}
+            >
+              <KeyboardArrowUp />
+            </IconButton>
+          </Container>
+        </Footer>
+      )}
     </Box>
   );
 };

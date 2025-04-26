@@ -11,5 +11,5 @@ const PettyCashBalanceSchema = new mongoose.Schema({
 // Optional: Add a unique index to prevent duplicate records for the same month/year
 PettyCashBalanceSchema.index({ month: 1, year: 1 }, { unique: true });
 
-const pettycashbal = mongoose.model("PettyCashBal", PettyCashBalanceSchema);
-export default pettycashbal;
+const PettyCashBalance = mongoose.model("PettyCashBalance", PettyCashBalanceSchema);
+export default PettyCashBalance;
