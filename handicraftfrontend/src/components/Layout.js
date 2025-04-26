@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import {
   Box,
@@ -194,10 +194,23 @@ const LoginButton = styled(Button)(({ theme }) => ({
 const Layout = ({ children }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [managerType, setManagerType] = useState(sessionStorage.getItem('managerType'));
 
   // State for dropdown menu
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
+
+  // Effect to listen for changes in session storage
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setManagerType(sessionStorage.getItem('managerType'));
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -207,6 +220,12 @@ const Layout = ({ children }) => {
     setAnchorEl(null);
   };
 
+  const handleLogout = () => {
+    sessionStorage.removeItem('managerType');
+    setManagerType(null); // Update local state
+    window.location.href = '/';
+  };
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -214,8 +233,112 @@ const Layout = ({ children }) => {
   // Handle logo load error
   const handleLogoError = (e) => {
     console.error("Failed to load logo at /assets/logo.jpg");
-    e.target.style.display = "none"; // Hide the broken image icon
+    e.target.style.display = "none";
   };
+
+  // Get manager-specific navigation items
+  const getManagerNavItems = () => {
+    switch (managerType) {
+      case 'hr':
+        return [
+          { label: 'Employee List', path: '/hr/list' },
+          { label: 'Overtime', path: '/hr/overtime' },
+          { label: 'Monthly Overtime', path: '/hr/overtime/monthly' },
+        ];
+      case 'finance':
+        return [
+          { label: 'Dashboard', path: '/finance/dashboard' },
+          { label: 'Reports', path: '/finance/reports' },
+          { label: 'Transactions', path: '/finance/transactions' },
+        ];
+      case 'product':
+        return [
+          { label: 'Product Manager', path: '/product/manager' },
+          { label: 'Refund Management', path: '/product/admin/refund-management' },
+        ];
+      case 'inventory':
+        return [
+          { label: 'View Inventory', path: '/inventory/display' },
+          { label: 'Add Inventory', path: '/inventory/add' },
+          { label: 'Inventory Reports', path: '/inventory/reports' },
+        ];
+      default:
+        return [];
+    }
+  };
+
+  const getManagerFooterContent = () => {
+    switch (managerType) {
+      case 'hr':
+        return {
+          title: 'HR Management',
+          quickLinks: [
+            { label: 'Employee List', path: '/hr/list' },
+            { label: 'Add Employee', path: '/hr/add-employee' },
+            { label: 'Overtime Management', path: '/hr/overtime' },
+            { label: 'Monthly Reports', path: '/hr/overtime/monthly' },
+          ],
+          services: [
+            { label: 'Employee Records', path: '/hr/list' },
+            { label: 'Attendance', path: '/hr/attendance' },
+            { label: 'Performance', path: '/hr/performance' },
+            { label: 'Training', path: '/hr/training' },
+          ]
+        };
+      case 'finance':
+        return {
+          title: 'Finance Management',
+          quickLinks: [
+            { label: 'Dashboard', path: '/finance/dashboard' },
+            { label: 'Transactions', path: '/finance/transactions' },
+            { label: 'Reports', path: '/finance/reports' },
+            { label: 'Analytics', path: '/finance/analytics' },
+          ],
+          services: [
+            { label: 'Income Reports', path: '/finance/income' },
+            { label: 'Expense Reports', path: '/finance/expenses' },
+            { label: 'Payroll', path: '/finance/payroll' },
+            { label: 'Budgeting', path: '/finance/budget' },
+          ]
+        };
+      case 'product':
+        return {
+          title: 'Product Management',
+          quickLinks: [
+            { label: 'Product List', path: '/product/manager' },
+            { label: 'Add Product', path: '/product/add' },
+            { label: 'Categories', path: '/product/categories' },
+            { label: 'Refund Management', path: '/product/admin/refund-management' },
+          ],
+          services: [
+            { label: 'Product Analytics', path: '/product/analytics' },
+            { label: 'Stock Management', path: '/product/stock' },
+            { label: 'Price Management', path: '/product/pricing' },
+            { label: 'Quality Control', path: '/product/quality' },
+          ]
+        };
+      case 'inventory':
+        return {
+          title: 'Inventory Management',
+          quickLinks: [
+            { label: 'Inventory List', path: '/inventory/display' },
+            { label: 'Add Inventory', path: '/inventory/add' },
+            { label: 'Stock Levels', path: '/inventory/stock' },
+            { label: 'Reports', path: '/inventory/reports' },
+          ],
+          services: [
+            { label: 'Stock Tracking', path: '/inventory/tracking' },
+            { label: 'Warehouse Management', path: '/inventory/warehouse' },
+            { label: 'Supply Chain', path: '/inventory/supply-chain' },
+            { label: 'Inventory Analytics', path: '/inventory/analytics' },
+          ]
+        };
+      default:
+        return null;
+    }
+  };
+
+  const managerFooterContent = getManagerFooterContent();
 
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -224,72 +347,140 @@ const Layout = ({ children }) => {
         position="static"
         sx={{
           backgroundColor: "#5D4037",
-          height: 100, // Increased height of the AppBar
+          height: 100,
         }}
       >
-        <Toolbar
-          sx={{
-            height: "100%", // Ensure Toolbar takes the full height of the AppBar
-            display: "flex",
-            alignItems: "center", // Center content vertically
-          }}
-        >
+        <Toolbar>
           {/* Logo */}
-          <Box sx={{ flexGrow: 1 }}>
-            <Link component={RouterLink} to="/">
-              <img
-                src="/assets/logo.jpg" // Path to the saved logo image
-                alt="Heritage Hands Logo"
-                style={{ height: 80, padding: theme.spacing(1) }} // Increased logo height
-                onError={handleLogoError} // Add error handling
-              />
-            </Link>
-          </Box>
+          <Box
+            component="img"
+            src="/assets/logo.jpg"
+            alt="Heritage Hands Logo"
+            onError={handleLogoError}
+            sx={{
+              height: 80,
+              mr: 2,
+              objectFit: "contain",
+            }}
+          />
 
           {/* Navigation Links */}
-          {!isMobile && (
-            <>
-              <Link
-                component={RouterLink}
-                to="/"
-                color="inherit"
-                sx={{
-                  mx: 2,
-                  textDecoration: "none",
-                  fontSize: "1.4rem",
-                }}
-              >
-                Home
-              </Link>
-              <Link
-                component={RouterLink}
-                to="/about"
-                color="inherit"
-                sx={{
-                  mx: 2,
-                  textDecoration: "none",
-                  fontSize: "1.4rem",
-                }}
-              >
-                About
-              </Link>
-              <Link
-                component={RouterLink}
-                to="/contact"
-                color="inherit"
-                sx={{
-                  mx: 2,
-                  textDecoration: "none",
-                  fontSize: "1.4rem",
-                }}
-              >
-                Contact
-              </Link>
+          <Box sx={{ flexGrow: 1, display: "flex", alignItems: "center" }}>
+            {!managerType ? (
+              <>
+                <Button
+                  component={RouterLink}
+                  to="/"
+                  variant="text"
+                  sx={{
+                    mx: 1,
+                    color: "#fff",
+                    fontSize: "1.1rem",
+                    textTransform: "none",
+                  }}
+                >
+                  Home
+                </Button>
+                <Button
+                  component={RouterLink}
+                  to="/about"
+                  variant="text"
+                  sx={{
+                    mx: 1,
+                    color: "#fff",
+                    fontSize: "1.1rem",
+                    textTransform: "none",
+                  }}
+                >
+                  About
+                </Button>
+                <Button
+                  component={RouterLink}
+                  to="/contact"
+                  variant="text"
+                  sx={{
+                    mx: 1,
+                    color: "#fff",
+                    fontSize: "1.1rem",
+                    textTransform: "none",
+                  }}
+                >
+                  Contact
+                </Button>
+              </>
+            ) : (
+              <>
+                {getManagerNavItems().map((item, index) => (
+                  <Button
+                    key={index}
+                    component={RouterLink}
+                    to={item.path}
+                    variant="text"
+                    sx={{
+                      mx: 1,
+                      color: "#fff",
+                      fontSize: "1.1rem",
+                      textTransform: "none",
+                    }}
+                  >
+                    {item.label}
+                  </Button>
+                ))}
+              </>
+            )}
+          </Box>
 
-              {/* Customer Home Button */}
+          {/* Right-side buttons */}
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            {!managerType ? (
+              <>
+                <Button
+                  component={RouterLink}
+                  to="/customer"
+                  variant="contained"
+                  sx={{
+                    mx: 1,
+                    backgroundColor: "rgba(255, 215, 0, 0.9)",
+                    color: "#3E2723",
+                    borderRadius: "12px",
+                    padding: "8px 16px",
+                    fontSize: "1.2rem",
+                    textTransform: "none",
+                    "&:hover": {
+                      backgroundColor: "rgba(255, 193, 7, 0.95)",
+                      transform: "translateY(-2px)",
+                      boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
+                    },
+                  }}
+                >
+                  Customer Home
+                </Button>
+
+                <Button
+                  component={RouterLink}
+                  to="/manager/login"
+                  variant="contained"
+                  sx={{
+                    mx: 1,
+                    backgroundColor: "rgba(93, 64, 55, 0.9)",
+                    color: "#fff",
+                    borderRadius: "12px",
+                    padding: "8px 16px",
+                    fontSize: "1.2rem",
+                    textTransform: "none",
+                    "&:hover": {
+                      backgroundColor: "rgba(93, 64, 55, 0.95)",
+                      transform: "translateY(-2px)",
+                      boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
+                    },
+                  }}
+                >
+                  Manager Access
+                </Button>
+              </>
+            ) : (
               <Button
-                component={RouterLink}
-                to="/customer"
+                onClick={handleLogout}
                 variant="contained"
                 sx={{
                   mx: 1,
@@ -306,64 +497,17 @@ const Layout = ({ children }) => {
                   },
                 }}
               >
-                Customer Home
+                Logout
               </Button>
-
-              {/* Manager Access Button */}
-              <Button
-                component={RouterLink}
-                to="/manager"
-                variant="contained"
-                sx={{
-                  mx: 1,
-                  backgroundColor: "rgba(93, 64, 55, 0.9)",
-                  color: "#fff",
-                  borderRadius: "12px",
-                  padding: "8px 16px",
-                  fontSize: "1.2rem",
-                  textTransform: "none",
-                  "&:hover": {
-                    backgroundColor: "rgba(93, 64, 55, 0.95)",
-                    transform: "translateY(-2px)",
-                    boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
-                  },
-                }}
-              >
-                Manager Access
-              </Button>
-
-              {/* Login Button with Dropdown */}
-              <LoginButton variant="contained" onClick={handleMenuOpen}>
-                Login
-              </LoginButton>
-              <Menu
-                anchorEl={anchorEl}
-                open={open}
-                onClose={handleMenuClose}
-                anchorOrigin={{
-                  vertical: "bottom",
-                  horizontal: "right",
-                }}
-                transformOrigin={{
-                  vertical: "top",
-                  horizontal: "right",
-                }}
-              >
-                <MenuItem
-                  onClick={handleMenuClose}
-                  component={RouterLink}
-                  to="/customer/login"
-                >
-                  Customer Login
-                </MenuItem>
-              </Menu>
-            </>
-          )}
+            )}
+          </Box>
         </Toolbar>
       </AppBar>
 
       {/* Main Content */}
-      <Box sx={{ flexGrow: 1 }}>{children}</Box>
+      <Box component="main" sx={{ flexGrow: 1 }}>
+        {children}
+      </Box>
 
       {/* Footer */}
       <Footer>
@@ -373,7 +517,7 @@ const Layout = ({ children }) => {
             <Grid item xs={12} sm={6} md={3}>
               <FooterSection>
                 <Typography variant="h6" className="section-title">
-                  About Us
+                  {managerType ? managerFooterContent.title : "About Us"}
                 </Typography>
                 <Typography variant="body2" sx={{ 
                   mb: 3, 
@@ -381,23 +525,27 @@ const Layout = ({ children }) => {
                   lineHeight: 1.8,
                   textShadow: '0 1px 2px rgba(0,0,0,0.2)',
                 }}>
-                  Heritage Hands is Sri Lanka's premier handicraft marketplace, 
-                  celebrating the artistry and cultural heritage of our skilled craftsmen.
+                  {managerType ? 
+                    `Welcome to the ${managerFooterContent.title} portal. Access all your management tools and reports from one central location.` :
+                    "Heritage Hands is Sri Lanka's premier handicraft marketplace, celebrating the artistry and cultural heritage of our skilled craftsmen."
+                  }
                 </Typography>
-                <Stack direction="row" spacing={1.5}>
-                  <SocialButton href="https://facebook.com" target="_blank">
-                    <Facebook />
-                  </SocialButton>
-                  <SocialButton href="https://twitter.com" target="_blank">
-                    <Twitter />
-                  </SocialButton>
-                  <SocialButton href="https://instagram.com" target="_blank">
-                    <Instagram />
-                  </SocialButton>
-                  <SocialButton href="https://linkedin.com" target="_blank">
-                    <LinkedIn />
-                  </SocialButton>
-                </Stack>
+                {!managerType && (
+                  <Stack direction="row" spacing={1.5}>
+                    <SocialButton href="https://facebook.com" target="_blank">
+                      <Facebook />
+                    </SocialButton>
+                    <SocialButton href="https://twitter.com" target="_blank">
+                      <Twitter />
+                    </SocialButton>
+                    <SocialButton href="https://instagram.com" target="_blank">
+                      <Instagram />
+                    </SocialButton>
+                    <SocialButton href="https://linkedin.com" target="_blank">
+                      <LinkedIn />
+                    </SocialButton>
+                  </Stack>
+                )}
               </FooterSection>
             </Grid>
 
@@ -407,11 +555,21 @@ const Layout = ({ children }) => {
                 <Typography variant="h6" className="section-title">
                   Quick Links
                 </Typography>
-                <Link component={RouterLink} to="/about" className="footer-link">About Us</Link>
-                <Link component={RouterLink} to="/products" className="footer-link">Our Products</Link>
-                <Link component={RouterLink} to="/customer" className="footer-link">Customer Portal</Link>
-                <Link component={RouterLink} to="/manager" className="footer-link">Manager Access</Link>
-                <Link component={RouterLink} to="/contact" className="footer-link">Contact Us</Link>
+                {managerType ? (
+                  managerFooterContent.quickLinks.map((link, index) => (
+                    <Link key={index} component={RouterLink} to={link.path} className="footer-link">
+                      {link.label}
+                    </Link>
+                  ))
+                ) : (
+                  <>
+                    <Link component={RouterLink} to="/about" className="footer-link">About Us</Link>
+                    <Link component={RouterLink} to="/products" className="footer-link">Our Products</Link>
+                    <Link component={RouterLink} to="/customer" className="footer-link">Customer Portal</Link>
+                    <Link component={RouterLink} to="/manager" className="footer-link">Manager Access</Link>
+                    <Link component={RouterLink} to="/contact" className="footer-link">Contact Us</Link>
+                  </>
+                )}
               </FooterSection>
             </Grid>
 
@@ -419,13 +577,23 @@ const Layout = ({ children }) => {
             <Grid item xs={12} sm={6} md={3}>
               <FooterSection>
                 <Typography variant="h6" className="section-title">
-                  Our Services
+                  {managerType ? 'Management Tools' : 'Our Services'}
                 </Typography>
-                <Link component={RouterLink} to="/custom-orders" className="footer-link">Custom Orders</Link>
-                <Link component={RouterLink} to="/wholesale" className="footer-link">Wholesale</Link>
-                <Link component={RouterLink} to="/shipping" className="footer-link">Shipping Information</Link>
-                <Link component={RouterLink} to="/returns" className="footer-link">Returns & Refunds</Link>
-                <Link component={RouterLink} to="/faq" className="footer-link">FAQ</Link>
+                {managerType ? (
+                  managerFooterContent.services.map((service, index) => (
+                    <Link key={index} component={RouterLink} to={service.path} className="footer-link">
+                      {service.label}
+                    </Link>
+                  ))
+                ) : (
+                  <>
+                    <Link component={RouterLink} to="/custom-orders" className="footer-link">Custom Orders</Link>
+                    <Link component={RouterLink} to="/wholesale" className="footer-link">Wholesale</Link>
+                    <Link component={RouterLink} to="/shipping" className="footer-link">Shipping Information</Link>
+                    <Link component={RouterLink} to="/returns" className="footer-link">Returns & Refunds</Link>
+                    <Link component={RouterLink} to="/faq" className="footer-link">FAQ</Link>
+                  </>
+                )}
               </FooterSection>
             </Grid>
 
@@ -433,12 +601,12 @@ const Layout = ({ children }) => {
             <Grid item xs={12} sm={6} md={3}>
               <FooterSection>
                 <Typography variant="h6" className="section-title">
-                  Contact Us
+                  Contact Support
                 </Typography>
                 <Box className="contact-item">
                   <LocationOn />
                   <Typography variant="body2">
-                    123 Craft Street, Colombo 10,<br />Sri Lanka
+                    Heritage Hands Head Office<br />123 Craft Street, Colombo 10,<br />Sri Lanka
                   </Typography>
                 </Box>
                 <Box className="contact-item">
@@ -449,8 +617,8 @@ const Layout = ({ children }) => {
                 </Box>
                 <Box className="contact-item">
                   <Email />
-        <Typography variant="body2">
-                    info@heritagehands.lk
+                  <Typography variant="body2">
+                    {managerType ? `${managerType}support@heritagehands.lk` : 'info@heritagehands.lk'}
                   </Typography>
                 </Box>
               </FooterSection>
@@ -462,17 +630,6 @@ const Layout = ({ children }) => {
             borderColor: 'rgba(255, 215, 0, 0.1)',
             '&::before, &::after': {
               borderColor: 'rgba(255, 215, 0, 0.1)',
-            },
-            position: 'relative',
-            '&::after': {
-              content: '""',
-              position: 'absolute',
-              width: '50px',
-              height: '50px',
-              left: '50%',
-              top: '50%',
-              transform: 'translate(-50%, -50%) rotate(45deg)',
-              background: 'linear-gradient(135deg, transparent 45%, rgba(255,215,0,0.1) 50%, transparent 55%)',
             }
           }} />
 
@@ -482,56 +639,21 @@ const Layout = ({ children }) => {
             flexDirection: { xs: 'column', sm: 'row' }, 
             justifyContent: 'space-between',
             alignItems: 'center',
-            textAlign: 'center',
-            position: 'relative',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: -20,
-              left: 0,
-              right: 0,
-              height: '1px',
-              background: 'linear-gradient(90deg, transparent, rgba(255,215,0,0.2), transparent)',
-            }
+            textAlign: 'center'
           }}>
-            <Typography variant="body2" sx={{ 
-              opacity: 0.9,
-              letterSpacing: 1,
-              fontWeight: 500,
-              textShadow: '0 1px 2px rgba(0,0,0,0.2)',
-            }}>
-          © {new Date().getFullYear()} Heritage Hands. All rights reserved.
-        </Typography>
-            <Box sx={{ 
-              mt: { xs: 2, sm: 0 },
-              display: 'flex',
-              gap: 3,
-            }}>
-              <Link 
-                component={RouterLink} 
-                to="/privacy" 
-                className="footer-link" 
-                sx={{ 
-                  display: 'inline',
-                  fontSize: '0.9rem',
-                  fontWeight: 500,
-                }}
-              >
-                Privacy Policy
-              </Link>
-              <Link 
-                component={RouterLink} 
-                to="/terms" 
-                className="footer-link" 
-                sx={{ 
-                  display: 'inline',
-                  fontSize: '0.9rem',
-                  fontWeight: 500,
-                }}
-              >
-                Terms of Service
-              </Link>
-            </Box>
+            <Typography variant="body2" sx={{ opacity: 0.9 }}>
+              © {new Date().getFullYear()} Heritage Hands. All rights reserved.
+            </Typography>
+            {!managerType && (
+              <Box sx={{ mt: { xs: 2, sm: 0 } }}>
+                <Link component={RouterLink} to="/privacy" className="footer-link" sx={{ mr: 3 }}>
+                  Privacy Policy
+                </Link>
+                <Link component={RouterLink} to="/terms" className="footer-link">
+                  Terms of Service
+                </Link>
+              </Box>
+            )}
           </Box>
         </Container>
 
@@ -545,32 +667,8 @@ const Layout = ({ children }) => {
             backgroundColor: '#FFD700',
             color: '#3E2723',
             padding: '12px',
-            transition: 'all 0.3s ease',
             '&:hover': {
               backgroundColor: '#FFA000',
-              transform: 'translateY(-5px)',
-              boxShadow: '0 5px 15px rgba(255,215,0,0.4)',
-            },
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              borderRadius: '50%',
-              background: 'rgba(255,215,0,0.2)',
-              animation: 'pulse 2s infinite',
-            },
-            '@keyframes pulse': {
-              '0%': {
-                transform: 'scale(1)',
-                opacity: 1,
-              },
-              '100%': {
-                transform: 'scale(1.5)',
-                opacity: 0,
-              },
             },
           }}
         >

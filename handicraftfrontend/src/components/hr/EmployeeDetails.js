@@ -14,6 +14,7 @@ import {
   Alert,
   Avatar,
   Chip,
+  Container,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import {
@@ -27,7 +28,6 @@ import {
   ArrowBack,
   Edit,
 } from "@mui/icons-material";
-import ManagerHeader from "../common/ManagerHeader";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
@@ -102,16 +102,8 @@ const EmployeeDetails = () => {
   }
 
   return (
-    <Box>
-      <ManagerHeader
-        title="Employee Details"
-        breadcrumbs={[
-          { label: 'HR', path: '/hr' },
-          { label: 'Employee List', path: '/hr/list' },
-        ]}
-      />
-      
-      <Box sx={{ p: 3 }}>
+    <Box sx={{ flexGrow: 1, p: 3 }}>
+      <Container maxWidth="lg">
         <Box sx={{ mb: 3, display: 'flex', gap: 2 }}>
           <Button
             startIcon={<ArrowBack />}
@@ -236,7 +228,7 @@ const EmployeeDetails = () => {
             </DetailCard>
           </Grid>
         </Grid>
-      </Box>
+      </Container>
     </Box>
   );
 };

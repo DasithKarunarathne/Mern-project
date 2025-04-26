@@ -25,7 +25,6 @@ import PeopleIcon from "@mui/icons-material/People";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import DescriptionIcon from "@mui/icons-material/Description";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import ManagerHeader from "../common/ManagerHeader";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
@@ -202,14 +201,8 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
   };
 
   return (
-    <Box>
-      <ManagerHeader 
-        title="Add Employee" 
-        breadcrumbs={[
-          { label: 'HR', path: '/hr' },
-        ]}
-      />
-      <FormContainer>
+    <Box sx={{ flexGrow: 1, p: 3 }}>
+      <Container maxWidth="lg">
         <Stepper activeStep={0} alternativeLabel sx={{ mb: 4 }}>
           <Step>
             <StepLabel>Add Employee</StepLabel>
@@ -516,7 +509,7 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
             {loading ? "Adding..." : "Add Employee"}
           </ActionButton>
         </Box>
-      </FormContainer>
+      </Container>
     </Box>
   );
 };

@@ -26,13 +26,13 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Container,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { Edit, Delete, Search, Add, AccessTime, Description } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import EmployeeUpdateForm from "./EmployeeUpdateForm";
-import ManagerHeader from "../common/ManagerHeader";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
@@ -164,14 +164,8 @@ const EmployeeList = () => {
   };
 
   return (
-    <Box>
-      <ManagerHeader 
-        title="Employee List" 
-        breadcrumbs={[
-          { label: 'HR', path: '/hr' },
-        ]}
-      />
-      <Box sx={{ p: 3 }}>
+    <Box sx={{ flexGrow: 1, p: 3 }}>
+      <Container maxWidth="lg">
         <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
           <Button
             variant="contained"
@@ -347,7 +341,7 @@ const EmployeeList = () => {
             </Grid>
           )}
         </ListContainer>
-      </Box>
+      </Container>
     </Box>
   );
 };
