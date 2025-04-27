@@ -24,6 +24,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Paper,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
@@ -33,6 +34,8 @@ import {
   Login as LoginIcon,
   HowToReg as RegisterIcon,
   Visibility as ViewIcon,
+  ArrowBackIos,
+  ArrowForwardIos,
 } from "@mui/icons-material";
 import WhyChooseUs from './WhyChooseUs';
 import FloatingChatbot from '../customer/FloatingChatbot';
@@ -85,6 +88,80 @@ const ProductGrid = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2),
 }));
 
+const CarouselContainer = styled(Box)(({ theme }) => ({
+  position: 'relative',
+  width: '100%',
+  height: '400px',
+  overflow: 'hidden',
+  borderRadius: '16px',
+  marginBottom: theme.spacing(4),
+  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+}));
+
+const CarouselSlide = styled(Paper)(({ theme }) => ({
+  position: 'absolute',
+  width: '100%',
+  height: '100%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  transition: 'opacity 0.5s ease-in-out',
+  opacity: 0,
+  '&.active': {
+    opacity: 1,
+  },
+}));
+
+const CarouselContent = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  right: 0,
+  padding: theme.spacing(4),
+  background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
+  color: 'white',
+  textAlign: 'center',
+}));
+
+const CarouselButton = styled(Button)(({ theme }) => ({
+  position: 'absolute',
+  top: '50%',
+  transform: 'translateY(-50%)',
+  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  color: 'white',
+  '&:hover': {
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+  },
+}));
+
+const PrevButton = styled(CarouselButton)(({ theme }) => ({
+  left: theme.spacing(2),
+}));
+
+const NextButton = styled(CarouselButton)(({ theme }) => ({
+  right: theme.spacing(2),
+}));
+
+const carouselItems = [
+  {
+    image: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+    title: 'Discover Sri Lankan Handicrafts',
+    description: 'Explore our collection of authentic Sri Lankan handicrafts, each piece telling a unique story of our rich cultural heritage.'
+  },
+  {
+    image: 'https://images.unsplash.com/photo-1583744946564-b52d01e3468c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+    title: 'Traditional Craftsmanship',
+    description: 'Experience the beauty of traditional craftsmanship passed down through generations.'
+  },
+  {
+    image: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+    title: 'Support Local Artisans',
+    description: 'Every purchase supports our local artisans and helps preserve Sri Lanka\'s cultural heritage.'
+  }
+];
+
 const ProductDashboard = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -94,6 +171,7 @@ const ProductDashboard = () => {
   const [error, setError] = useState(null);
   const [loginDialog, setLoginDialog] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
   
   const navigate = useNavigate();
   const theme = useTheme();
@@ -137,6 +215,21 @@ const ProductDashboard = () => {
     setFilteredProducts(filtered);
   }, [searchTerm, selectedCategory, products]);
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % carouselItems.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const handlePrevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + carouselItems.length) % carouselItems.length);
+  };
+
+  const handleNextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % carouselItems.length);
+  };
+
   const handleViewDetails = (productId) => {
     navigate(`/product/${productId}`);
   };
@@ -179,6 +272,33 @@ const ProductDashboard = () => {
 
       {!isLoggedIn && (
         <>
+          <CarouselContainer>
+            {carouselItems.map((item, index) => (
+              <CarouselSlide
+                key={index}
+                className={index === currentSlide ? 'active' : ''}
+                sx={{
+                  backgroundImage: `url(${item.image})`,
+                }}
+              >
+                <CarouselContent>
+                  <Typography variant="h4" sx={{ mb: 2, fontWeight: 700 }}>
+                    {item.title}
+                  </Typography>
+                  <Typography variant="h6">
+                    {item.description}
+                  </Typography>
+                </CarouselContent>
+              </CarouselSlide>
+            ))}
+            <PrevButton onClick={handlePrevSlide}>
+              <ArrowBackIos />
+            </PrevButton>
+            <NextButton onClick={handleNextSlide}>
+              <ArrowForwardIos />
+            </NextButton>
+          </CarouselContainer>
+
           <Alert 
             severity="info" 
             sx={{ 
