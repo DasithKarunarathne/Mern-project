@@ -25,14 +25,14 @@ const API_URL = 'http://localhost:5000/api/customer';
 function Profile() {
   const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({});
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
+    useEffect(() => {
+        const token = localStorage.getItem('token');
     if (!token) {
       navigate('/customer/login');
       return;
@@ -45,7 +45,7 @@ function Profile() {
         });
         setUserData(response.data);
         setEditedData(response.data);
-      } catch (err) {
+            } catch (err) {
         if (err.response?.status === 401) {
           localStorage.removeItem('token');
           navigate('/customer/login');
@@ -78,15 +78,15 @@ function Profile() {
 
   const handleSave = async () => {
     try {
-      const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token');
       const response = await axios.put(`${API_URL}/auth/profile`, editedData, {
         headers: { 'x-auth-token': token }
-      });
+            });
       setUserData(response.data);
-      setIsEditing(false);
+            setIsEditing(false);
       setSuccess('Profile updated successfully');
       setTimeout(() => setSuccess(''), 3000);
-    } catch (err) {
+        } catch (err) {
       if (err.response?.status === 401) {
         localStorage.removeItem('token');
         navigate('/customer/login');
@@ -116,14 +116,14 @@ function Profile() {
   };
 
   if (!userData) {
-    return (
+        return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
         <Typography>Loading...</Typography>
       </Box>
-    );
-  }
+        );
+    }
 
-  return (
+    return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Paper sx={{ p: 4, borderRadius: 2, boxShadow: 3 }}>
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -156,7 +156,7 @@ function Profile() {
             <TextField
               fullWidth
               label="Full Name"
-              name="fullName"
+                                name="fullName"
               value={editedData.fullName || ''}
               onChange={handleChange}
               disabled={!isEditing}
@@ -166,7 +166,7 @@ function Profile() {
             <TextField
               fullWidth
               label="Username"
-              name="username"
+                                name="username"
               value={editedData.username || ''}
               onChange={handleChange}
               disabled={!isEditing}
@@ -177,7 +177,7 @@ function Profile() {
               fullWidth
               label="Email"
               name="email"
-              type="email"
+                                type="email"
               value={editedData.email || ''}
               onChange={handleChange}
               disabled={!isEditing}
@@ -194,8 +194,8 @@ function Profile() {
                 startIcon={<Edit />}
                 onClick={handleEdit}
                 sx={{ mr: 2 }}
-              >
-                Edit Profile
+                        >
+                            Edit Profile
               </Button>
             ) : (
               <>
@@ -245,7 +245,7 @@ function Profile() {
         </DialogActions>
       </Dialog>
     </Container>
-  );
+    );
 }
 
 export default Profile;

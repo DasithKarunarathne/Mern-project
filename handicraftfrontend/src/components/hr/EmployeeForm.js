@@ -73,6 +73,22 @@ const ActionButton = styled(Button)(({ theme }) => ({
   },
 }));
 
+const employeeTypes = [
+  "Lacemaker",
+  "Mask Maker",
+  "Wood Carver",
+  "Metal Worker / Brass Worker",
+  "Potter",
+  "Handloom Weaver",
+  "Batik Artist",
+  "Jeweler",
+  "Cane Craftsman",
+  "Coir Craftsman",
+  "Palm Leaf Craftsman",
+  "Painter",
+  "Stone Carver"
+];
+
 const EmployeeForm = ({ onEmployeeAdded }) => {
   const [formData, setFormData] = useState({
     empID: "",
@@ -324,16 +340,27 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
               </Grid>
               <Grid item xs={12} sm={6}>
                 <CustomTextField
-          label="Role"
-          name="role"
-          value={formData.role}
-          onChange={handleChange}
-          fullWidth
-          required
-          error={!!errors.role}
-          helperText={errors.role}
-          disabled={loading}
-        />
+                  select
+                  label="Role"
+                  name="role"
+                  value={formData.role}
+                  onChange={handleChange}
+                  fullWidth
+                  required
+                  error={!!errors.role}
+                  helperText={errors.role}
+                  disabled={loading}
+                  SelectProps={{
+                    native: true,
+                  }}
+                >
+                  <option value="">Select Role</option>
+                  {employeeTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </CustomTextField>
               </Grid>
               <Grid item xs={12} sm={6}>
                 <CustomTextField
