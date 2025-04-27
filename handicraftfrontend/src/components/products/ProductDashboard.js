@@ -24,6 +24,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Paper,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
@@ -33,6 +34,8 @@ import {
   Login as LoginIcon,
   HowToReg as RegisterIcon,
   Visibility as ViewIcon,
+  ArrowBackIos,
+  ArrowForwardIos,
 } from "@mui/icons-material";
 import WhyChooseUs from './WhyChooseUs';
 import FloatingChatbot from '../customer/FloatingChatbot';
@@ -85,6 +88,97 @@ const ProductGrid = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2),
 }));
 
+const CarouselContainer = styled(Box)(({ theme }) => ({
+  position: 'relative',
+  width: '100%',
+  height: '300px',
+  overflow: 'hidden',
+  borderRadius: '12px',
+  marginBottom: theme.spacing(3),
+  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+  [theme.breakpoints.down('sm')]: {
+    height: '200px',
+  },
+}));
+
+const CarouselSlide = styled(Paper)(({ theme }) => ({
+  position: 'absolute',
+  width: '100%',
+  height: '100%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat',
+  transition: 'opacity 0.5s ease-in-out',
+  opacity: 0,
+  '&.active': {
+    opacity: 1,
+  },
+}));
+
+const CarouselContent = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  right: 0,
+  padding: theme.spacing(2),
+  background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
+  color: 'white',
+  textAlign: 'center',
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(1),
+  },
+}));
+
+const CarouselButton = styled(Button)(({ theme }) => ({
+  position: 'absolute',
+  top: '50%',
+  transform: 'translateY(-50%)',
+  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  color: 'white',
+  '&:hover': {
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+  },
+}));
+
+const PrevButton = styled(CarouselButton)(({ theme }) => ({
+  left: theme.spacing(2),
+}));
+
+const NextButton = styled(CarouselButton)(({ theme }) => ({
+  right: theme.spacing(2),
+}));
+
+const carouselItems = [
+  {
+    image: '/images/carousel/handicraft.jpg',
+    title: 'Traditional Sri Lankan Handicrafts',
+    description: 'Discover the rich heritage of Sri Lankan craftsmanship, where each piece tells a story of our ancient traditions and cultural legacy.'
+  },
+  {
+    image: '/images/carousel/wood-carving.jpg',
+    title: 'Authentic Wood Carvings',
+    description: 'Experience the intricate beauty of Sri Lankan wood carvings, crafted with precision and passion by our skilled artisans.'
+  },
+  {
+    image: '/images/carousel/batik.jpg',
+    title: 'Handmade Batik & Textiles',
+    description: 'Explore our collection of vibrant batik fabrics and handloom textiles, each piece showcasing unique Sri Lankan patterns and colors.'
+  },
+  {
+    image: '/images/carousel/pottery.jpg',
+    title: 'Traditional Pottery & Ceramics',
+    description: 'Admire the timeless elegance of Sri Lankan pottery, where traditional techniques meet contemporary designs.'
+  },
+  {
+    image: '/images/carousel/jewelry.jpg',
+    title: 'Handcrafted Jewelry',
+    description: 'Discover exquisite Sri Lankan jewelry, crafted with precious metals and gemstones, reflecting our island\'s natural beauty.'
+  }
+];
+
 const ProductDashboard = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -94,6 +188,7 @@ const ProductDashboard = () => {
   const [error, setError] = useState(null);
   const [loginDialog, setLoginDialog] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
   
   const navigate = useNavigate();
   const theme = useTheme();
@@ -137,6 +232,21 @@ const ProductDashboard = () => {
     setFilteredProducts(filtered);
   }, [searchTerm, selectedCategory, products]);
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % carouselItems.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const handlePrevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + carouselItems.length) % carouselItems.length);
+  };
+
+  const handleNextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % carouselItems.length);
+  };
+
   const handleViewDetails = (productId) => {
     navigate(`/product/${productId}`);
   };
@@ -179,6 +289,33 @@ const ProductDashboard = () => {
 
       {!isLoggedIn && (
         <>
+          <CarouselContainer>
+            {carouselItems.map((item, index) => (
+              <CarouselSlide
+                key={index}
+                className={index === currentSlide ? 'active' : ''}
+                sx={{
+                  backgroundImage: `url(${item.image})`,
+                }}
+              >
+                <CarouselContent>
+                  <Typography variant="h4" sx={{ mb: 2, fontWeight: 700 }}>
+                    {item.title}
+                  </Typography>
+                  <Typography variant="h6">
+                    {item.description}
+                  </Typography>
+                </CarouselContent>
+              </CarouselSlide>
+            ))}
+            <PrevButton onClick={handlePrevSlide}>
+              <ArrowBackIos />
+            </PrevButton>
+            <NextButton onClick={handleNextSlide}>
+              <ArrowForwardIos />
+            </NextButton>
+          </CarouselContainer>
+
           <Alert 
             severity="info" 
             sx={{ 
