@@ -30,6 +30,7 @@ import {
   KeyboardArrowUp,
   AccountCircle,
   ExitToApp,
+  ShoppingCart,
 } from "@mui/icons-material";
 
 // Custom styled components
@@ -461,6 +462,18 @@ const Layout = ({ children }) => {
                       >
                         <AccountCircle sx={{ fontSize: 32 }} />
                       </IconButton>
+                      <IconButton
+                        component={RouterLink}
+                        to="/product/cart"
+                        sx={{
+                          color: 'white',
+                          '&:hover': {
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                          },
+                        }}
+                      >
+                        <ShoppingCart sx={{ fontSize: 32 }} />
+                      </IconButton>
                       <Menu
                         anchorEl={anchorEl}
                         open={Boolean(anchorEl)}
@@ -496,28 +509,6 @@ const Layout = ({ children }) => {
                     </>
                   ) : (
                     <>
-                      <Button
-                        component={RouterLink}
-                        to="/customer"
-                        variant="contained"
-                        sx={{
-                          mx: 1,
-                          backgroundColor: "rgba(255, 215, 0, 0.9)",
-                          color: "#3E2723",
-                          borderRadius: "12px",
-                          padding: "8px 16px",
-                          fontSize: "1.2rem",
-                          textTransform: "none",
-                          "&:hover": {
-                            backgroundColor: "rgba(255, 193, 7, 0.95)",
-                            transform: "translateY(-2px)",
-                            boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
-                          },
-                        }}
-                      >
-                        Customer Home
-                      </Button>
-
                       <Button
                         component={RouterLink}
                         to="/manager/login"

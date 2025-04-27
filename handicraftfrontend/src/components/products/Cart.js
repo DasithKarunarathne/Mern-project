@@ -296,7 +296,7 @@ const Cart = () => {
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
                 <ActionButton
                   variant="outlined"
-                  onClick={() => navigate('/products')}
+                  onClick={() => navigate('/')}
                   startIcon={<ArrowBackIcon />}
                 >
                   Continue Shopping
