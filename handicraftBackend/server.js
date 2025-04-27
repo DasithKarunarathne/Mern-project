@@ -66,7 +66,7 @@ app.use("/api/employee", employeeRoutes);
 app.use("/api/product", productRoutes);
 
 // Customer
-app.use("/api/auth", authRoutes);
+app.use("/api/customer/auth", authRoutes);
 
 // Inventory routes
 app.use("/inventory", inventoryroute);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import {
   Box,
   AppBar,
@@ -16,6 +16,7 @@ import {
   Grid,
   IconButton,
   Stack,
+  Avatar,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import {
@@ -27,6 +28,8 @@ import {
   Email,
   LocationOn,
   KeyboardArrowUp,
+  AccountCircle,
+  ExitToApp,
 } from "@mui/icons-material";
 
 // Custom styled components
@@ -195,10 +198,8 @@ const Layout = ({ children }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [managerType, setManagerType] = useState(sessionStorage.getItem('managerType'));
-
-  // State for dropdown menu
   const [anchorEl, setAnchorEl] = useState(null);
-  const open = Boolean(anchorEl);
+  const isCustomerLoggedIn = localStorage.getItem("token") !== null;
 
   // Effect to listen for changes in session storage
   useEffect(() => {
@@ -221,6 +222,7 @@ const Layout = ({ children }) => {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem("token");
     sessionStorage.removeItem('managerType');
     setManagerType(null); // Update local state
     window.location.href = '/';
@@ -340,6 +342,14 @@ const Layout = ({ children }) => {
 
   const managerFooterContent = getManagerFooterContent();
 
+  const handleProfileMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleProfileMenuClose = () => {
+    setAnchorEl(null);
+  };
+
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       {/* Header */}
@@ -434,49 +444,99 @@ const Layout = ({ children }) => {
           <Box sx={{ display: "flex", alignItems: "center" }}>
             {!managerType ? (
               <>
-                <Button
-                  component={RouterLink}
-                  to="/customer"
-                  variant="contained"
-                  sx={{
-                    mx: 1,
-                    backgroundColor: "rgba(255, 215, 0, 0.9)",
-                    color: "#3E2723",
-                    borderRadius: "12px",
-                    padding: "8px 16px",
-                    fontSize: "1.2rem",
-                    textTransform: "none",
-                    "&:hover": {
-                      backgroundColor: "rgba(255, 193, 7, 0.95)",
-                      transform: "translateY(-2px)",
-                      boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
-                    },
-                  }}
-                >
-                  Customer Home
-                </Button>
+                {isCustomerLoggedIn ? (
+                  <>
+                    <IconButton
+                      onClick={handleProfileMenuOpen}
+                      sx={{
+                        color: 'white',
+                        '&:hover': {
+                          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        },
+                      }}
+                    >
+                      <AccountCircle sx={{ fontSize: 32 }} />
+                    </IconButton>
+                    <Menu
+                      anchorEl={anchorEl}
+                      open={Boolean(anchorEl)}
+                      onClose={handleProfileMenuClose}
+                      PaperProps={{
+                        sx: {
+                          mt: 1,
+                          '& .MuiMenuItem-root': {
+                            px: 2,
+                            py: 1,
+                            fontSize: '0.9rem',
+                            borderRadius: 1,
+                          },
+                        },
+                      }}
+                    >
+                      <MenuItem 
+                        component={RouterLink} 
+                        to="/customer/profile"
+                        onClick={handleProfileMenuClose}
+                      >
+                        <AccountCircle sx={{ mr: 2 }} />
+                        Profile Settings
+                      </MenuItem>
+                      <MenuItem onClick={() => {
+                        handleProfileMenuClose();
+                        handleLogout();
+                      }}>
+                        <ExitToApp sx={{ mr: 2 }} />
+                        Logout
+                      </MenuItem>
+                    </Menu>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      component={RouterLink}
+                      to="/customer"
+                      variant="contained"
+                      sx={{
+                        mx: 1,
+                        backgroundColor: "rgba(255, 215, 0, 0.9)",
+                        color: "#3E2723",
+                        borderRadius: "12px",
+                        padding: "8px 16px",
+                        fontSize: "1.2rem",
+                        textTransform: "none",
+                        "&:hover": {
+                          backgroundColor: "rgba(255, 193, 7, 0.95)",
+                          transform: "translateY(-2px)",
+                          boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
+                        },
+                      }}
+                    >
+                      Customer Home
+                    </Button>
 
-                <Button
-                  component={RouterLink}
-                  to="/manager/login"
-                  variant="contained"
-                  sx={{
-                    mx: 1,
-                    backgroundColor: "rgba(93, 64, 55, 0.9)",
-                    color: "#fff",
-                    borderRadius: "12px",
-                    padding: "8px 16px",
-                    fontSize: "1.2rem",
-                    textTransform: "none",
-                    "&:hover": {
-                      backgroundColor: "rgba(93, 64, 55, 0.95)",
-                      transform: "translateY(-2px)",
-                      boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
-                    },
-                  }}
-                >
-                  Manager Access
-                </Button>
+                    <Button
+                      component={RouterLink}
+                      to="/manager/login"
+                      variant="contained"
+                      sx={{
+                        mx: 1,
+                        backgroundColor: "rgba(93, 64, 55, 0.9)",
+                        color: "#fff",
+                        borderRadius: "12px",
+                        padding: "8px 16px",
+                        fontSize: "1.2rem",
+                        textTransform: "none",
+                        "&:hover": {
+                          backgroundColor: "rgba(93, 64, 55, 0.95)",
+                          transform: "translateY(-2px)",
+                          boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
+                        },
+                      }}
+                    >
+                      Manager Access
+                    </Button>
+                  </>
+                )}
               </>
             ) : (
               <Button
