@@ -359,19 +359,19 @@ const Layout = ({ children }) => {
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       {/* Header */}
       {!isFinanceDashboard && (
-        <AppBar
-          position="static"
-          sx={{
-            backgroundColor: "#5D4037",
+      <AppBar
+        position="static"
+        sx={{
+          backgroundColor: "#5D4037",
             height: 100,
           }}
         >
           <Toolbar>
-            {/* Logo */}
+          {/* Logo */}
             <Box
               component="img"
               src="/assets/logo.jpg"
-              alt="Heritage Hands Logo"
+                alt="Heritage Hands Logo"
               onError={handleLogoError}
               sx={{
                 height: 80,
@@ -379,48 +379,48 @@ const Layout = ({ children }) => {
                 objectFit: "contain",
               }}
             />
-            {/* Navigation Links */}
+          {/* Navigation Links */}
             <Box sx={{ flexGrow: 1, display: "flex", alignItems: "center" }}>
               {!managerType ? (
-                <>
+            <>
                   <Button
-                    component={RouterLink}
-                    to="/"
+                component={RouterLink}
+                to="/"
                     variant="text"
-                    sx={{
+                sx={{
                       mx: 1,
                       color: "#fff",
                       fontSize: "1.1rem",
                       textTransform: "none",
-                    }}
-                  >
-                    Home
+                }}
+              >
+                Home
                   </Button>
                   <Button
-                    component={RouterLink}
-                    to="/about"
+                component={RouterLink}
+                to="/about"
                     variant="text"
-                    sx={{
+                sx={{
                       mx: 1,
                       color: "#fff",
                       fontSize: "1.1rem",
                       textTransform: "none",
-                    }}
-                  >
-                    About
+                }}
+              >
+                About
                   </Button>
                   <Button
-                    component={RouterLink}
-                    to="/contact"
+                component={RouterLink}
+                to="/contact"
                     variant="text"
-                    sx={{
+                sx={{
                       mx: 1,
                       color: "#fff",
                       fontSize: "1.1rem",
                       textTransform: "none",
-                    }}
-                  >
-                    Contact
+                }}
+              >
+                Contact
                   </Button>
                 </>
               ) : (
@@ -474,8 +474,8 @@ const Layout = ({ children }) => {
                       >
                         <ShoppingCart sx={{ fontSize: 32 }} />
                       </IconButton>
-                      <Menu
-                        anchorEl={anchorEl}
+              <Menu
+                anchorEl={anchorEl}
                         open={Boolean(anchorEl)}
                         onClose={handleProfileMenuClose}
                         PaperProps={{
@@ -488,10 +488,10 @@ const Layout = ({ children }) => {
                               borderRadius: 1,
                             },
                           },
-                        }}
-                      >
-                        <MenuItem 
-                          component={RouterLink} 
+                }}
+              >
+                <MenuItem
+                  component={RouterLink}
                           to="/customer/profile"
                           onClick={handleProfileMenuClose}
                         >
@@ -504,9 +504,9 @@ const Layout = ({ children }) => {
                         }}>
                           <ExitToApp sx={{ mr: 2 }} />
                           Logout
-                        </MenuItem>
-                      </Menu>
-                    </>
+                </MenuItem>
+              </Menu>
+            </>
                   ) : (
                     <>
                       <Button
@@ -556,8 +556,8 @@ const Layout = ({ children }) => {
                 </Button>
               )}
             </Box>
-          </Toolbar>
-        </AppBar>
+        </Toolbar>
+      </AppBar>
       )}
       {/* Main Content */}
       <Box component="main" sx={{ flexGrow: 1 }}>
@@ -565,7 +565,7 @@ const Layout = ({ children }) => {
       </Box>
       {/* Footer */}
       {!isFinanceDashboard && (
-        <Footer>
+      <Footer>
           <Container maxWidth="lg">
             <Grid container spacing={4}>
               {/* About Section */}
@@ -669,7 +669,7 @@ const Layout = ({ children }) => {
                   </Box>
                   <Box className="contact-item">
                     <Email />
-                    <Typography variant="body2">
+        <Typography variant="body2">
                       {managerType ? `${managerType}support@heritagehands.lk` : 'info@heritagehands.lk'}
                     </Typography>
                   </Box>
@@ -692,8 +692,8 @@ const Layout = ({ children }) => {
               textAlign: 'center'
             }}>
               <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                © {new Date().getFullYear()} Heritage Hands. All rights reserved.
-              </Typography>
+          © {new Date().getFullYear()} Heritage Hands. All rights reserved.
+        </Typography>
               {!managerType && (
                 <Box sx={{ mt: { xs: 2, sm: 0 } }}>
                   <Link component={RouterLink} to="/privacy" className="footer-link" sx={{ mr: 3 }}>
@@ -723,7 +723,7 @@ const Layout = ({ children }) => {
               <KeyboardArrowUp />
             </IconButton>
           </Container>
-        </Footer>
+      </Footer>
       )}
     </Box>
   );

@@ -492,12 +492,12 @@ const Ledger = () => {
             {ledger
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((entry) => (
-                <TableRow key={entry._id}>
-                  <TableCell>{new Date(entry.date).toLocaleDateString()}</TableCell>
-                  <TableCell>{entry.description}</TableCell>
+              <TableRow key={entry._id}>
+                <TableCell>{new Date(entry.date).toLocaleDateString()}</TableCell>
+                <TableCell>{entry.description}</TableCell>
                   <TableCell>Rs. {entry.amount.toLocaleString()}</TableCell>
-                  <TableCell>{entry.category}</TableCell>
-                  <TableCell>{entry.source}</TableCell>
+                <TableCell>{entry.category}</TableCell>
+                <TableCell>{entry.source}</TableCell>
                   <TableCell>{entry.referenceNumber || 'N/A'}</TableCell>
                   <TableCell>{entry.status || 'Completed'}</TableCell>
                   <TableCell>
@@ -506,8 +506,8 @@ const Ledger = () => {
                       type={entry.transactiontype}
                     />
                   </TableCell>
-                </TableRow>
-              ))}
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
                 </StyledTableContainer>
