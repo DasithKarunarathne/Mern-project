@@ -103,6 +103,20 @@ router.put('/profile', auth, async (req, res) => {
     }
 });
 
+// Delete Profile
+router.delete('/profile', auth, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ msg: 'User not found' });
+
+        await User.deleteOne({ _id: req.user.id });
+        res.json({ msg: 'Account deleted successfully' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server error');
+    }
+});
+
 // Admin: Get all users
 router.get('/users', auth, admin, async (req, res) => {
     try {
