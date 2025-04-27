@@ -35,6 +35,7 @@ import {
   Visibility as ViewIcon,
 } from "@mui/icons-material";
 import WhyChooseUs from './WhyChooseUs';
+import FloatingChatbot from '../customer/FloatingChatbot';
 
 const StyledContainer = styled(Container)(({ theme }) => ({
   padding: theme.spacing(4),
@@ -319,6 +320,8 @@ const ProductDashboard = () => {
       )}
 
       <WhyChooseUs />
+
+      <FloatingChatbot />
 
       <Dialog open={loginDialog} onClose={() => setLoginDialog(false)}>
         <DialogTitle>Login Required</DialogTitle>
