@@ -107,7 +107,7 @@ function FinancialStatements() {
           params: { year: selectedYear, month: selectedMonth },
         }),
         axios.get('http://localhost:5000/api/financialStatements/sofp', {
-          params: { year: selectedYear, month: selectedMonth },
+        params: { year: selectedYear, month: selectedMonth },
         })
       ]);
       setPL(plResponse.data);
@@ -180,8 +180,8 @@ function FinancialStatements() {
                 color: theme.palette.primary.main,
               }}
             >
-              Financial Statements
-            </Typography>
+        Financial Statements
+      </Typography>
           </Box>
         </Box>
 
@@ -194,9 +194,9 @@ function FinancialStatements() {
           
           <StyledTextField
             type="month"
-            label="Select Month"
-            value={`${selectedYear}-${String(selectedMonth).padStart(2, '0')}`}
-            onChange={handleMonthChange}
+          label="Select Month"
+          value={`${selectedYear}-${String(selectedMonth).padStart(2, '0')}`}
+          onChange={handleMonthChange}
             InputProps={{
               startAdornment: <CalendarIcon color="action" sx={{ mr: 1 }} />,
             }}
@@ -221,7 +221,7 @@ function FinancialStatements() {
               <RefreshIcon />
             </IconButton>
           </Tooltip>
-        </Box>
+      </Box>
 
         {error && (
           <Snackbar open={!!error} autoHideDuration={6000} onClose={handleCloseError}>
@@ -237,7 +237,7 @@ function FinancialStatements() {
           </Box>
         ) : (
           <Grid container spacing={3}>
-            {/* Profit & Loss */}
+      {/* Profit & Loss */}
             <Grid item xs={12} md={6}>
               <StyledCard>
                 <CardContent>
@@ -245,11 +245,11 @@ function FinancialStatements() {
                     <ProfitIcon color="primary" />
                     <Typography variant="h6" component="h2">
                       Profit & Loss Statement
-                    </Typography>
+        </Typography>
                   </Box>
                   <StatementSection>
-                    <List>
-                      <ListItem>
+        <List>
+          <ListItem>
                         <ListItemText 
                           primary={
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -258,13 +258,13 @@ function FinancialStatements() {
                             </Box>
                           }
                         />
-                      </ListItem>
-                      <Divider />
-                      <ListItem>
+          </ListItem>
+          <Divider />
+          <ListItem>
                         <ListItemText primary="Expenses" />
-                      </ListItem>
-                      <List sx={{ pl: 4 }}>
-                        <ListItem>
+          </ListItem>
+          <List sx={{ pl: 4 }}>
+            <ListItem>
                           <ListItemText 
                             primary={
                               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -273,8 +273,8 @@ function FinancialStatements() {
                               </Box>
                             }
                           />
-                        </ListItem>
-                        <ListItem>
+            </ListItem>
+            <ListItem>
                           <ListItemText 
                             primary={
                               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -283,10 +283,10 @@ function FinancialStatements() {
                               </Box>
                             }
                           />
-                        </ListItem>
-                      </List>
-                      <Divider />
-                      <ListItem>
+            </ListItem>
+          </List>
+          <Divider />
+          <ListItem>
                         <ListItemText 
                           primary={
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -297,14 +297,14 @@ function FinancialStatements() {
                             </Box>
                           }
                         />
-                      </ListItem>
-                    </List>
+          </ListItem>
+        </List>
                   </StatementSection>
                 </CardContent>
               </StyledCard>
             </Grid>
 
-            {/* Statement of Financial Position */}
+      {/* Statement of Financial Position */}
             <Grid item xs={12} md={6}>
               <StyledCard>
                 <CardContent>
@@ -312,11 +312,11 @@ function FinancialStatements() {
                     <BalanceIcon color="primary" />
                     <Typography variant="h6" component="h2">
                       Statement of Financial Position
-                    </Typography>
+        </Typography>
                   </Box>
                   <StatementSection>
-                    <List>
-                      <ListItem>
+        <List>
+          <ListItem>
                         <ListItemText primary="Assets" />
                       </ListItem>
                       <List sx={{ pl: 4 }}>
@@ -357,9 +357,9 @@ function FinancialStatements() {
                         </List>
                         <ListItem>
                           <ListItemText primary="Non-Current Assets" />
-                        </ListItem>
-                        <List sx={{ pl: 4 }}>
-                          <ListItem>
+          </ListItem>
+          <List sx={{ pl: 4 }}>
+            <ListItem>
                             <ListItemText 
                               primary={
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -368,8 +368,8 @@ function FinancialStatements() {
                                 </Box>
                               }
                             />
-                          </ListItem>
-                          <ListItem>
+            </ListItem>
+            <ListItem>
                             <ListItemText 
                               primary={
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -378,8 +378,8 @@ function FinancialStatements() {
                                 </Box>
                               }
                             />
-                          </ListItem>
-                          <ListItem>
+            </ListItem>
+            <ListItem>
                             <ListItemText 
                               primary={
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -399,18 +399,18 @@ function FinancialStatements() {
                               </Box>
                             }
                           />
-                        </ListItem>
-                      </List>
-                      <Divider />
-                      <ListItem>
+            </ListItem>
+          </List>
+          <Divider />
+          <ListItem>
                         <ListItemText primary="Liabilities" />
                       </ListItem>
                       <List sx={{ pl: 4 }}>
                         <ListItem>
                           <ListItemText primary="Current Liabilities" />
-                        </ListItem>
-                        <List sx={{ pl: 4 }}>
-                          <ListItem>
+          </ListItem>
+          <List sx={{ pl: 4 }}>
+            <ListItem>
                             <ListItemText 
                               primary={
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -429,8 +429,8 @@ function FinancialStatements() {
                                 </Box>
                               }
                             />
-                          </ListItem>
-                          <ListItem>
+            </ListItem>
+            <ListItem>
                             <ListItemText 
                               primary={
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -465,10 +465,10 @@ function FinancialStatements() {
                               </Box>
                             }
                           />
-                        </ListItem>
-                      </List>
-                      <Divider />
-                      <ListItem>
+            </ListItem>
+          </List>
+          <Divider />
+          <ListItem>
                         <ListItemText primary="Equity" />
                       </ListItem>
                       <List sx={{ pl: 4 }}>
@@ -503,8 +503,8 @@ function FinancialStatements() {
                               </Box>
                             }
                           />
-                        </ListItem>
-                      </List>
+          </ListItem>
+        </List>
                       {sofp.accountingEquationBalanced === false && (
                         <Alert severity="warning" sx={{ mt: 2 }}>
                           Warning: The accounting equation does not balance. Please check the calculations.

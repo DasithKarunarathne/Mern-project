@@ -193,8 +193,8 @@ const ProductList = () => {
                 label="Free Shipping"
                 color="info"
                 variant="outlined"
-              />
-            </Box>
+          />
+        </Box>
 
             <Typography
               variant="h4"
@@ -222,15 +222,15 @@ const ProductList = () => {
                 color: theme.palette.text.secondary,
               }}
             >
-              {product.description}
-            </Typography>
+            {product.description}
+          </Typography>
 
             <Box sx={{ display: 'flex', gap: 2, mt: 'auto' }}>
               <ActionButton
-                variant="contained"
-                color="primary"
-                onClick={handleBuyNow}
-                disabled={loading}
+              variant="contained"
+              color="primary"
+              onClick={handleBuyNow}
+              disabled={loading}
                 startIcon={<LocalShippingIcon />}
                 sx={{
                   flex: 1,
@@ -239,14 +239,14 @@ const ProductList = () => {
                     backgroundColor: theme.palette.primary.dark,
                   },
                 }}
-              >
-                Buy Now
+            >
+              Buy Now
               </ActionButton>
               <ActionButton
-                variant="contained"
-                color="secondary"
-                onClick={handleAddToCart}
-                disabled={loading}
+              variant="contained"
+              color="secondary"
+              onClick={handleAddToCart}
+              disabled={loading}
                 startIcon={<ShoppingCartIcon />}
                 sx={{
                   flex: 1,
@@ -255,8 +255,8 @@ const ProductList = () => {
                     backgroundColor: theme.palette.secondary.dark,
                   },
                 }}
-              >
-                Add to Cart
+            >
+              Add to Cart
               </ActionButton>
             </Box>
           </Box>

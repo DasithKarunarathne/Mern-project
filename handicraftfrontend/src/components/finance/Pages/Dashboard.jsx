@@ -519,9 +519,9 @@ export default function Dashboard() {
             ].map((item) => (
               <StyledListItem
                 key={item.path}
-                component={Link}
+              component={Link}
                 to={item.path}
-                onClick={handleDrawerClose}
+              onClick={handleDrawerClose}
                 sx={{ pl: 4 }}
                 $active={isActiveRoute(item.path)}
               >
@@ -548,7 +548,7 @@ export default function Dashboard() {
 
   const Overview = () => (
     <Fade in timeout={500}>
-      <Grid container spacing={3}>
+    <Grid container spacing={3}>
         {/* First row - 3 cards taking one-third width each */}
         <Grid item xs={12} md={4}>
           <StyledCard>
@@ -557,7 +557,7 @@ export default function Dashboard() {
                 <Avatar sx={{ bgcolor: theme.palette.primary.main, mr: 2 }}>
                   <AccountBalanceWalletIcon />
                 </Avatar>
-                <Typography variant="h6">Total Petty Cash</Typography>
+          <Typography variant="h6">Total Petty Cash</Typography>
               </Box>
               {loading ? (
                 <CircularProgress size={24} />
@@ -720,7 +720,7 @@ export default function Dashboard() {
               )}
             </CardContent>
           </StyledCard>
-        </Grid>
+      </Grid>
 
         {/* Cash Inflow Chart */}
         <Grid item xs={12}>
@@ -743,10 +743,10 @@ export default function Dashboard() {
               </Box>
             </CardContent>
           </StyledCard>
-        </Grid>
+      </Grid>
 
         {/* Existing expense chart */}
-        <Grid item xs={12}>
+      <Grid item xs={12}>
           <StyledCard>
             <CardContent>
               <Box sx={{ height: 450 }}>
@@ -757,12 +757,12 @@ export default function Dashboard() {
                 ) : error ? (
                   <Typography color="error">{error}</Typography>
                 ) : chartData ? (
-                  <Bar data={chartData} options={chartOptions} />
-                ) : (
+            <Bar data={chartData} options={chartOptions} />
+          ) : (
                   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                     <Typography variant="body1">No data available</Typography>
                   </Box>
-                )}
+          )}
               </Box>
             </CardContent>
           </StyledCard>
