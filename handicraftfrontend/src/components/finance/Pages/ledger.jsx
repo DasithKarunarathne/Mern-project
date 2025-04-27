@@ -119,11 +119,35 @@ const Ledger = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
+  const generateReferenceNumber = (transaction) => {
+    const date = new Date(transaction.date);
+    const year = date.getFullYear().toString().slice(-2);
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    return `HH-${year}${month}${day}-${random}`;
+  };
+
   const fetchLedger = useCallback(async () => {
     setLoading(true);
     try {
       const response = await axios.get(`http://localhost:5000/api/ledger/fetchLedger/${month}/${year}`);
-      setLedger(response.data);
+      // Only generate reference numbers for transactions that don't have one
+      const ledgerWithRefs = response.data.map(transaction => {
+        if (!transaction.referenceNumber) {
+          // If no reference number exists, generate one and update the backend
+          const newRefNumber = generateReferenceNumber(transaction);
+          // Update the transaction in the backend with the new reference number
+          axios.patch(`http://localhost:5000/api/ledger/${transaction._id}/reference`, {
+            referenceNumber: newRefNumber
+          }).catch(error => {
+            console.error("Error updating reference number:", error);
+          });
+          return { ...transaction, referenceNumber: newRefNumber };
+        }
+        return transaction;
+      });
+      setLedger(ledgerWithRefs);
       setError(null);
     } catch (error) {
       console.error("Error fetching ledger", error);
@@ -212,43 +236,81 @@ const Ledger = () => {
     doc.line(25, 105, pageWidth - 25, 105);
 
     // Convert table data
-    const tableData = ledger.map((entry) => [
+    const tableData = ledger.map(entry => [
       new Date(entry.date).toLocaleDateString(),
       entry.description,
       `Rs. ${entry.amount.toLocaleString()}`,
       entry.category,
       entry.source,
-      entry.transactionId,
-      entry.transactiontype,
+      entry.referenceNumber || 'N/A',
+      entry.status || 'Completed',
+      entry.transactiontype
     ]);
 
     // Add table with themed colors
     autoTable(doc, {
       startY: 115,
-      head: [["Date", "Description", "Amount", "Category", "Source", "Transaction ID", "Type"]],
+      head: [["Date", "Description", "Amount", "Category", "Source", "Reference Number", "Status", "Type"]],
       body: tableData,
       theme: 'grid',
-      styles: { 
-        fontSize: 9,
-        cellPadding: 3,
-        lineColor: [primaryColor.r, primaryColor.g, primaryColor.b],
-        lineWidth: 0.1,
-        font: 'helvetica',
-      },
-      headStyles: { 
-        fillColor: [primaryColor.r, primaryColor.g, primaryColor.b],
-        textColor: 255,
-        fontSize: 10,
+      headStyles: {
+        fillColor: [93, 64, 55],
+        textColor: [255, 255, 255],
+        fontSize: 8,
         fontStyle: 'bold',
         halign: 'center',
-      },
-      alternateRowStyles: {
-        fillColor: [251, 247, 245],
+        cellPadding: 1,
+        minCellHeight: 10
       },
       bodyStyles: {
-        textColor: [primaryColor.r, primaryColor.g, primaryColor.b],
+        fontSize: 7,
+        textColor: [0, 0, 0],
+        halign: 'center',
+        cellPadding: 1,
+        minCellHeight: 8
       },
-      margin: { left: 25, right: 25 },
+      columnStyles: {
+        0: { cellWidth: 15 }, // Date
+        1: { cellWidth: 25 }, // Description
+        2: { cellWidth: 18 }, // Amount
+        3: { cellWidth: 18 }, // Category
+        4: { cellWidth: 18 }, // Source
+        5: { cellWidth: 20 }, // Reference Number
+        6: { cellWidth: 15 }, // Status
+        7: { cellWidth: 15 }  // Type
+      },
+      margin: { top: 15, right: 15, bottom: 15, left: 15 },
+      styles: {
+        cellPadding: 1,
+        fontSize: 7,
+        lineColor: [93, 64, 55],
+        lineWidth: 0.1,
+        overflow: 'linebreak',
+        cellWidth: 'wrap'
+      },
+      alternateRowStyles: {
+        fillColor: [251, 247, 245]
+      },
+      didDrawPage: function(data) {
+        // Add page border
+        doc.setDrawColor(93, 64, 55);
+        doc.setLineWidth(0.5);
+        doc.rect(15, 15, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 30);
+        
+        // Add page numbers
+        doc.setFontSize(8);
+        doc.text(
+          `Page ${doc.internal.getNumberOfPages()}`,
+          data.settings.margin.left,
+          doc.internal.pageSize.height - 20
+        );
+      },
+      willDrawCell: function(data) {
+        // Ensure text wrapping for long content
+        if (data.cell.text.length > 0) {
+          data.cell.styles.cellWidth = 'wrap';
+        }
+      }
     });
 
     // Add footer
@@ -420,57 +482,31 @@ const Ledger = () => {
               <TableCell>Amount</TableCell>
               <TableCell>Category</TableCell>
               <TableCell>Source</TableCell>
-              <TableCell>Transaction ID</TableCell>
-                        <TableCell>Type</TableCell>
+              <TableCell>Reference Number</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Type</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-                      {(rowsPerPage > 0
-                        ? ledger.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                        : ledger
-                      ).map((entry) => (
-                        <TableRow key={entry._id} hover>
-                <TableCell>{new Date(entry.date).toLocaleDateString()}</TableCell>
-                <TableCell>{entry.description}</TableCell>
-                          <TableCell>
-                            <Typography
-                              sx={{
-                                color: entry.transactiontype.toLowerCase() === 'credit' 
-                                  ? theme.palette.success.main 
-                                  : theme.palette.error.main,
-                                fontWeight: 600,
-                              }}
-                            >
-                              Rs. {entry.amount.toLocaleString()}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              icon={<AccountIcon />}
-                              label={entry.category}
-                              variant="outlined"
-                              size="small"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              icon={<ReceiptIcon />}
-                              label={entry.source}
-                              variant="outlined"
-                              size="small"
-                            />
-                          </TableCell>
-                <TableCell>{entry.transactionId}</TableCell>
-                          <TableCell>
-                            <TransactionChip
-                              icon={<PaymentIcon />}
-                              label={entry.transactiontype}
-                              type={entry.transactiontype.toLowerCase()}
-                              size="small"
-                            />
-                          </TableCell>
-              </TableRow>
-            ))}
+            {ledger
+              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              .map((entry) => (
+                <TableRow key={entry._id}>
+                  <TableCell>{new Date(entry.date).toLocaleDateString()}</TableCell>
+                  <TableCell>{entry.description}</TableCell>
+                  <TableCell>Rs. {entry.amount.toLocaleString()}</TableCell>
+                  <TableCell>{entry.category}</TableCell>
+                  <TableCell>{entry.source}</TableCell>
+                  <TableCell>{entry.referenceNumber || 'N/A'}</TableCell>
+                  <TableCell>{entry.status || 'Completed'}</TableCell>
+                  <TableCell>
+                    <TransactionChip
+                      label={entry.transactiontype}
+                      type={entry.transactiontype}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
                 </StyledTableContainer>

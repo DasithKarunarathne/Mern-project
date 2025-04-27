@@ -321,25 +321,75 @@ function FinancialStatements() {
                       </ListItem>
                       <List sx={{ pl: 4 }}>
                         <ListItem>
-                          <ListItemText 
-                            primary={
-                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <Typography>Cash</Typography>
-                                <ValueText>Rs. {(sofp.assets?.cash || 0).toLocaleString()}</ValueText>
-                              </Box>
-                            }
-                          />
+                          <ListItemText primary="Current Assets" />
                         </ListItem>
+                        <List sx={{ pl: 4 }}>
+                          <ListItem>
+                            <ListItemText 
+                              primary={
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <Typography>Cash</Typography>
+                                  <ValueText>Rs. {(sofp.assets?.current?.cash || 0).toLocaleString()}</ValueText>
+                                </Box>
+                              }
+                            />
+                          </ListItem>
+                          <ListItem>
+                            <ListItemText 
+                              primary={
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <Typography>Receivables</Typography>
+                                  <ValueText>Rs. {(sofp.assets?.current?.receivables || 0).toLocaleString()}</ValueText>
+                                </Box>
+                              }
+                            />
+                          </ListItem>
+                          <ListItem>
+                            <ListItemText 
+                              primary={
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <Typography>Total Current Assets</Typography>
+                                  <ValueText>Rs. {(sofp.assets?.current?.total || 0).toLocaleString()}</ValueText>
+                                </Box>
+                              }
+                            />
+                          </ListItem>
+                        </List>
                         <ListItem>
-                          <ListItemText 
-                            primary={
-                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <Typography>Receivables</Typography>
-                                <ValueText>Rs. {(sofp.assets?.receivables || 0).toLocaleString()}</ValueText>
-                              </Box>
-                            }
-                          />
+                          <ListItemText primary="Non-Current Assets" />
                         </ListItem>
+                        <List sx={{ pl: 4 }}>
+                          <ListItem>
+                            <ListItemText 
+                              primary={
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <Typography>Long-term Receivables</Typography>
+                                  <ValueText>Rs. {(sofp.assets?.nonCurrent?.longTermReceivables || 0).toLocaleString()}</ValueText>
+                                </Box>
+                              }
+                            />
+                          </ListItem>
+                          <ListItem>
+                            <ListItemText 
+                              primary={
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <Typography>Inventory</Typography>
+                                  <ValueText>Rs. {(sofp.assets?.nonCurrent?.inventory || 0).toLocaleString()}</ValueText>
+                                </Box>
+                              }
+                            />
+                          </ListItem>
+                          <ListItem>
+                            <ListItemText 
+                              primary={
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <Typography>Total Non-Current Assets</Typography>
+                                  <ValueText>Rs. {(sofp.assets?.nonCurrent?.total || 0).toLocaleString()}</ValueText>
+                                </Box>
+                              }
+                            />
+                          </ListItem>
+                        </List>
                         <ListItem>
                           <ListItemText 
                             primary={
@@ -357,15 +407,55 @@ function FinancialStatements() {
                       </ListItem>
                       <List sx={{ pl: 4 }}>
                         <ListItem>
-                          <ListItemText 
-                            primary={
-                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <Typography>Unpaid Salaries</Typography>
-                                <ValueText>Rs. {(sofp.liabilities?.unpaidSalaries || 0).toLocaleString()}</ValueText>
-                              </Box>
-                            }
-                          />
+                          <ListItemText primary="Current Liabilities" />
                         </ListItem>
+                        <List sx={{ pl: 4 }}>
+                          <ListItem>
+                            <ListItemText 
+                              primary={
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <Typography>Unpaid Salaries</Typography>
+                                  <ValueText>Rs. {(sofp.liabilities?.current?.unpaidSalaries || 0).toLocaleString()}</ValueText>
+                                </Box>
+                              }
+                            />
+                          </ListItem>
+                          <ListItem>
+                            <ListItemText 
+                              primary={
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <Typography>Unpaid Orders</Typography>
+                                  <ValueText>Rs. {(sofp.liabilities?.current?.unpaidOrders || 0).toLocaleString()}</ValueText>
+                                </Box>
+                              }
+                            />
+                          </ListItem>
+                          <ListItem>
+                            <ListItemText 
+                              primary={
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <Typography>Total Current Liabilities</Typography>
+                                  <ValueText>Rs. {(sofp.liabilities?.current?.total || 0).toLocaleString()}</ValueText>
+                                </Box>
+                              }
+                            />
+                          </ListItem>
+                        </List>
+                        <ListItem>
+                          <ListItemText primary="Non-Current Liabilities" />
+                        </ListItem>
+                        <List sx={{ pl: 4 }}>
+                          <ListItem>
+                            <ListItemText 
+                              primary={
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <Typography>Total Non-Current Liabilities</Typography>
+                                  <ValueText>Rs. {(sofp.liabilities?.nonCurrent?.total || 0).toLocaleString()}</ValueText>
+                                </Box>
+                              }
+                            />
+                          </ListItem>
+                        </List>
                         <ListItem>
                           <ListItemText 
                             primary={
@@ -379,15 +469,47 @@ function FinancialStatements() {
                       </List>
                       <Divider />
                       <ListItem>
-                        <ListItemText 
-                          primary={
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <Typography>Total Equity</Typography>
-                              <ValueText>Rs. {(sofp.equity || 0).toLocaleString()}</ValueText>
-                            </Box>
-                          }
-                        />
+                        <ListItemText primary="Equity" />
                       </ListItem>
+                      <List sx={{ pl: 4 }}>
+                        <ListItem>
+                          <ListItemText 
+                            primary={
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Typography>Initial Capital</Typography>
+                                <ValueText>Rs. {(sofp.equity?.initialCapital || 0).toLocaleString()}</ValueText>
+                              </Box>
+                            }
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary={
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Typography>Accumulated Profit/Loss</Typography>
+                                <ValueText type={sofp.equity?.accumulatedProfitLoss >= 0 ? 'profit' : 'loss'}>
+                                  Rs. {(sofp.equity?.accumulatedProfitLoss || 0).toLocaleString()}
+                                </ValueText>
+                              </Box>
+                            }
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary={
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Typography>Total Equity</Typography>
+                                <ValueText>Rs. {(sofp.equity?.total || 0).toLocaleString()}</ValueText>
+                              </Box>
+                            }
+                          />
+                        </ListItem>
+                      </List>
+                      {sofp.accountingEquationBalanced === false && (
+                        <Alert severity="warning" sx={{ mt: 2 }}>
+                          Warning: The accounting equation does not balance. Please check the calculations.
+                        </Alert>
+                      )}
                     </List>
                   </StatementSection>
                 </CardContent>
