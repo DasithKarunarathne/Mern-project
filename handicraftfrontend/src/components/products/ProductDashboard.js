@@ -91,11 +91,14 @@ const ProductGrid = styled(Box)(({ theme }) => ({
 const CarouselContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
   width: '100%',
-  height: '400px',
+  height: '300px',
   overflow: 'hidden',
-  borderRadius: '16px',
-  marginBottom: theme.spacing(4),
-  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+  borderRadius: '12px',
+  marginBottom: theme.spacing(3),
+  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+  [theme.breakpoints.down('sm')]: {
+    height: '200px',
+  },
 }));
 
 const CarouselSlide = styled(Paper)(({ theme }) => ({
@@ -107,6 +110,7 @@ const CarouselSlide = styled(Paper)(({ theme }) => ({
   justifyContent: 'center',
   backgroundSize: 'cover',
   backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat',
   transition: 'opacity 0.5s ease-in-out',
   opacity: 0,
   '&.active': {
@@ -119,10 +123,13 @@ const CarouselContent = styled(Box)(({ theme }) => ({
   bottom: 0,
   left: 0,
   right: 0,
-  padding: theme.spacing(4),
+  padding: theme.spacing(2),
   background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
   color: 'white',
   textAlign: 'center',
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(1),
+  },
 }));
 
 const CarouselButton = styled(Button)(({ theme }) => ({
@@ -146,19 +153,29 @@ const NextButton = styled(CarouselButton)(({ theme }) => ({
 
 const carouselItems = [
   {
-    image: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-    title: 'Discover Sri Lankan Handicrafts',
-    description: 'Explore our collection of authentic Sri Lankan handicrafts, each piece telling a unique story of our rich cultural heritage.'
+    image: '/images/carousel/handicraft.jpg',
+    title: 'Traditional Sri Lankan Handicrafts',
+    description: 'Discover the rich heritage of Sri Lankan craftsmanship, where each piece tells a story of our ancient traditions and cultural legacy.'
   },
   {
-    image: 'https://images.unsplash.com/photo-1583744946564-b52d01e3468c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-    title: 'Traditional Craftsmanship',
-    description: 'Experience the beauty of traditional craftsmanship passed down through generations.'
+    image: '/images/carousel/wood-carving.jpg',
+    title: 'Authentic Wood Carvings',
+    description: 'Experience the intricate beauty of Sri Lankan wood carvings, crafted with precision and passion by our skilled artisans.'
   },
   {
-    image: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-    title: 'Support Local Artisans',
-    description: 'Every purchase supports our local artisans and helps preserve Sri Lanka\'s cultural heritage.'
+    image: '/images/carousel/batik.jpg',
+    title: 'Handmade Batik & Textiles',
+    description: 'Explore our collection of vibrant batik fabrics and handloom textiles, each piece showcasing unique Sri Lankan patterns and colors.'
+  },
+  {
+    image: '/images/carousel/pottery.jpg',
+    title: 'Traditional Pottery & Ceramics',
+    description: 'Admire the timeless elegance of Sri Lankan pottery, where traditional techniques meet contemporary designs.'
+  },
+  {
+    image: '/images/carousel/jewelry.jpg',
+    title: 'Handcrafted Jewelry',
+    description: 'Discover exquisite Sri Lankan jewelry, crafted with precious metals and gemstones, reflecting our island\'s natural beauty.'
   }
 ];
 
