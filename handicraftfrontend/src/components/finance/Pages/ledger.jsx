@@ -209,7 +209,7 @@ const Ledger = () => {
     doc.setLineWidth(0.5);
     doc.line(pageWidth/2 - 50, 65, pageWidth/2 + 50, 65);
 
-    // Add reference number and date section
+    // Add reference number and date section with better spacing
     doc.setFontSize(10);
     doc.setTextColor(0, 0, 0);
     const refNumber = `REF: HH/GL/${year}/${month.toString().padStart(2, '0')}`;
@@ -256,37 +256,38 @@ const Ledger = () => {
       headStyles: {
         fillColor: [93, 64, 55],
         textColor: [255, 255, 255],
-        fontSize: 8,
+        fontSize: 9,
         fontStyle: 'bold',
         halign: 'center',
-        cellPadding: 1,
+        cellPadding: 3,
         minCellHeight: 10
       },
       bodyStyles: {
-        fontSize: 7,
+        fontSize: 8,
         textColor: [0, 0, 0],
         halign: 'center',
-        cellPadding: 1,
+        cellPadding: 2,
         minCellHeight: 8
       },
       columnStyles: {
-        0: { cellWidth: 15 }, // Date
-        1: { cellWidth: 25 }, // Description
-        2: { cellWidth: 18 }, // Amount
-        3: { cellWidth: 18 }, // Category
-        4: { cellWidth: 18 }, // Source
-        5: { cellWidth: 20 }, // Reference Number
-        6: { cellWidth: 15 }, // Status
-        7: { cellWidth: 15 }  // Type
+        0: { cellWidth: 18 }, // Date
+        1: { cellWidth: 30 }, // Description
+        2: { cellWidth: 22 }, // Amount
+        3: { cellWidth: 22 }, // Category
+        4: { cellWidth: 22 }, // Source
+        5: { cellWidth: 25 }, // Reference Number
+        6: { cellWidth: 18 }, // Status
+        7: { cellWidth: 18 }  // Type
       },
-      margin: { top: 15, right: 15, bottom: 15, left: 15 },
+      margin: { top: 15, right: 20, bottom: 40, left: 20 },
       styles: {
-        cellPadding: 1,
-        fontSize: 7,
+        cellPadding: 2,
+        fontSize: 8,
         lineColor: [93, 64, 55],
         lineWidth: 0.1,
         overflow: 'linebreak',
-        cellWidth: 'wrap'
+        cellWidth: 'wrap',
+        font: 'helvetica'
       },
       alternateRowStyles: {
         fillColor: [251, 247, 245]

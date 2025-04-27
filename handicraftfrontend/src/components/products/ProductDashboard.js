@@ -92,10 +92,17 @@ const ProductDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [loginDialog, setLoginDialog] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  useEffect(() => {
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    setIsLoggedIn(!!token);
+  }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -169,43 +176,47 @@ const ProductDashboard = () => {
         Heritage Hands
       </Typography>
 
-      <Alert 
-        severity="info" 
-        sx={{ 
-          mb: 3, 
-          borderRadius: 2,
-          backgroundColor: 'rgba(229, 246, 253, 0.9)',
-        }}
-      >
-        Please log in or register to purchase items. You can browse our collection as a guest.
-      </Alert>
+      {!isLoggedIn && (
+        <>
+          <Alert 
+            severity="info" 
+            sx={{ 
+              mb: 3, 
+              borderRadius: 2,
+              backgroundColor: 'rgba(229, 246, 253, 0.9)',
+            }}
+          >
+            Please log in or register to view product details and make purchases. You can browse our collection as a guest.
+          </Alert>
 
-      <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mb: 4 }}>
-        <Button
-          variant="contained"
-          startIcon={<LoginIcon />}
-          onClick={() => navigate('/customer/login')}
-          sx={{
-            borderRadius: '12px',
-            textTransform: 'none',
-            fontWeight: 600,
-          }}
-        >
-          Login
-        </Button>
-        <Button
-          variant="outlined"
-          startIcon={<RegisterIcon />}
-          onClick={() => navigate('/customer/register')}
-          sx={{
-            borderRadius: '12px',
-            textTransform: 'none',
-            fontWeight: 600,
-          }}
-        >
-          Register
-        </Button>
-      </Box>
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mb: 4 }}>
+            <Button
+              variant="contained"
+              startIcon={<LoginIcon />}
+              onClick={() => navigate('/customer/login')}
+              sx={{
+                borderRadius: '12px',
+                textTransform: 'none',
+                fontWeight: 600,
+              }}
+            >
+              Login
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<RegisterIcon />}
+              onClick={() => navigate('/customer/register')}
+              sx={{
+                borderRadius: '12px',
+                textTransform: 'none',
+                fontWeight: 600,
+              }}
+            >
+              Register
+            </Button>
+          </Box>
+        </>
+      )}
 
       <SearchContainer>
         <TextField
@@ -291,7 +302,7 @@ const ProductDashboard = () => {
                       <Button
                         variant="contained"
                         startIcon={<ViewIcon />}
-                        onClick={() => handleViewDetails(product._id)}
+                        onClick={() => isLoggedIn ? handleViewDetails(product._id) : handleLoginPrompt()}
                         sx={{
                           borderRadius: '8px',
                           textTransform: 'none',
@@ -301,7 +312,7 @@ const ProductDashboard = () => {
                       </Button>
                       <Button
                         variant="outlined"
-                        onClick={handleLoginPrompt}
+                        onClick={isLoggedIn ? () => navigate('/product/delivery', { state: { singleProduct: { productId: product._id, quantity: 1, price: product.price } } }) : handleLoginPrompt}
                         sx={{
                           borderRadius: '8px',
                           textTransform: 'none',
@@ -324,7 +335,7 @@ const ProductDashboard = () => {
         <DialogTitle>Login Required</DialogTitle>
         <DialogContent>
           <Typography>
-            Please log in or create an account to purchase items.
+            Please log in or create an account to view product details and make purchases.
           </Typography>
         </DialogContent>
         <DialogActions>
