@@ -1,8 +1,88 @@
 import express from "express";
-import mongoose from "mongoose";
 import Inventory from "../../models/inventorymodel/inventory.js";
+import Restock from "../../models/inventorymodel/Restock.js";
+import { Types } from "mongoose";
+
 
 const router = express.Router();
+
+// Helper function for calculating statistics
+const calculateInventoryStats = (inventories) => {
+    const stats = {
+        totalItems: inventories.length,
+        totalValue: 0,
+        lowStockItems: 0,
+        priceRanges: {
+            '0-500': 0,
+            '501-1000': 0,
+            '1001-1500': 0,
+            '1501-2000': 0,
+            '2000+': 0
+        },
+        topItemsByQuantity: [],
+        stockStatus: {
+            lowStock: 0,
+            inStock: 0
+        },
+        restockStatus: {
+            pending: 0,
+            inTransit: 0,
+            completed: 0
+        },
+        monthlyTrend: [],
+        inventories // Include inventories in stats for frontend
+    };
+
+    // Calculate monthly trend (last 6 months)
+    const now = new Date();
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+    const monthlyData = {};
+    inventories.forEach(item => {
+        const createdAt = new Date(item.createdAt);
+        if (createdAt >= sixMonthsAgo) {
+            const monthYear = createdAt.toLocaleString('default', { month: 'short', year: 'numeric' });
+            monthlyData[monthYear] = (monthlyData[monthYear] || 0) + 1;
+        }
+    });
+
+    stats.monthlyTrend = Object.entries(monthlyData)
+        .map(([month, count]) => ({ month, count }))
+        .sort((a, b) => new Date(a.month) - new Date(b.month));
+
+    inventories.forEach(item => {
+        // Calculate total inventory value
+        stats.totalValue += item.price * item.qty;
+
+        // Check for low stock
+        if (item.qty <= 10) {
+            stats.lowStockItems++;
+            stats.stockStatus.lowStock++;
+        } else {
+            stats.stockStatus.inStock++;
+        }
+
+        // Categorize by price range
+        const price = Number(item.price);
+        if (price <= 500) stats.priceRanges['0-500']++;
+        else if (price <= 1000) stats.priceRanges['501-1000']++;
+        else if (price <= 1500) stats.priceRanges['1001-1500']++;
+        else if (price <= 2000) stats.priceRanges['1501-2000']++;
+        else stats.priceRanges['2000+']++;
+    });
+
+    // Get top 10 items by quantity
+    stats.topItemsByQuantity = [...inventories]
+        .sort((a, b) => b.qty - a.qty)
+        .slice(0, 10)
+        .map(item => ({
+            itemname: item.itemname,
+            quantity: item.qty
+        }));
+
+    return stats;
+};
 
 // Create Inventory Item
 router.post("/add", async (req, res) => {
@@ -43,6 +123,17 @@ router.post("/add", async (req, res) => {
 router.get("/", async (req, res) => {
     try {
         const inventories = await Inventory.find().sort({ createdAt: -1 });
+        
+        // Check if client wants statistics (for reports)
+        if (req.query.withStats === "true") {
+            const stats = calculateInventoryStats(inventories);
+            return res.status(200).json({
+                success: true,
+                inventories,
+                stats
+            });
+        }
+
         res.status(200).json({
             success: true,
             inventories 
@@ -56,10 +147,60 @@ router.get("/", async (req, res) => {
     }
 });
 
-// Get Single Inventory Item
-router.get("/:id", async (req, res) => {
+// Report data endpoint
+router.get("/report-data", async (req, res) => {
     try {
-        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        const inventories = await Inventory.find().sort({ createdAt: -1 });
+        const stats = calculateInventoryStats(inventories);
+
+        // Get restock status counts from Restock model
+        const restockCounts = await Restock.aggregate([
+            {
+                $group: {
+                    _id: "$status",
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        // Update restock status counts
+        restockCounts.forEach(({ _id, count }) => {
+            if (stats.restockStatus.hasOwnProperty(_id)) {
+                stats.restockStatus[_id] = count;
+            }
+        });
+
+        // Prepare data specifically for charts
+        const chartData = {
+            stockStatus: {
+                labels: ['Low Stock', 'In Stock'],
+                data: [stats.stockStatus.lowStock, stats.stockStatus.inStock]
+            },
+            priceDistribution: {
+                labels: Object.keys(stats.priceRanges),
+                data: Object.values(stats.priceRanges)
+            },
+            topItems: stats.topItemsByQuantity
+        };
+
+        res.status(200).json({
+            success: true,
+            stats,
+            chartData
+        });
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            error: "Error generating report data",
+            details: err.message
+        });
+    }
+});
+
+// Get Single Inventory Item
+router.get("/item/:id", async (req, res) => {
+    try {
+        if (!Types.ObjectId.isValid(req.params.id)) {
             return res.status(400).json({ 
                 success: false,
                 error: "Invalid inventory ID" 
@@ -91,7 +232,7 @@ router.get("/:id", async (req, res) => {
 // Update Inventory Item
 router.put("/update/:id", async (req, res) => {
     try {
-        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        if (!Types.ObjectId.isValid(req.params.id)) {
             return res.status(400).json({ 
                 success: false,
                 error: "Invalid inventory ID" 
@@ -138,7 +279,7 @@ router.put("/update/:id", async (req, res) => {
 // Delete Inventory Item
 router.delete("/delete/:id", async (req, res) => {
     try {
-        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        if (!Types.ObjectId.isValid(req.params.id)) {
             return res.status(400).json({ 
                 success: false,
                 error: "Invalid inventory ID" 
@@ -166,10 +307,29 @@ router.delete("/delete/:id", async (req, res) => {
     }
 });
 
-// Add this route before module.exports
+// Inventory Statistics
+router.get("/stats/summary", async (req, res) => {
+    try {
+        const inventories = await Inventory.find();
+        const stats = calculateInventoryStats(inventories);
+
+        res.status(200).json({
+            success: true,
+            stats
+        });
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            error: "Error calculating statistics",
+            details: err.message
+        });
+    }
+});
+
+// Restock endpoints
 router.get("/restock/:id", async (req, res) => {
     try {
-        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        if (!Types.ObjectId.isValid(req.params.id)) {
             return res.status(400).json({ 
                 success: false,
                 error: "Invalid inventory ID" 
@@ -198,14 +358,13 @@ router.get("/restock/:id", async (req, res) => {
     }
 });
 
-// Keep the existing PUT /restock/:id endpoint
 router.put("/restock/:id", async (req, res) => {
     console.log(`PUT /inventory/restock/${req.params.id} received with body:`, req.body);
     try {
         const { id } = req.params;
         const { quantity } = req.body;
 
-        if (!mongoose.Types.ObjectId.isValid(id)) {
+        if (!Types.ObjectId.isValid(id)) {
             console.log(`Invalid ID: ${id}`);
             return res.status(400).json({ success: false, error: "Invalid inventory ID" });
         }

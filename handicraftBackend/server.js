@@ -19,7 +19,8 @@ import financialsRoutes from "./routes/financeroutes/financialstatementsRoutes.j
 import authRoutes from "./routes/customerroutes/auth.js";
 
 // Inventory routes
-import inventoryroute from "./routes/inventoryroutes/inventories.js";
+import inventoryRoutes from "./routes/inventoryroutes/inventories.js";
+import restockRoutes from "./routes/inventoryroutes/restock.js";
 
 // Chatbot routes
 import chatbotRoutes from "./routes/customerroutes/chat.js";
@@ -69,11 +70,12 @@ app.use("/api/employee", employeeRoutes);
 app.use("/api/product", productRoutes);
 
 // Customer
-app.use("/api/customer/auth", authRoutes); // Adjusted to match frontend routes
-app.use("/api/customer/chat", chatbotRoutes); // Chatbot routes under customer namespace
+app.use("/api/customer/auth", authRoutes);
+app.use("/api/customer/chat", chatbotRoutes);
 
 // Inventory routes
-app.use("/inventory", inventoryroute);
+app.use("/inventory", inventoryRoutes);
+app.use("/inventory/restock", restockRoutes);
 
 // Start server
 const startServer = async () => {

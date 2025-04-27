@@ -39,16 +39,17 @@ import Profile from "./components/customer/Profile";
 import AdminDashboard from "./components/customer/AdminDashboard";
 import Chatbot from "./components/customer/Chatbot";
 
-// Inventory Components
-import AddInventories from "./components/inventory/addInventories.js";
-import ReadInventories from "./components/inventory/readinventories";
-import UpdateInventories from "./components/inventory/updateinventories";
-import DeleteInventories from "./components/inventory/deleteinventories";
-import InventoryReport from "./components/inventory/inventoryreports";
-import RestockPage from "./components/inventory/restockPage";
-
 // Manager Components
 import ManagerDashboard from "./pages/ManagerDashboard";
+
+// Inventory Components
+import AddInventories from "./components/inventory/addInventories.js";
+import ReadInventories from "./components/inventory/readinventories.js";
+import UpdateInventories from "./components/inventory/updateinventories.js";
+import DeleteInventories from "./components/inventory/deleteinventories.js";
+import InventoryReport from "./components/inventory/inventoryreports.js";
+import RestockPage from "./components/inventory/restockPage.js";
+import CheckInventoryQuality from "./components/inventory/checkinventories.js";
 
 // Define PrivateRoute Component with manager type check
 const PrivateRoute = ({ element, allowedManagerTypes }) => {
@@ -146,34 +147,15 @@ function App() {
             />
 
             {/* Inventory Routes */}
-            <Route
-              path="/inventory"
-              element={<PrivateRoute element={<Navigate to="/inventory/display" />} allowedManagerTypes={["inventory"]} />}
-            />
-            <Route
-              path="/inventory/add"
-              element={<PrivateRoute element={<AddInventories />} allowedManagerTypes={["inventory"]} />}
-            />
-            <Route
-              path="/inventory/display"
-              element={<PrivateRoute element={<ReadInventories />} allowedManagerTypes={["inventory"]} />}
-            />
-            <Route
-              path="/inventory/update/:id"
-              element={<PrivateRoute element={<UpdateInventories />} allowedManagerTypes={["inventory"]} />}
-            />
-            <Route
-              path="/inventory/delete/:id"
-              element={<PrivateRoute element={<DeleteInventories />} allowedManagerTypes={["inventory"]} />}
-            />
-            <Route
-              path="/inventory/restock/:id"
-              element={<PrivateRoute element={<RestockPage />} allowedManagerTypes={["inventory"]} />}
-            />
-            <Route
-              path="/inventory/report"
-              element={<PrivateRoute element={<InventoryReport />} allowedManagerTypes={["inventory"]} />}
-            />
+            <Route path="/inventory" element={<PrivateRoute element={<ReadInventories />} allowedManagerTypes={["inventory"]} />} />
+            <Route path="/inventory/add" element={<PrivateRoute element={<AddInventories />} allowedManagerTypes={["inventory"]} />} />
+            <Route path="/inventory/check" element={<PrivateRoute element={<CheckInventoryQuality />} allowedManagerTypes={["inventory"]} />} />
+            <Route path="/inventory/display" element={<PrivateRoute element={<ReadInventories />} allowedManagerTypes={["inventory"]} />} />
+            <Route path="/inventory/update/:id" element={<PrivateRoute element={<UpdateInventories />} allowedManagerTypes={["inventory"]} />} />
+            <Route path="/inventory/delete/:id" element={<PrivateRoute element={<DeleteInventories />} allowedManagerTypes={["inventory"]} />} />
+            <Route path="/inventory/restock" element={<PrivateRoute element={<ReadInventories />} allowedManagerTypes={["inventory"]} />} />
+            <Route path="/inventory/restock/:id" element={<PrivateRoute element={<RestockPage />} allowedManagerTypes={["inventory"]} />} />
+            <Route path="/inventory/report" element={<PrivateRoute element={<InventoryReport />} allowedManagerTypes={["inventory"]} />} />
 
             {/* Catch-All Route */}
             <Route path="*" element={<div>404 - Route Not Found</div>} />

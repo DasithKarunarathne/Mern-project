@@ -1,6 +1,5 @@
-import mongoose from "mongoose";
-
-const { Schema } = mongoose;
+import { Schema as _Schema, model } from "mongoose";
+const Schema = _Schema;
 
 const inventorySchema = new Schema({
     itemno: {
@@ -31,11 +30,16 @@ const inventorySchema = new Schema({
         required: true,
         default: Date.now
     },
+
     lastrestockdate: {
         type: Date,
         required: true,
         default: Date.now
+    },
+    isActive: {
+        type: Boolean,
+        default: true
     }
 }, { timestamps: true });
 
-export default mongoose.model('Inventory', inventorySchema);
+export default model('Inventory', inventorySchema);
