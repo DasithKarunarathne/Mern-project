@@ -10,17 +10,25 @@ import {
   InputLabel,
   CircularProgress,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
-const EmployeeUpdateForm = ({ employee, onUpdate, onCancel }) => {
+const EmployeeUpdateForm = ({ employee, onUpdate, onCancel, open }) => {
   const [formData, setFormData] = useState({
     empID: employee.empID,
     empname: employee.empname,
     role: employee.role,
     basicSalary: employee.basicSalary,
     overtimeRate: employee.overtimeRate,
+    gender: employee.gender,
+    contactNumber: employee.contactNumber,
+    address: employee.address,
+    emergencyContact: employee.emergencyContact,
     image: null,
     birthCertificate: null,
     medicalRecords: null,
@@ -47,6 +55,10 @@ const EmployeeUpdateForm = ({ employee, onUpdate, onCancel }) => {
     data.append("role", formData.role);
     data.append("basicSalary", formData.basicSalary);
     data.append("overtimeRate", formData.overtimeRate || "200");
+    data.append("gender", formData.gender);
+    data.append("contactNumber", formData.contactNumber);
+    data.append("address", formData.address);
+    data.append("emergencyContact", formData.emergencyContact);
     if (formData.image) data.append("image", formData.image);
     if (formData.birthCertificate) data.append("birthCertificate", formData.birthCertificate);
     if (formData.medicalRecords) data.append("medicalRecords", formData.medicalRecords);
@@ -87,92 +99,149 @@ const EmployeeUpdateForm = ({ employee, onUpdate, onCancel }) => {
   };
 
   return (
-    <Paper elevation={2} sx={{ p: 2, mt: 2 }}>
-      <Typography variant="h6" gutterBottom>
-        Update Employee
-      </Typography>
-      {successMessage && <Alert severity="success" sx={{ mb: 2 }}>{successMessage}</Alert>}
-      {errorMessage && <Alert severity="error" sx={{ mb: 2 }}>{errorMessage}</Alert>}
-      <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        <TextField label="Employee ID" name="empID" value={formData.empID} onChange={handleChange} required fullWidth disabled={loading} />
-        <TextField label="Name" name="empname" value={formData.empname} onChange={handleChange} required fullWidth disabled={loading} />
-        <TextField label="Role" name="role" value={formData.role} onChange={handleChange} required fullWidth disabled={loading} />
-        <TextField
-          label="Basic Salary"
-          name="basicSalary"
-          type="number"
-          value={formData.basicSalary}
-          onChange={handleChange}
-          required
-          fullWidth
-          disabled={loading}
-        />
-        <TextField
-          label="Overtime Rate (optional)"
-          name="overtimeRate"
-          type="number"
-          value={formData.overtimeRate}
-          onChange={handleChange}
-          fullWidth
-          disabled={loading}
-        />
-        <FormControl fullWidth>
-          <InputLabel shrink>Employee Photo (current file will be kept if not updated)</InputLabel>
-          <input type="file" name="image" accept="image/jpeg,image/png" onChange={handleChange} style={{ marginTop: "16px" }} disabled={loading} />
-          {employee.image && !formData.image && (
-            <Typography variant="caption" color="textSecondary">
-              Current: Image file (type: {employee.imageType})
-            </Typography>
-          )}
-        </FormControl>
-        <FormControl fullWidth>
-          <InputLabel shrink>Birth Certificate (current file will be kept if not updated)</InputLabel>
-          <input
-            type="file"
-            name="birthCertificate"
-            accept="image/jpeg,image/png,application/pdf"
+    <Dialog open={open} onClose={onCancel} maxWidth="md" fullWidth>
+      <DialogTitle>
+        <Typography variant="h6" component="div">
+          Update Employee
+        </Typography>
+      </DialogTitle>
+      <DialogContent>
+        {successMessage && <Alert severity="success" sx={{ mb: 2 }}>{successMessage}</Alert>}
+        {errorMessage && <Alert severity="error" sx={{ mb: 2 }}>{errorMessage}</Alert>}
+        <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
+          <TextField label="Employee ID" name="empID" value={formData.empID} onChange={handleChange} required fullWidth disabled={loading} />
+          <TextField label="Name" name="empname" value={formData.empname} onChange={handleChange} required fullWidth disabled={loading} />
+          <TextField label="Role" name="role" value={formData.role} onChange={handleChange} required fullWidth disabled={loading} />
+          <TextField
+            label="Basic Salary"
+            name="basicSalary"
+            type="number"
+            value={formData.basicSalary}
             onChange={handleChange}
-            style={{ marginTop: "16px" }}
+            required
+            fullWidth
             disabled={loading}
           />
-          {employee.birthCertificate && !formData.birthCertificate && (
-            <Typography variant="caption" color="textSecondary">
-              Current: Birth Certificate (type: {employee.birthCertificateType})
-            </Typography>
-          )}
-        </FormControl>
-        <FormControl fullWidth>
-          <InputLabel shrink>Medical Records (optional, current file will be kept if not updated)</InputLabel>
-          <input
-            type="file"
-            name="medicalRecords"
-            accept="image/jpeg,image/png,application/pdf"
+          <TextField
+            label="Overtime Rate (optional)"
+            name="overtimeRate"
+            type="number"
+            value={formData.overtimeRate}
             onChange={handleChange}
-            style={{ marginTop: "16px" }}
+            fullWidth
             disabled={loading}
           />
-          {employee.medicalRecords && !formData.medicalRecords && (
-            <Typography variant="caption" color="textSecondary">
-              Current: Medical Records (type: {employee.medicalRecordsType})
-            </Typography>
-          )}
-        </FormControl>
-        <Box sx={{ display: "flex", gap: 2 }}>
-          <Button
-            variant="contained"
-            color="primary"
-            type="submit"
+          <TextField
+            select
+            label="Gender"
+            name="gender"
+            value={formData.gender}
+            onChange={handleChange}
+            required
+            fullWidth
             disabled={loading}
-            startIcon={loading ? <CircularProgress size={20} /> : null}
+            SelectProps={{
+              native: true,
+            }}
           >
-            {loading ? "Updating Employee..." : "Update Employee"}
-          </Button>
-          <Button variant="outlined" color="secondary" onClick={onCancel} disabled={loading}>
-            Cancel
-          </Button>
+            <option value="">Select Gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </TextField>
+          <TextField
+            label="Contact Number"
+            name="contactNumber"
+            value={formData.contactNumber}
+            onChange={handleChange}
+            required
+            fullWidth
+            disabled={loading}
+            inputProps={{
+              maxLength: 10,
+            }}
+          />
+          <TextField
+            label="Address"
+            name="address"
+            value={formData.address}
+            onChange={handleChange}
+            required
+            fullWidth
+            multiline
+            rows={3}
+            disabled={loading}
+          />
+          <TextField
+            label="Emergency Contact"
+            name="emergencyContact"
+            value={formData.emergencyContact}
+            onChange={handleChange}
+            required
+            fullWidth
+            disabled={loading}
+            inputProps={{
+              maxLength: 10,
+            }}
+          />
+          <FormControl fullWidth>
+            <InputLabel shrink>Employee Photo (current file will be kept if not updated)</InputLabel>
+            <input type="file" name="image" accept="image/jpeg,image/png" onChange={handleChange} style={{ marginTop: "16px" }} disabled={loading} />
+            {employee.image && !formData.image && (
+              <Typography variant="caption" color="textSecondary">
+                Current: Image file (type: {employee.imageType})
+              </Typography>
+            )}
+          </FormControl>
+          <FormControl fullWidth>
+            <InputLabel shrink>Birth Certificate (current file will be kept if not updated)</InputLabel>
+            <input
+              type="file"
+              name="birthCertificate"
+              accept="image/jpeg,image/png,application/pdf"
+              onChange={handleChange}
+              style={{ marginTop: "16px" }}
+              disabled={loading}
+            />
+            {employee.birthCertificate && !formData.birthCertificate && (
+              <Typography variant="caption" color="textSecondary">
+                Current: Birth Certificate (type: {employee.birthCertificateType})
+              </Typography>
+            )}
+          </FormControl>
+          <FormControl fullWidth>
+            <InputLabel shrink>Medical Records (optional, current file will be kept if not updated)</InputLabel>
+            <input
+              type="file"
+              name="medicalRecords"
+              accept="image/jpeg,image/png,application/pdf"
+              onChange={handleChange}
+              style={{ marginTop: "16px" }}
+              disabled={loading}
+            />
+            {employee.medicalRecords && !formData.medicalRecords && (
+              <Typography variant="caption" color="textSecondary">
+                Current: Medical Records (type: {employee.medicalRecordsType})
+              </Typography>
+            )}
+          </FormControl>
         </Box>
-      </Box>
-    </Paper>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onCancel} disabled={loading}>
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleSubmit}
+          disabled={loading}
+          startIcon={loading ? <CircularProgress size={20} /> : null}
+        >
+          {loading ? "Updating..." : "Update Employee"}
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 

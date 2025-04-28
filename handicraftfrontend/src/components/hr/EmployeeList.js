@@ -85,7 +85,8 @@ const EmployeeList = () => {
   const [employees, setEmployees] = useState([]);
   const [filteredEmployees, setFilteredEmployees] = useState([]);
   const [overtimeRecords, setOvertimeRecords] = useState({});
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -141,8 +142,19 @@ const EmployeeList = () => {
     }
   };
 
-  const handleUpdateClick = (id) => {
-    setSelectedEmployeeId(id === selectedEmployeeId ? null : id);
+  const handleUpdateClick = (employee) => {
+    setSelectedEmployee(employee);
+    setUpdateDialogOpen(true);
+  };
+
+  const handleUpdateClose = () => {
+    setUpdateDialogOpen(false);
+    setSelectedEmployee(null);
+  };
+
+  const handleUpdateSuccess = () => {
+    fetchEmployees();
+    handleUpdateClose();
   };
 
   const handleSearchChange = (event) => {
@@ -261,7 +273,7 @@ const EmployeeList = () => {
                           {employee.empname}
                         </Typography>
                         <Box>
-                          <IconButton color="primary" onClick={() => handleUpdateClick(employee._id)}>
+                          <IconButton color="primary" onClick={() => handleUpdateClick(employee)}>
                             <Edit />
                           </IconButton>
                           <IconButton color="error" onClick={() => handleDelete(employee._id)}>
@@ -323,17 +335,6 @@ const EmployeeList = () => {
                           ))}
                         </Box>
                       )}
-
-                      {selectedEmployeeId === employee._id && (
-                        <Box sx={{ mt: 2 }}>
-                          <Divider sx={{ my: 2 }} />
-                          <EmployeeUpdateForm
-                            employee={employee}
-                            onUpdate={fetchEmployees}
-                            onCancel={() => setSelectedEmployeeId(null)}
-                          />
-                        </Box>
-                      )}
                     </CardContent>
                   </EmployeeCard>
                 </Grid>
@@ -342,6 +343,14 @@ const EmployeeList = () => {
           )}
         </ListContainer>
       </Container>
+      {selectedEmployee && (
+        <EmployeeUpdateForm
+          employee={selectedEmployee}
+          onUpdate={handleUpdateSuccess}
+          onCancel={handleUpdateClose}
+          open={updateDialogOpen}
+        />
+      )}
     </Box>
   );
 };

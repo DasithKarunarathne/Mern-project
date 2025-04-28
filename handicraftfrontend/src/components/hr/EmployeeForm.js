@@ -59,6 +59,21 @@ const CustomTextField = styled(TextField)(({ theme }) => ({
       borderWidth: '2px',
     },
   },
+  '& .MuiSelect-select': {
+    padding: '12px 14px',
+    display: 'flex',
+    alignItems: 'center',
+  },
+  '& .MuiInputLabel-root': {
+    backgroundColor: 'white',
+    padding: '0 4px',
+    '&.Mui-focused': {
+      color: theme.palette.primary.main,
+    },
+  },
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'rgba(0, 0, 0, 0.23)',
+  },
 }));
 
 const ActionButton = styled(Button)(({ theme }) => ({

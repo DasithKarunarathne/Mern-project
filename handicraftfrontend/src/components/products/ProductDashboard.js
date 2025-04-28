@@ -138,9 +138,21 @@ const StyledChip = styled(Chip)(({ theme }) => ({
   top: theme.spacing(2),
   right: theme.spacing(2),
   zIndex: 1,
-  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+  backgroundColor: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(4px)',
   fontWeight: 600,
+  fontSize: '0.9rem',
+  padding: theme.spacing(0.5, 1),
+  boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+  border: '1px solid rgba(255,255,255,0.3)',
+  '& .MuiChip-label': {
+    padding: theme.spacing(0, 1),
+    color: theme.palette.primary.main,
+  },
+  '&:hover': {
+    backgroundColor: 'rgba(255, 255, 255, 1)',
+    transform: 'scale(1.05)',
+  },
 }));
 
 const ProductGrid = styled(Box)(({ theme }) => ({
@@ -298,7 +310,6 @@ const ProductDashboard = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [loginDialog, setLoginDialog] = useState(false);
@@ -471,7 +482,7 @@ const ProductDashboard = () => {
               <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Typography 
                   variant="h6" 
-                  sx={{ 
+                  sx={{
                     fontWeight: 600,
                     fontSize: '1.1rem',
                     mb: 1,
@@ -494,7 +505,7 @@ const ProductDashboard = () => {
                 <Typography 
                   variant="h6" 
                   color="primary" 
-                  sx={{ 
+                  sx={{
                     fontWeight: 700,
                     mt: 'auto',
                     pt: 1
@@ -522,10 +533,10 @@ const ProductDashboard = () => {
 
   return (
     <StyledContainer maxWidth="xl">
-      <Typography 
-        variant={isMobile ? "h4" : "h3"} 
-        sx={{ 
-          mb: 4, 
+      <Typography
+        variant={isMobile ? "h4" : "h3"}
+        sx={{
+          mb: 4,
           textAlign: "center",
           fontWeight: 700,
           background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
@@ -641,85 +652,7 @@ const ProductDashboard = () => {
         </StyledFormControl>
       </SearchContainer>
 
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-          <CircularProgress size={60} thickness={4} />
-        </Box>
-      ) : filteredProducts.length === 0 ? (
-        <Fade in>
-          <Box sx={{ textAlign: 'center', mt: 8 }}>
-            <Typography variant="h6" color="text.secondary">
-              No products found matching your criteria.
-            </Typography>
-          </Box>
-        </Fade>
-      ) : (
-        <Fade in>
-          <ProductGrid>
-            {filteredProducts.map((product) => {
-              const imageUrl = product.image 
-                ? `http://localhost:5000${product.image}` 
-                : "https://via.placeholder.com/280x200?text=Product+Image";
-              
-              return (
-                <ProductCard key={product._id}>
-                  <CardMedia
-                    component="img"
-                    image={imageUrl}
-                    alt={product.name}
-                    onError={(e) => {
-                      e.target.src = "https://via.placeholder.com/280x200?text=Image+Not+Found";
-                    }}
-                    sx={{
-                      height: 200,
-                      objectFit: 'cover'
-                    }}
-                  />
-                  <CardContent>
-                    <Typography variant="h6" noWrap sx={{ mb: 1 }}>
-                      {product.name}
-                    </Typography>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                      <Typography variant="h6" color="primary">
-                        LKR {product.price?.toFixed(2)}
-                      </Typography>
-                      <Chip
-                        label={product.category}
-                        size="small"
-                        color="primary"
-                        variant="outlined"
-                      />
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Button
-                        variant="contained"
-                        startIcon={<ViewIcon />}
-                        onClick={() => isLoggedIn ? handleViewDetails(product._id) : handleLoginPrompt()}
-                        sx={{
-                          borderRadius: '8px',
-                          textTransform: 'none',
-                        }}
-                      >
-                        View Details
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        onClick={isLoggedIn ? () => navigate('/product/delivery', { state: { singleProduct: { productId: product._id, quantity: 1, price: product.price } } }) : handleLoginPrompt}
-                        sx={{
-                          borderRadius: '8px',
-                          textTransform: 'none',
-                        }}
-                      >
-                        Buy Now
-                      </Button>
-                    </Box>
-                  </CardContent>
-                </ProductCard>
-              );
-            })}
-          </ProductGrid>
-        </Fade>
-      )}
+      {renderContent()}
 
       <WhyChooseUs />
 
