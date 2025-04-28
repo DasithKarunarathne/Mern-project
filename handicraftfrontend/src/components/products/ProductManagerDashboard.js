@@ -9,7 +9,7 @@ const ProductManagerDashboard = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
+ 
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);

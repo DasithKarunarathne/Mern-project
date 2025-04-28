@@ -38,6 +38,7 @@ import Login from "./components/customer/Login";
 import Profile from "./components/customer/Profile";
 import AdminDashboard from "./components/customer/AdminDashboard";
 import Chatbot from "./components/customer/Chatbot";
+import FloatingChatbot from "./components/customer/FloatingChatbot";
 
 // Manager Components
 import ManagerDashboard from "./pages/ManagerDashboard";
@@ -160,6 +161,7 @@ function App() {
             {/* Catch-All Route */}
             <Route path="*" element={<div>404 - Route Not Found</div>} />
           </Routes>
+          <FloatingChatbot />
         </Layout>
       </Router>
     </ThemeProvider>
