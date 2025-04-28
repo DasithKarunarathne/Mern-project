@@ -324,6 +324,7 @@ const ProductManager = () => {
   };
 
   const validateForm = () => {
+
     const errors = {
       name: validateName(formData.name),
       description: validateDescription(formData.description),
@@ -334,6 +335,26 @@ const ProductManager = () => {
 
     setFormErrors(errors);
     return !Object.values(errors).some(error => error !== '');
+
+    if (!formData.name.trim()) {
+      return "Name is required.";
+    }
+    if (!formData.description.trim()) {
+      return "Description is required.";
+    }
+    const price = parseFloat(formData.price);
+    if (isNaN(price) || price <= 0) { 
+      return "Price must be a positive number.";
+    }
+    const stock = parseInt(formData.stockQuantity, 10);
+    if (isNaN(stock) || stock < 0) {
+      return "Stock Quantity must be a non-negative number.";
+    }
+    if (!formData.category.trim()) {
+      return "Category is required.";
+    }
+    return null; // No errors
+
   };
 
   const handleSubmit = async (e) => {

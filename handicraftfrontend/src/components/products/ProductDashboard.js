@@ -164,6 +164,7 @@ const ProductDashboard = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [loginDialog, setLoginDialog] = useState(false);
