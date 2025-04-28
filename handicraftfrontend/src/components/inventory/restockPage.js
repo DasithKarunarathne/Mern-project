@@ -22,7 +22,7 @@ export default function RestockPage() {
     const fetchInventory = async () => {
         try {
             setLoading(true);
-            const response = await axios.get(`http://localhost:5000/inventory/item/${id}`);
+            const response = await axios.get(`http://localhost:5000/inventory/restock/${id}`);
             if (response.data && response.data.success && response.data.inventory) {
                 setInventory(response.data.inventory);
                 setRestockData(prev => ({

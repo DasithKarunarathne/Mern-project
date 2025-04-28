@@ -90,7 +90,13 @@ export const getUserOrders = (userId) => axiosInstance.get(`/orders/user/${userI
 export const getOrderById = (orderId) => axiosInstance.get(`/orders/${orderId}`);
 export const approveRefund = (orderId) =>
   axiosInstance.patch(`/orders/${orderId}/approve-refund`, null, {
-    headers: { 'x-admin-key': 'mock-admin-key' },
+    headers: {
+      'x-admin-key': 'mock-admin-key',
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*'
+    },
+    withCredentials: true
   });
 export const denyRefund = (orderId) =>
   axiosInstance.patch(`/orders/${orderId}/deny-refund`, null, {

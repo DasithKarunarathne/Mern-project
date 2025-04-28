@@ -153,14 +153,24 @@ const ProductGrid = styled(Box)(({ theme }) => ({
 const CarouselContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
   width: '100%',
-  height: '350px',
+  height: '500px',
   overflow: 'hidden',
-  borderRadius: '12px',
-  marginBottom: theme.spacing(3),
-  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+  borderRadius: '20px',
+  marginBottom: theme.spacing(4),
+  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
   [theme.breakpoints.down('sm')]: {
-    height: '250px',
+    height: '350px',
   },
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'linear-gradient(45deg, rgba(93, 64, 55, 0.3), rgba(62, 39, 35, 0.3))',
+    zIndex: 1,
+  }
 }));
 
 const CarouselSlide = styled(Paper)(({ theme }) => ({
@@ -173,10 +183,12 @@ const CarouselSlide = styled(Paper)(({ theme }) => ({
   backgroundSize: 'cover',
   backgroundPosition: 'center',
   backgroundRepeat: 'no-repeat',
-  transition: 'opacity 0.5s ease-in-out',
+  transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
   opacity: 0,
+  transform: 'scale(1.1)',
   '&.active': {
     opacity: 1,
+    transform: 'scale(1)',
   },
 }));
 
@@ -185,12 +197,30 @@ const CarouselContent = styled(Box)(({ theme }) => ({
   bottom: 0,
   left: 0,
   right: 0,
-  padding: theme.spacing(2.5),
+  padding: theme.spacing(4),
   background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
   color: 'white',
   textAlign: 'center',
+  zIndex: 2,
   [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(1.5),
+    padding: theme.spacing(2),
+  },
+  '& h4': {
+    fontSize: '2.5rem',
+    fontWeight: 700,
+    marginBottom: theme.spacing(2),
+    textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '1.8rem',
+    },
+  },
+  '& h6': {
+    fontSize: '1.2rem',
+    opacity: 0.9,
+    textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '1rem',
+    },
   },
 }));
 
@@ -200,17 +230,26 @@ const CarouselButton = styled(Button)(({ theme }) => ({
   transform: 'translateY(-50%)',
   backgroundColor: 'rgba(255, 255, 255, 0.2)',
   color: 'white',
+  padding: theme.spacing(2),
+  borderRadius: '50%',
+  minWidth: 'auto',
+  zIndex: 2,
+  transition: 'all 0.3s ease',
   '&:hover': {
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    transform: 'translateY(-50%) scale(1.1)',
+  },
+  '& .MuiSvgIcon-root': {
+    fontSize: '2rem',
   },
 }));
 
 const PrevButton = styled(CarouselButton)(({ theme }) => ({
-  left: theme.spacing(2),
+  left: theme.spacing(3),
 }));
 
 const NextButton = styled(CarouselButton)(({ theme }) => ({
-  right: theme.spacing(2),
+  right: theme.spacing(3),
 }));
 
 const carouselItems = [

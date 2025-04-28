@@ -36,6 +36,7 @@ import {
   ArrowBack as ArrowBackIcon,
   LocalShipping as ShippingIcon,
 } from '@mui/icons-material';
+import config from '../../config';
 
 const StyledContainer = styled(Container)(({ theme }) => ({
   padding: theme.spacing(4),
@@ -91,6 +92,17 @@ const ActionButton = styled(Button)(({ theme }) => ({
     boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
   },
 }));
+
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return config.DEFAULT_PRODUCT_IMAGE;
+  try {
+    const url = new URL(imagePath);
+    return imagePath; // If it's already a full URL, return as is
+  } catch {
+    // If it's a relative path, prepend the image base URL
+    return `${config.IMAGE_BASE_URL}${imagePath.startsWith('/') ? '' : '/'}${imagePath}`;
+  }
+};
 
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -228,8 +240,12 @@ const Cart = () => {
                   <CardContent>
                     <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                       <ProductImage
-                        image={item.productId.image || 'https://via.placeholder.com/120x120?text=Product'}
+                        image={getImageUrl(item.productId.image)}
                         title={item.productId.name}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = config.DEFAULT_PRODUCT_IMAGE;
+                        }}
                       />
                       <Box sx={{ flex: 1 }}>
                         <Typography variant="h6" noWrap>

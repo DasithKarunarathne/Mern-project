@@ -389,7 +389,7 @@ export default function ReadInventories() {
     };
 
     const handleRestock = (item) => {
-        navigate(`/restock/${item._id}`);
+        navigate(`/inventory/restock/${item._id}`);
     };
 
     const handleGenerateReport = () => {

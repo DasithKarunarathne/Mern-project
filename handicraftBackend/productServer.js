@@ -10,7 +10,7 @@ const router = express.Router();
 
 // Add CORS configuration for product routes
 router.use(cors({
-  origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:3002"],
+  origin: true, // Allow all origins in development
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "x-admin-key", "Authorization", "x-auth-token", "Accept", "Origin", "X-Requested-With"],
@@ -19,6 +19,9 @@ router.use(cors({
   preflightContinue: false,
   optionsSuccessStatus: 204
 }));
+
+// Handle OPTIONS requests for product routes
+router.options('*', cors());
 
 // Define sub-routes under /api/product
 router.use("/products", productRouter);
