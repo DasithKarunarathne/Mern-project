@@ -1,4 +1,42 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  CircularProgress,
+  Alert,
+  Grid,
+  Card,
+  CardContent,
+  useTheme,
+  useMediaQuery,
+  Stepper,
+  Step,
+  StepLabel,
+  IconButton,
+  Tooltip,
+  Chip,
+  Divider,
+} from "@mui/material";
+import { styled } from "@mui/material/styles";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  Add as AddIcon,
+  People as PeopleIcon,
+  AccessTime as AccessTimeIcon,
+  PictureAsPdf as PdfIcon,
+  Refresh as RefreshIcon,
+  ArrowBack as ArrowBackIcon,
+} from "@mui/icons-material";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { 
@@ -7,13 +45,15 @@ import {
   LinearScale, 
   BarElement, 
   Title, 
-  Tooltip, 
+  Tooltip as ChartTooltip, 
   Legend, 
   ArcElement, 
   PointElement, 
   LineElement 
 } from 'chart.js';
 import { Pie, Line } from 'react-chartjs-2';
+import autoTable from "jspdf-autotable";
+import { HERITAGE_HANDS_LOGO } from '../hr/logo';
 
 // Register ChartJS components
 ChartJS.register(
@@ -21,7 +61,7 @@ ChartJS.register(
   LinearScale,
   BarElement,
   Title,
-  Tooltip,
+  ChartTooltip,
   Legend,
   ArcElement,
   PointElement,
@@ -296,55 +336,220 @@ export default function InventoryReport() {
         }
     };
 
-    const downloadPDF = () => {
-        const reportContent = document.getElementById('inventory-report-container');
-        if (!reportContent) {
-            console.error('Report content not found');
-            return;
+    const downloadPDF = async () => {
+        const doc = new jsPDF();
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+
+        // Define theme colors
+        const primaryColor = {
+            r: 93,
+            g: 64,
+            b: 55
+        }; // #5D4037 - Deep Brown
+        const secondaryColor = {
+            r: 255,
+            g: 215,
+            b: 0
+        }; // #FFD700 - Gold
+
+        // Add letterhead border
+        doc.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b);
+        doc.setLineWidth(0.5);
+        doc.rect(15, 15, pageWidth - 30, pageHeight - 30);
+
+        // Add company logo on the right (smaller size)
+        try {
+            const logoWidth = 35;
+            const logoHeight = 35;
+            const logoX = pageWidth - logoWidth - 25;
+            const logoY = 20;
+            doc.addImage(HERITAGE_HANDS_LOGO, 'PNG', logoX, logoY, logoWidth, logoHeight);
+        } catch (error) {
+            console.error('Error adding logo to PDF:', error);
         }
 
-        // A4 dimensions in mm
-        const a4Width = 210;
-        const a4Height = 297;
+        // Add company header on the left
+        doc.setFontSize(22);
+        doc.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b);
+        doc.text('HERITAGE HANDS', 25, 35);
+        
+        // Add document title
+        doc.setFontSize(16);
+        doc.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b);
+        doc.text('INVENTORY MANAGEMENT REPORT', pageWidth/2, 60, { align: 'center' });
 
-        html2canvas(reportContent, {
-            scale: 1.5, // Reduced scale for better fit
-            useCORS: true,
-            logging: true,
-            allowTaint: true,
-            width: reportContent.offsetWidth,
-            height: reportContent.offsetHeight
-        }).then((canvas) => {
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF({
-                orientation: 'portrait',
-                unit: 'mm',
-                format: 'a4'
-            });
+        // Add horizontal line under the title
+        doc.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b);
+        doc.setLineWidth(0.5);
+        doc.line(pageWidth/2 - 50, 65, pageWidth/2 + 50, 65);
 
-            // Calculate dimensions to fit A4
-            const imgWidth = a4Width;
-            const imgHeight = (canvas.height * a4Width) / canvas.width;
+        // Add reference number and date section
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        const refNumber = `REF: HH/INV/${currentMonth.toUpperCase()}/${currentYear}`;
+        doc.text(refNumber, 25, 80);
+        
+        // Add date information in a more formal format
+        const formattedDate = new Date().toLocaleDateString('en-US', { 
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+        });
+        
+        doc.text('Date: ' + formattedDate, 25, 87);
+        doc.text('Report Period: ' + currentMonth + ' ' + currentYear, 25, 94);
 
-            // Scale down if content is too tall
-            let finalWidth = imgWidth;
-            let finalHeight = imgHeight;
-            
-            if (imgHeight > a4Height) {
-                const scale = a4Height / imgHeight;
-                finalWidth = imgWidth * scale;
-                finalHeight = a4Height;
+        // Add a subtle divider before the charts
+        doc.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b);
+        doc.setLineWidth(0.2);
+        doc.line(25, 105, pageWidth - 25, 105);
+
+        // Capture and add charts
+        try {
+            // Capture Stock Status Chart
+            const stockStatusChart = document.querySelector('#stock-status-chart');
+            if (stockStatusChart) {
+                const stockStatusCanvas = await html2canvas(stockStatusChart, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: true,
+                    allowTaint: true
+                });
+                const stockStatusImg = stockStatusCanvas.toDataURL('image/png');
+                doc.addImage(stockStatusImg, 'PNG', 25, 115, 80, 60);
             }
 
-            // Center the content on the page
-            const xOffset = (a4Width - finalWidth) / 2;
-            const yOffset = (a4Height - finalHeight) / 2;
+            // Capture Restock Status Chart
+            const restockStatusChart = document.querySelector('#restock-status-chart');
+            if (restockStatusChart) {
+                const restockStatusCanvas = await html2canvas(restockStatusChart, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: true,
+                    allowTaint: true
+                });
+                const restockStatusImg = restockStatusCanvas.toDataURL('image/png');
+                doc.addImage(restockStatusImg, 'PNG', pageWidth - 105, 115, 80, 60);
+            }
 
-            pdf.addImage(imgData, 'PNG', xOffset, yOffset, finalWidth, finalHeight);
-            pdf.save(`inventory_report_${currentMonth}_${currentYear}.pdf`);
-        }).catch(error => {
-            console.error('Error generating PDF:', error);
+            // Capture Monthly Trend Chart
+            const monthlyTrendChart = document.querySelector('#monthly-trend-chart');
+            if (monthlyTrendChart) {
+                const monthlyTrendCanvas = await html2canvas(monthlyTrendChart, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: true,
+                    allowTaint: true
+                });
+                const monthlyTrendImg = monthlyTrendCanvas.toDataURL('image/png');
+                doc.addImage(monthlyTrendImg, 'PNG', 25, 190, pageWidth - 50, 60);
+            }
+        } catch (error) {
+            console.error('Error capturing charts:', error);
+        }
+
+        // Add a divider after charts
+        doc.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b);
+        doc.setLineWidth(0.2);
+        doc.line(25, 265, pageWidth - 25, 265);
+
+        // Prepare table data
+        const tableData = reportData.inventories.map((item) => [
+            item.itemname,
+            item.qty.toString(),
+            `Rs. ${item.price.toLocaleString()}`,
+            `Rs. ${(item.price * item.qty).toLocaleString()}`,
+            item.qty < 20 ? 'Low Stock' : 'In Stock',
+            new Date(item.createdAt).toLocaleDateString()
+        ]);
+
+        // Add the main table with themed colors
+        autoTable(doc, {
+            startY: 275,
+            head: [
+                [
+                    "Item Name",
+                    "Quantity",
+                    "Unit Price",
+                    "Total Value",
+                    "Status",
+                    "Added Date"
+                ],
+            ],
+            body: tableData,
+            theme: "grid",
+            styles: { 
+                fontSize: 9,
+                cellPadding: 3,
+                lineColor: [primaryColor.r, primaryColor.g, primaryColor.b],
+                lineWidth: 0.1,
+                font: 'helvetica',
+            },
+            headStyles: { 
+                fillColor: [primaryColor.r, primaryColor.g, primaryColor.b],
+                textColor: 255,
+                fontSize: 10,
+                fontStyle: 'bold',
+                halign: 'center',
+            },
+            alternateRowStyles: {
+                fillColor: [251, 247, 245],
+            },
+            bodyStyles: {
+                textColor: [primaryColor.r, primaryColor.g, primaryColor.b],
+            },
+            margin: { left: 25, right: 25 },
         });
+
+        // Add summary section
+        const finalY = doc.lastAutoTable.finalY || 275;
+        doc.setFontSize(12);
+        doc.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b);
+        doc.text('Summary', 25, finalY + 20);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Total Items: ${reportData.totalItems}`, 25, finalY + 30);
+        doc.text(`Total Value: Rs. ${reportData.totalValue.toLocaleString()}`, 25, finalY + 37);
+        doc.text(`Low Stock Items: ${reportData.stockStatus.lowStock}`, 25, finalY + 44);
+        doc.text(`Pending Restocks: ${reportData.restockStatus.pending}`, 25, finalY + 51);
+
+        // Add footer
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            
+            // Add footer border
+            doc.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b);
+            doc.setLineWidth(0.2);
+            doc.line(25, pageHeight - 35, pageWidth - 25, pageHeight - 35);
+
+            // Footer text
+            doc.setFontSize(8);
+            doc.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b);
+            
+            // Left side
+            doc.text('Heritage Hands Pvt Ltd.', 25, pageHeight - 25);
+            
+            // Center
+            doc.text(
+                `Page ${i} of ${pageCount}`,
+                pageWidth / 2,
+                pageHeight - 25,
+                { align: 'center' }
+            );
+            
+            // Right side
+            doc.text(
+                'CONFIDENTIAL',
+                pageWidth - 25,
+                pageHeight - 25,
+                { align: 'right' }
+            );
+        }
+
+        doc.save(`Heritage_Hands_Inventory_Report_${currentMonth}_${currentYear}.pdf`);
     };
 
     if (loading) {
@@ -365,36 +570,10 @@ export default function InventoryReport() {
             {/* Charts Section */}
             <div style={styles.chartsSection}>
                 <div style={styles.chartsGrid}>
-                    {/* Inventory Levels Chart */}
-                    <div style={styles.section}>
-                        <h3 style={styles.sectionTitle}>Inventory Levels</h3>
-                        <div style={{ width: '400px', height: '300px', margin: '0 auto' }}>
-                            <Line 
-                                data={monthlyTrendData}
-                                options={{
-                                    responsive: true,
-                                    maintainAspectRatio: false,
-                                    plugins: {
-                                        legend: { 
-                                            position: 'top',
-                                            labels: {
-                                                boxWidth: 10,
-                                                font: {
-                                                    size: 10
-                                                }
-                                            }
-                                        },
-                                        title: { display: false }
-                                    }
-                                }}
-                            />
-                        </div>
-                    </div>
-
                     {/* Stock Status Chart */}
                     <div style={styles.section}>
                         <h3 style={styles.sectionTitle}>Stock Status</h3>
-                        <div style={{ width: '200px', height: '200px', margin: '0 auto' }}>
+                        <div id="stock-status-chart" style={{ width: '200px', height: '200px', margin: '0 auto' }}>
                             <Pie 
                                 data={stockStatusData}
                                 options={{
@@ -414,6 +593,57 @@ export default function InventoryReport() {
                                 }}
                             />
                         </div>
+                    </div>
+
+                    {/* Restock Status Chart */}
+                    <div style={styles.section}>
+                        <h3 style={styles.sectionTitle}>Restock Status</h3>
+                        <div id="restock-status-chart" style={{ width: '200px', height: '200px', margin: '0 auto' }}>
+                            <Pie 
+                                data={restockStatusData}
+                                options={{
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: { 
+                                            position: 'top',
+                                            labels: {
+                                                boxWidth: 10,
+                                                font: {
+                                                    size: 10
+                                                }
+                                            }
+                                        }
+                                    }
+                                }}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Monthly Trend Chart */}
+                <div style={styles.section}>
+                    <h3 style={styles.sectionTitle}>Monthly Trend</h3>
+                    <div id="monthly-trend-chart" style={{ width: '100%', height: '300px', margin: '0 auto' }}>
+                        <Line 
+                            data={monthlyTrendData}
+                            options={{
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { 
+                                        position: 'top',
+                                        labels: {
+                                            boxWidth: 10,
+                                            font: {
+                                                size: 10
+                                            }
+                                        }
+                                    },
+                                    title: { display: false }
+                                }
+                            }}
+                        />
                     </div>
                 </div>
             </div>

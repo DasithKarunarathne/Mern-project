@@ -37,6 +37,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import ManagerHeader from '../common/ManagerHeader';
 import config from '../../config';
 import { alpha } from '@mui/material/styles';
+import { HERITAGE_HANDS_LOGO } from '../hr/logo';
 
 // Styled components
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -436,65 +437,73 @@ const ProductManager = () => {
 
   const generatePDF = async () => {
     const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.width;
-    const currentDate = new Date().toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    // Define theme colors
+    const primaryColor = {
+        r: 93,
+        g: 64,
+        b: 55
+    }; // #5D4037 - Deep Brown
+    const secondaryColor = {
+        r: 255,
+        g: 215,
+        b: 0
+    }; // #FFD700 - Gold
+
+    // Add letterhead border
+    doc.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b);
+    doc.setLineWidth(0.5);
+    doc.rect(15, 15, pageWidth - 30, pageHeight - 30);
+
+    // Add company logo on the right (smaller size)
+    try {
+        const logoWidth = 35;
+        const logoHeight = 35;
+        const logoX = pageWidth - logoWidth - 25;
+        const logoY = 20;
+        doc.addImage(HERITAGE_HANDS_LOGO, 'PNG', logoX, logoY, logoWidth, logoHeight);
+    } catch (error) {
+        console.error('Error adding logo to PDF:', error);
+    }
+
+    // Add company header on the left
+    doc.setFontSize(22);
+    doc.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b);
+    doc.text('HERITAGE HANDS', 25, 35);
+    
+    // Add document title
+    doc.setFontSize(16);
+    doc.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b);
+    doc.text('PRODUCT STOCK LEVELS REPORT', pageWidth/2, 60, { align: 'center' });
+
+    // Add horizontal line under the title
+    doc.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b);
+    doc.setLineWidth(0.5);
+    doc.line(pageWidth/2 - 50, 65, pageWidth/2 + 50, 65);
+
+    // Add reference number and date section
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    const currentDate = new Date();
+    const refNumber = `REF: HH/PRD/${currentDate.getMonth() + 1}/${currentDate.getFullYear()}`;
+    doc.text(refNumber, 25, 80);
+    
+    // Add date information in a more formal format
+    const formattedDate = currentDate.toLocaleDateString('en-US', { 
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
     });
     
-    // Create brown header bar first
-    doc.setFillColor(46, 19, 8); // #2E1308 Darkest Brown
-    doc.rect(0, 0, pageWidth, 45, 'F');
+    doc.text('Date: ' + formattedDate, 25, 87);
+    doc.text('Report Period: ' + currentDate.toLocaleString('default', { month: 'long' }) + ' ' + currentDate.getFullYear(), 25, 94);
 
-    // Load and add logo
-    const logoImg = new Image();
-    logoImg.src = '/assets/logo.jpg';
-    
-    await new Promise((resolve, reject) => {
-      logoImg.onload = () => {
-        try {
-          // Calculate logo dimensions to maintain aspect ratio
-          const logoHeight = 35; // Fixed height for the header
-          const logoWidth = (logoImg.width * logoHeight) / logoImg.height;
-          
-          // Add logo at the left side of the header
-          doc.addImage(
-            logoImg, 
-            'JPEG', 
-            10, // Left margin
-            5,  // Top margin within header
-            logoWidth, 
-            logoHeight
-          );
-          
-          // Add titles next to the logo
-          doc.setTextColor(200, 173, 127); // #C8AD7F Beige
-          
-          // Company name
-          doc.setFontSize(24);
-          doc.text('HERITAGE HANDS', logoWidth + 20, 20);
-          
-          // Report title
-          doc.setFontSize(16);
-          doc.text('Products Stock Levels Report', logoWidth + 20, 35);
-          
-          // Add generation date on the right side
-          doc.setFontSize(12);
-          doc.text(
-            `Generated: ${currentDate}`,
-            pageWidth - 10,
-            35,
-            { align: 'right' }
-          );
-
-          resolve();
-        } catch (error) {
-          reject(error);
-        }
-      };
-      logoImg.onerror = reject;
-    });
+    // Add a subtle divider before the charts
+    doc.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b);
+    doc.setLineWidth(0.2);
+    doc.line(25, 105, pageWidth - 25, 105);
 
     // Create bar chart
     const canvas = document.createElement('canvas');
@@ -503,173 +512,236 @@ const ProductManager = () => {
     const ctx = canvas.getContext('2d');
 
     const sortedProducts = [...products]
-      .sort((a, b) => b.stockQuantity - a.stockQuantity)
-      .slice(0, 8);
+        .sort((a, b) => b.stockQuantity - a.stockQuantity)
+        .slice(0, 8);
 
     await new Promise((resolve) => {
-      new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: sortedProducts.map(p => 
-            p.name.length > 15 ? p.name.substring(0, 15) + '...' : p.name
-          ),
-          datasets: [{
-            label: 'Stock Level',
-            data: sortedProducts.map(p => p.stockQuantity),
-            backgroundColor: [
-              '#2E1308',  // Darkest Brown
-              '#5E3219',  // Dark Brown
-              '#97553B',  // Medium Brown
-              '#A6755B',  // Brown
-              '#BC9773',  // Light Brown
-              '#C8AD7F',  // Beige
-              '#DEB887',  // Burlywood
-              '#D2B48C'   // Tan
-            ],
-            borderColor: '#2E1308',
-            borderWidth: 1,
-            borderRadius: 4,
-            barThickness: 40
-          }]
-        },
-        options: {
-          responsive: false,
-          maintainAspectRatio: false,
-          plugins: {
-            title: {
-              display: true,
-              text: 'Stock Levels Overview',
-              color: '#2E1308',
-              font: {
-                size: 20,
-                weight: 'bold'
-              },
-              padding: 20
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: sortedProducts.map(p => 
+                    p.name.length > 15 ? p.name.substring(0, 15) + '...' : p.name
+                ),
+                datasets: [{
+                    label: 'Stock Level',
+                    data: sortedProducts.map(p => p.stockQuantity),
+                    backgroundColor: [
+                        '#5D4037',  // Deep Brown
+                        '#8D6E63',  // Medium Brown
+                        '#A1887F',  // Light Brown
+                        '#BCAAA4',  // Lighter Brown
+                        '#D7CCC8',  // Very Light Brown
+                        '#EFEBE9',  // Off White
+                        '#D2B48C',  // Tan
+                        '#DEB887'   // Burlywood
+                    ],
+                    borderColor: '#5D4037',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    barThickness: 40
+                }]
             },
-            legend: { display: false }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: {
-                color: '#DEB887'  // Burlywood for grid lines
-              },
-              ticks: {
-                color: '#2E1308',
-                font: {
-                  size: 12,
-                  weight: 'bold'
-                }
-              }
-            },
-            x: {
-              grid: { display: false },
-              ticks: {
-                color: '#2E1308',
-                font: {
-                  size: 12,
-                  weight: 'bold'
+            options: {
+                responsive: false,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Stock Levels Overview',
+                        color: '#5D4037',
+                        font: {
+                            size: 20,
+                            weight: 'bold'
+                        },
+                        padding: 20
+                    },
+                    legend: { display: false }
                 },
-                maxRotation: 45,
-                minRotation: 45
-              }
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#D7CCC8'  // Very Light Brown for grid lines
+                        },
+                        ticks: {
+                            color: '#5D4037',
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            color: '#5D4037',
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            },
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    }
+                }
             }
-          }
-        }
-      });
-      
-      setTimeout(resolve, 100);
+        });
+        
+        setTimeout(resolve, 100);
     });
 
     // Add chart to PDF
     const chartImage = canvas.toDataURL('image/png', 1.0);
-    doc.addImage(chartImage, 'PNG', 10, 55, 190, 90);
+    doc.addImage(chartImage, 'PNG', 25, 115, pageWidth - 50, 90);
 
-    // Product table with updated colors
+    // Add a divider after charts
+    doc.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b);
+    doc.setLineWidth(0.2);
+    doc.line(25, 220, pageWidth - 25, 220);
+
+    // Product table with updated colors and proper spacing
+    const tableStartY = 230;
+    let tableEndY = tableStartY;
+    
     autoTable(doc, {
-      startY: 155,
-      head: [['Product Name', 'Stock', 'Price (LKR)', 'Status', 'Action Required']],
-      body: products.map(p => [
-        p.name,
-        p.stockQuantity,
-        p.price.toFixed(2),
-        p.stockQuantity <= 10 ? 'Critical' :
-        p.stockQuantity <= 30 ? 'Low' :
-        p.stockQuantity <= 50 ? 'Moderate' : 'Good',
-        p.stockQuantity <= 10 ? 'Immediate Restock' :
-        p.stockQuantity <= 30 ? 'Plan Restock' :
-        p.stockQuantity <= 50 ? 'Monitor' : '-'
-      ]),
-      headStyles: {
-        fillColor: [46, 19, 8],     // Darkest Brown
-        textColor: [200, 173, 127], // Beige
-        fontStyle: 'bold',
-        fontSize: 12
-      },
-      bodyStyles: {
-        fontSize: 10,
-        textColor: [46, 19, 8]      // Darkest Brown
-      },
-      alternateRowStyles: {
-        fillColor: [222, 184, 135, 0.05]  // Very light brown
-      },
-      styles: {
-        cellPadding: 3,
-        lineColor: [151, 85, 59],  // Medium Brown
-        lineWidth: 0.1,
-        fillColor: [255, 255, 255], // White background
-        valign: 'middle'
-      },
-      theme: 'plain',
-      tableLineColor: [151, 85, 59], // Medium Brown
-      tableLineWidth: 0.1,
-      didParseCell: function(data) {
-        data.cell.styles.fillColor = [255, 255, 255];
-      },
-      didDrawCell: function(data) {
-        if (data.section === 'body' && data.column.index === 3) {
-          if (data.cell.text[0] === 'Critical') {
-            doc.setFillColor(139, 0, 0);  // Dark Red
-            doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.text(data.cell.text[0], data.cell.x + 2, data.cell.y + 5);
-          } else if (data.cell.text[0] === 'Low') {
-            doc.setFillColor(255, 140, 0);  // Dark Orange
-            doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.text(data.cell.text[0], data.cell.x + 2, data.cell.y + 5);
-          } else if (data.cell.text[0] === 'Moderate') {
-            doc.setFillColor(222, 184, 135);  // Burlywood
-            doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
-            doc.setTextColor(0, 0, 0);
-            doc.text(data.cell.text[0], data.cell.x + 2, data.cell.y + 5);
-          } else if (data.cell.text[0] === 'Good') {
-            doc.setFillColor(34, 139, 34);  // Forest Green
-            doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.text(data.cell.text[0], data.cell.x + 2, data.cell.y + 5);
-          }
+        startY: tableStartY,
+        head: [['Product Name', 'Stock', 'Price (LKR)', 'Status', 'Action Required']],
+        body: products.map(p => [
+            p.name,
+            p.stockQuantity,
+            p.price.toFixed(2),
+            p.stockQuantity <= 10 ? 'Critical' :
+            p.stockQuantity <= 30 ? 'Low' :
+            p.stockQuantity <= 50 ? 'Moderate' : 'Good',
+            p.stockQuantity <= 10 ? 'Immediate Restock' :
+            p.stockQuantity <= 30 ? 'Plan Restock' :
+            p.stockQuantity <= 50 ? 'Monitor' : '-'
+        ]),
+        headStyles: {
+            fillColor: [primaryColor.r, primaryColor.g, primaryColor.b],
+            textColor: 255,
+            fontStyle: 'bold',
+            fontSize: 10,
+            halign: 'center'
+        },
+        bodyStyles: {
+            fontSize: 9,
+            textColor: [primaryColor.r, primaryColor.g, primaryColor.b]
+        },
+        alternateRowStyles: {
+            fillColor: [251, 247, 245]  // Very light brown
+        },
+        styles: {
+            cellPadding: 3,
+            lineColor: [primaryColor.r, primaryColor.g, primaryColor.b],
+            lineWidth: 0.1,
+            font: 'helvetica'
+        },
+        theme: 'grid',
+        margin: { 
+            left: 25, 
+            right: 25,
+            top: 20,
+            bottom: 60  // Increased bottom margin to prevent footer overlap
+        },
+        pageBreak: 'auto',
+        didDrawCell: function(data) {
+            if (data.section === 'body' && data.column.index === 3) {
+                if (data.cell.text[0] === 'Critical') {
+                    doc.setFillColor(139, 0, 0);  // Dark Red
+                    doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.text(data.cell.text[0], data.cell.x + 2, data.cell.y + 5);
+                } else if (data.cell.text[0] === 'Low') {
+                    doc.setFillColor(255, 140, 0);  // Dark Orange
+                    doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.text(data.cell.text[0], data.cell.x + 2, data.cell.y + 5);
+                } else if (data.cell.text[0] === 'Moderate') {
+                    doc.setFillColor(222, 184, 135);  // Burlywood
+                    doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
+                    doc.setTextColor(0, 0, 0);
+                    doc.text(data.cell.text[0], data.cell.x + 2, data.cell.y + 5);
+                } else if (data.cell.text[0] === 'Good') {
+                    doc.setFillColor(34, 139, 34);  // Forest Green
+                    doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.text(data.cell.text[0], data.cell.x + 2, data.cell.y + 5);
+                }
+            }
+        },
+        didDrawPage: function(data) {
+            tableEndY = data.cursor.y;
+        },
+        addPageContent: function(data) {
+            // Add footer to each page
+            const footerY = pageHeight - 40;
+            
+            // Footer border
+            doc.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b);
+            doc.setLineWidth(0.2);
+            doc.line(25, footerY, pageWidth - 25, footerY);
+
+            // Footer text
+            doc.setFontSize(8);
+            doc.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b);
+            
+            // Left side
+            doc.text('Heritage Hands Pvt Ltd.', 25, footerY + 10);
+            
+            // Center
+            doc.text(
+                `Page ${data.pageNumber} of ${data.pageCount}`,
+                pageWidth / 2,
+                footerY + 10,
+                { align: 'center' }
+            );
+            
+            // Right side
+            doc.text(
+                'CONFIDENTIAL',
+                pageWidth - 25,
+                footerY + 10,
+                { align: 'right' }
+            );
         }
-      }
     });
 
-    // Add footer with page number
-    const pageCount = doc.internal.getNumberOfPages();
-    for(let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFontSize(10);
-      doc.setTextColor(46, 19, 8); // Darkest Brown
-      doc.text(
-        `Page ${i} of ${pageCount}`,
-        doc.internal.pageSize.width / 2,
-        doc.internal.pageSize.height - 10,
-        { align: 'center' }
-      );
+    // Add summary section with proper spacing
+    const summaryStartY = tableEndY + 20;
+    const currentPage = doc.internal.getNumberOfPages();
+    
+    // Check if we need a new page for the summary
+    if (summaryStartY > pageHeight - 80) {
+        doc.addPage();
+        doc.setPage(currentPage + 1);
     }
+
+    // Set the correct Y position for summary based on current page
+    const summaryY = doc.internal.getNumberOfPages() === currentPage ? summaryStartY : 30;
+    
+    doc.setFontSize(12);
+    doc.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b);
+    doc.text('Summary', 25, summaryY);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    
+    // Add summary items with proper spacing
+    const summaryItems = [
+        `Total Products: ${products.length}`,
+        `Critical Stock Items: ${products.filter(p => p.stockQuantity <= 10).length}`,
+        `Low Stock Items: ${products.filter(p => p.stockQuantity <= 30).length}`,
+        `Total Stock Value: Rs. ${products.reduce((sum, p) => sum + (p.price * p.stockQuantity), 0).toLocaleString()}`
+    ];
+
+    summaryItems.forEach((item, index) => {
+        doc.text(item, 25, summaryY + 10 + (index * 7));
+    });
 
     // Save PDF with formatted date
     const dateForFilename = new Date().toISOString().split('T')[0];
-    doc.save(`HERITAGE_HANDS_Stock_Report_${dateForFilename}.pdf`);
+    doc.save(`Heritage_Hands_Product_Report_${dateForFilename}.pdf`);
   };
 
   return (
