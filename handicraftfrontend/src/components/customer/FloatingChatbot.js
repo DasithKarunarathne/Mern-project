@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Fab, Dialog, DialogTitle, DialogContent, IconButton, Alert } from '@mui/material';
+import { Box, Fab, Dialog, DialogTitle, DialogContent, IconButton, Alert, Button } from '@mui/material';
 import ChatIcon from '@mui/icons-material/Chat';
 import CloseIcon from '@mui/icons-material/Close';
-import Chatbot from './Chatbot';
+import { useNavigate } from 'react-router-dom';
+import Chatbot from './Chatbot.js';
 import axios from 'axios';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
@@ -11,6 +12,8 @@ const FloatingChatbot = () => {
   const [open, setOpen] = useState(false);
   const [isBackendAvailable, setIsBackendAvailable] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
+  const token = localStorage.getItem("token");
 
   // Check if backend is available
   useEffect(() => {
@@ -30,6 +33,10 @@ const FloatingChatbot = () => {
   }, []);
 
   const handleClickOpen = () => {
+    if (!token) {
+      navigate('/customer/login');
+      return;
+    }
     if (isBackendAvailable) {
       setOpen(true);
     }

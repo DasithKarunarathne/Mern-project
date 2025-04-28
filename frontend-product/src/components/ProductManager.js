@@ -2,7 +2,12 @@
 import React, { useState, useEffect } from 'react';
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import { Routes, Route, Navigate } from 'react-router-dom';
+=======
+import { useLocation, useNavigate } from 'react-router-dom';
+import { createProduct, updateProduct } from '../services/api'; // Adjust path if needed
+>>>>>>> Stashed changes
 =======
 import { useLocation, useNavigate } from 'react-router-dom';
 import { createProduct, updateProduct } from '../services/api'; // Adjust path if needed
@@ -15,6 +20,7 @@ import {
   Box,
   Typography,
   Button,
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
   Paper,
@@ -49,6 +55,10 @@ import {
   Description as DescriptionIcon
 } from '@mui/icons-material';
 import { getProducts, createProduct, updateProduct, deleteProduct } from '../services/api';
+=======
+  CircularProgress,
+} from '@mui/material';
+>>>>>>> Stashed changes
 =======
   CircularProgress,
 } from '@mui/material';
@@ -158,6 +168,7 @@ const validateImage = (file) => {
 const ProductManager = () => {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   const theme = useTheme();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -173,11 +184,16 @@ const ProductManager = () => {
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
   const navigate = useNavigate();
   const location = useLocation();
   const editingProduct = location.state?.editingProduct || null;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -189,6 +205,7 @@ const ProductManager = () => {
     category: editingProduct?.category || '',
     image: null,
   });
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
@@ -217,6 +234,12 @@ const ProductManager = () => {
 
   useEffect(() => {
 >>>>>>> Stashed changes
+=======
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+>>>>>>> Stashed changes
     if (editingProduct) {
       setFormData({
         name: editingProduct.name,
@@ -227,6 +250,7 @@ const ProductManager = () => {
         image: null,
       });
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
     }
   }, [editingProduct]);
@@ -234,11 +258,16 @@ const ProductManager = () => {
   const showSnackbar = (message, severity = 'success') => {
     setSnackbar({ open: true, message, severity });
   };
+=======
+    }
+  }, [editingProduct]);
+>>>>>>> Stashed changes
 
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
+<<<<<<< Updated upstream
   const handleOpenDialog = (product = null) => {
     setSelectedProduct(product);
     setFormErrors({
@@ -266,10 +295,48 @@ const ProductManager = () => {
         category: '',
         image: null,
       });
+=======
+  const handleFileChange = (e) => {
+    setFormData({ ...formData, image: e.target.files[0] });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    const data = new FormData();
+    data.append('name', formData.name);
+    data.append('description', formData.description);
+    data.append('price', formData.price);
+    data.append('stockQuantity', formData.stockQuantity);
+    data.append('category', formData.category);
+    if (formData.image) {
+      data.append('image', formData.image);
+    }
+
+    try {
+      if (editingProduct) {
+        await updateProduct(editingProduct._id, data);
+        toast.success('Product updated successfully!');
+      } else {
+        await createProduct(data);
+        toast.success('Product added successfully!');
+      }
+      setFormData({ name: '', description: '', price: '', stockQuantity: '', category: '', image: null });
+      navigate('/manager'); // Updated path
+    } catch (error) {
+      console.error('Error saving product:', error);
+      setError('Failed to save product: ' + (error.response?.data?.error || error.message));
+      toast.error('Failed to save product: ' + (error.response?.data?.error || error.message));
+    } finally {
+      setLoading(false);
+>>>>>>> Stashed changes
     }
     setOpenDialog(true);
   };
 
+<<<<<<< Updated upstream
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setSelectedProduct(null);
@@ -457,6 +524,8 @@ const ProductManager = () => {
     return theme.palette.success.main;
   };
 
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
