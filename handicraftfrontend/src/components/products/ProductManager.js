@@ -16,6 +16,8 @@ import {
   Tooltip,
   Alert,
   TableContainer,
+  Chip,
+  InputAdornment,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { toast, ToastContainer } from 'react-toastify';
@@ -30,41 +32,105 @@ import RefundIcon from '@mui/icons-material/AssignmentReturn';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import ManagerHeader from '../common/ManagerHeader';
 import config from '../../config';
+import { alpha } from '@mui/material/styles';
 
 // Styled components
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
   margin: theme.spacing(2),
-  borderRadius: '12px',
-  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+  borderRadius: '16px',
+  boxShadow: '0 8px 32px rgba(151, 85, 59, 0.1)',
   background: '#ffffff',
+  border: '1px solid rgba(151, 85, 59, 0.1)',
+  backdropFilter: 'blur(10px)',
+  transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+  '&:hover': {
+    transform: 'translateY(-4px)',
+    boxShadow: '0 12px 48px rgba(151, 85, 59, 0.15)',
+  },
 }));
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  fontWeight: 'bold',
-  backgroundColor: theme.palette.background.paper,
+  fontWeight: 600,
+  backgroundColor: alpha(theme.palette.primary.main, 0.02),
   color: theme.palette.text.primary,
+  fontSize: '0.95rem',
+  padding: theme.spacing(1.5),
+  borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+  '&.image-cell': {
+    width: '200px',
+    padding: theme.spacing(1),
+  },
+  '&.name-cell': {
+    width: '250px',
+  },
+  '&.category-cell': {
+    width: '150px',
+  },
+  '&.price-cell': {
+    width: '120px',
+  },
+  '&.stock-cell': {
+    width: '100px',
+  },
+  '&.actions-cell': {
+    width: '120px',
+  },
 }));
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
   '&:nth-of-type(odd)': {
-    backgroundColor: 'rgba(222, 184, 135, 0.05)',
+    backgroundColor: alpha('#DEB887', 0.05),
   },
   '&:hover': {
-    backgroundColor: 'rgba(222, 184, 135, 0.1)',
+    backgroundColor: alpha('#DEB887', 0.1),
+    transform: 'scale(1.002)',
   },
-  transition: 'background-color 0.3s ease',
+  transition: 'all 0.2s ease',
 }));
 
 const ActionButton = styled(Button)(({ theme }) => ({
-  borderRadius: theme.spacing(1),
+  borderRadius: '12px',
   textTransform: 'none',
   fontWeight: 600,
   padding: theme.spacing(1.5, 3),
   transition: 'all 0.3s ease',
+  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
   '&:hover': {
     transform: 'translateY(-2px)',
-    boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+    boxShadow: '0 6px 16px rgba(0,0,0,0.15)',
+  },
+}));
+
+const FormTextField = styled(TextField)(({ theme }) => ({
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '12px',
+    transition: 'all 0.3s ease',
+    '&:hover': {
+      boxShadow: '0 4px 12px rgba(151, 85, 59, 0.08)',
+    },
+    '&.Mui-focused': {
+      boxShadow: '0 4px 12px rgba(151, 85, 59, 0.12)',
+    },
+  },
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: alpha('#97553B', 0.2),
+  },
+  '& .Mui-focused .MuiOutlinedInput-notchedOutline': {
+    borderColor: '#97553B',
+  },
+}));
+
+const ImagePreviewBox = styled(Box)(({ theme }) => ({
+  position: 'relative',
+  width: '180px',
+  height: '120px',
+  borderRadius: '8px',
+  overflow: 'hidden',
+  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+  transition: 'transform 0.3s ease',
+  '&:hover': {
+    transform: 'scale(1.02)',
   },
 }));
 
@@ -582,7 +648,10 @@ const ProductManager = () => {
   };
 
   return (
-    <Box>
+    <Box sx={{ 
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, rgba(222,184,135,0.1) 0%, rgba(255,255,255,0.1) 100%)',
+    }}>
       <ManagerHeader 
         title="Product Management" 
         breadcrumbs={[
@@ -596,9 +665,23 @@ const ProductManager = () => {
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center',
-          mb: 3
+          mb: 4,
+          background: 'rgba(255,255,255,0.8)',
+          padding: 3,
+          borderRadius: '16px',
+          backdropFilter: 'blur(10px)',
+          boxShadow: '0 4px 20px rgba(151, 85, 59, 0.1)',
         }}>
-          <Typography variant="h4" sx={{ fontWeight: 600, color: '#2E1308' }}>
+          <Typography 
+            variant="h4" 
+            sx={{ 
+              fontWeight: 700, 
+              color: '#2E1308',
+              background: 'linear-gradient(45deg, #2E1308, #97553B)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
             Product Management Dashboard
           </Typography>
           <Box sx={{ display: 'flex', gap: 2 }}>
@@ -607,17 +690,24 @@ const ProductManager = () => {
               startIcon={<FileDownloadIcon />}
               onClick={generatePDF}
               sx={{
-                backgroundColor: '#97553B',
-                '&:hover': { backgroundColor: '#5E3219' }
+                background: 'linear-gradient(45deg, #97553B, #5E3219)',
+                '&:hover': { 
+                  background: 'linear-gradient(45deg, #5E3219, #2E1308)',
+                }
               }}
             >
               Generate Report
             </ActionButton>
             <ActionButton
               variant="contained"
-              color="primary"
               startIcon={<RefundIcon />}
               onClick={() => navigate('/product/admin/refund-management')}
+              sx={{
+                background: 'linear-gradient(45deg, #2E1308, #97553B)',
+                '&:hover': { 
+                  background: 'linear-gradient(45deg, #97553B, #2E1308)',
+                }
+              }}
             >
               Manage Refunds
             </ActionButton>
@@ -629,7 +719,8 @@ const ProductManager = () => {
             severity="error" 
             sx={{ 
               mb: 3,
-              borderRadius: 2
+              borderRadius: '12px',
+              boxShadow: '0 4px 12px rgba(211, 47, 47, 0.1)',
             }}
             onClose={() => setError(null)}
           >
@@ -644,15 +735,15 @@ const ProductManager = () => {
             sx={{ 
               display: 'flex', 
               flexDirection: 'column', 
-              gap: 2, 
+              gap: 3, 
               maxWidth: 800, 
               margin: '0 auto',
-              p: 3 
+              p: 4,
             }}
           >
-            <TextField
+            <FormTextField
               fullWidth
-              label="Name"
+              label="Product Name"
               name="name"
               value={formData.name}
               onChange={handleInputChange}
@@ -661,29 +752,28 @@ const ProductManager = () => {
               disabled={loading}
               error={!!formErrors.name}
               helperText={formErrors.name || 'Only letters and spaces are allowed'}
-              inputProps={{
-                maxLength: 100
+              InputProps={{
+                sx: { fontSize: '1.1rem' }
+              }}
+              InputLabelProps={{
+                sx: { fontSize: '1.1rem' }
               }}
             />
-            <TextField
+            <FormTextField
               fullWidth
               label="Description"
               name="description"
               value={formData.description}
               onChange={handleInputChange}
-              margin="normal"
               multiline
-              rows={3}
+              rows={4}
               required
               disabled={loading}
               error={!!formErrors.description}
               helperText={formErrors.description}
-              inputProps={{
-                maxLength: 500
-              }}
             />
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <TextField
+            <Box sx={{ display: 'flex', gap: 3 }}>
+              <FormTextField
                 fullWidth
                 label="Price (LKR)"
                 name="price"
@@ -694,13 +784,11 @@ const ProductManager = () => {
                 disabled={loading}
                 error={!!formErrors.price}
                 helperText={formErrors.price}
-                inputProps={{
-                  min: 0,
-                  step: 0.01,
-                  max: 1000000
+                InputProps={{
+                  startAdornment: <InputAdornment position="start">LKR</InputAdornment>,
                 }}
               />
-              <TextField
+              <FormTextField
                 fullWidth
                 label="Stock Quantity"
                 name="stockQuantity"
@@ -711,13 +799,9 @@ const ProductManager = () => {
                 disabled={loading}
                 error={!!formErrors.stockQuantity}
                 helperText={formErrors.stockQuantity}
-                inputProps={{
-                  min: 0,
-                  max: 10000
-                }}
               />
             </Box>
-            <TextField
+            <FormTextField
               fullWidth
               label="Category"
               name="category"
@@ -727,9 +811,6 @@ const ProductManager = () => {
               disabled={loading}
               error={!!formErrors.category}
               helperText={formErrors.category}
-              inputProps={{
-                maxLength: 50
-              }}
             />
             <Box sx={{ mt: 2 }}>
               <input
@@ -745,20 +826,31 @@ const ProductManager = () => {
                   component="span"
                   startIcon={<CloudUploadIcon />}
                   sx={{ 
-                    mr: 2,
+                    borderRadius: '12px',
                     borderColor: '#97553B',
                     color: '#97553B',
+                    padding: '10px 24px',
                     '&:hover': {
                       borderColor: '#5E3219',
-                      backgroundColor: 'rgba(151, 85, 59, 0.04)'
-                    }
+                      backgroundColor: 'rgba(151, 85, 59, 0.08)',
+                      transform: 'translateY(-2px)',
+                    },
+                    transition: 'all 0.3s ease',
                   }}
                 >
                   Upload Image
                 </Button>
               </label>
               {formData.image && (
-                <Typography variant="body2" component="span" color="textSecondary">
+                <Typography 
+                  variant="body2" 
+                  component="span" 
+                  sx={{ 
+                    ml: 2,
+                    color: '#97553B',
+                    fontStyle: 'italic'
+                  }}
+                >
                   {typeof formData.image === 'string' 
                     ? 'Current image: ' + formData.image.split('/').pop()
                     : 'Selected file: ' + formData.image.name
@@ -766,141 +858,212 @@ const ProductManager = () => {
                 </Typography>
               )}
             </Box>
-            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
-              <Button
+            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+              <ActionButton
                 type="submit"
                 variant="contained"
                 disabled={loading}
                 sx={{
-                  minWidth: 200,
-                  backgroundColor: '#97553B',
-                  '&:hover': { backgroundColor: '#5E3219' }
+                  minWidth: 250,
+                  height: 48,
+                  background: 'linear-gradient(45deg, #97553B, #5E3219)',
+                  fontSize: '1.1rem',
+                  '&:hover': { 
+                    background: 'linear-gradient(45deg, #5E3219, #2E1308)',
+                  }
                 }}
               >
                 {loading ? (
                   <CircularProgress size={24} color="inherit" />
                 ) : (
-                  formData._id ? 'Update Product' : 'Add Product'
+                  editingProduct ? 'Update Product' : 'Add Product'
                 )}
-              </Button>
+              </ActionButton>
             </Box>
           </Box>
         </StyledPaper>
 
         {/* Product List Section */}
         <StyledPaper elevation={0} sx={{ mt: 4 }}>
-          <Typography variant="h5" sx={{ mb: 3, color: '#2E1308', fontWeight: 600 }}>
+          <Typography 
+            variant="h5" 
+            sx={{ 
+              mb: 4, 
+              color: '#2E1308', 
+              fontWeight: 700,
+              textAlign: 'center',
+              position: 'relative',
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                bottom: -8,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '60px',
+                height: '3px',
+                background: 'linear-gradient(45deg, #97553B, #5E3219)',
+                borderRadius: '2px',
+              }
+            }}
+          >
             Product List
           </Typography>
 
           {loading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-              <CircularProgress size={40} />
+            <Box sx={{ display: 'flex', justifyContent: 'center', my: 6 }}>
+              <CircularProgress 
+                size={50}
+                sx={{ 
+                  color: '#97553B',
+                  '& .MuiCircularProgress-circle': {
+                    strokeLinecap: 'round',
+                  }
+                }} 
+              />
             </Box>
           ) : products.length === 0 ? (
-            <Box sx={{ textAlign: 'center', py: 4 }}>
-              <Typography color="textSecondary">
+            <Box sx={{ 
+              textAlign: 'center', 
+              py: 6,
+              px: 3,
+              backgroundColor: alpha('#DEB887', 0.05),
+              borderRadius: '12px',
+            }}>
+              <Typography 
+                color="textSecondary"
+                sx={{ 
+                  fontSize: '1.1rem',
+                  fontStyle: 'italic'
+                }}
+              >
                 No products available. Add your first product using the form above.
               </Typography>
             </Box>
           ) : (
-            <TableContainer>
+            <TableContainer sx={{ borderRadius: '12px', overflow: 'hidden' }}>
               <Table>
                 <TableHead>
                   <TableRow>
-                    <StyledTableCell>Image</StyledTableCell>
-                    <StyledTableCell>Name</StyledTableCell>
-                    <StyledTableCell>Category</StyledTableCell>
-                    <StyledTableCell>Price (LKR)</StyledTableCell>
-                    <StyledTableCell>Stock</StyledTableCell>
-                    <StyledTableCell align="center">Actions</StyledTableCell>
+                    <StyledTableCell className="image-cell">Image</StyledTableCell>
+                    <StyledTableCell className="name-cell">Name</StyledTableCell>
+                    <StyledTableCell className="category-cell">Category</StyledTableCell>
+                    <StyledTableCell className="price-cell">Price (LKR)</StyledTableCell>
+                    <StyledTableCell className="stock-cell">Stock</StyledTableCell>
+                    <StyledTableCell className="actions-cell" align="center">Actions</StyledTableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {products.map((product) => (
                     <StyledTableRow key={product._id}>
-                      <TableCell>
-                        <img
-                          src={getImageUrl(product.image)}
-                          alt={product.name}
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = config.DEFAULT_PRODUCT_IMAGE;
-                          }}
-                          style={{ width: '280px', height: '200px', objectFit: 'cover' }}
-                        />
+                      <TableCell className="image-cell">
+                        <ImagePreviewBox>
+                          <img
+                            src={getImageUrl(product.image)}
+                            alt={product.name}
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = config.DEFAULT_PRODUCT_IMAGE;
+                            }}
+                            style={{ 
+                              width: '100%', 
+                              height: '100%', 
+                              objectFit: 'cover',
+                            }}
+                          />
+                        </ImagePreviewBox>
                       </TableCell>
-                      <TableCell>
-                        <Typography sx={{ fontWeight: 500 }}>
+                      <TableCell className="name-cell">
+                        <Typography 
+                          sx={{ 
+                            fontWeight: 600,
+                            fontSize: '0.95rem',
+                            color: '#2E1308',
+                          }}
+                        >
                           {product.name}
                         </Typography>
                       </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" sx={{ 
-                          backgroundColor: 'rgba(151, 85, 59, 0.1)', 
-                          color: '#97553B',
-                          py: 0.5,
-                          px: 1.5,
-                          borderRadius: '16px',
-                          display: 'inline-block'
-                        }}>
-                          {product.category}
-                        </Typography>
+                      <TableCell className="category-cell">
+                        <Chip
+                          label={product.category}
+                          size="small"
+                          sx={{ 
+                            backgroundColor: alpha('#97553B', 0.1),
+                            color: '#97553B',
+                            fontWeight: 600,
+                            borderRadius: '8px',
+                            '& .MuiChip-label': {
+                              px: 1.5,
+                              fontSize: '0.85rem',
+                            },
+                          }}
+                        />
                       </TableCell>
-                      <TableCell>
-                        <Typography sx={{ fontWeight: 600, color: '#2E1308' }}>
+                      <TableCell className="price-cell">
+                        <Typography 
+                          sx={{ 
+                            fontWeight: 700,
+                            color: '#2E1308',
+                            fontSize: '0.95rem',
+                          }}
+                        >
                           {product.price.toFixed(2)}
                         </Typography>
                       </TableCell>
-                      <TableCell>
-                        <Typography
+                      <TableCell className="stock-cell">
+                        <Chip
+                          label={product.stockQuantity}
+                          size="small"
                           sx={{
+                            backgroundColor: product.stockQuantity <= 10 ? alpha('#dc3545', 0.1) :
+                                          product.stockQuantity <= 30 ? alpha('#ffc107', 0.1) :
+                                          alpha('#28a745', 0.1),
                             color: product.stockQuantity <= 10 ? '#dc3545' :
-                                   product.stockQuantity <= 30 ? '#ffc107' :
-                                   '#28a745',
-                            fontWeight: 'bold',
-                            backgroundColor: product.stockQuantity <= 10 ? 'rgba(220, 53, 69, 0.1)' :
-                                          product.stockQuantity <= 30 ? 'rgba(255, 193, 7, 0.1)' :
-                                          'rgba(40, 167, 69, 0.1)',
-                            py: 0.5,
-                            px: 1.5,
-                            borderRadius: '16px',
-                            display: 'inline-block'
+                                  product.stockQuantity <= 30 ? '#ffc107' :
+                                  '#28a745',
+                            fontWeight: 700,
+                            borderRadius: '8px',
+                            '& .MuiChip-label': {
+                              px: 1.5,
+                              fontSize: '0.85rem',
+                            },
                           }}
-                        >
-                          {product.stockQuantity}
-                        </Typography>
+                        />
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="actions-cell">
                         <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
-                          <Tooltip title="Edit Product">
+                          <Tooltip title="Edit Product" arrow>
                             <IconButton 
+                              size="small"
                               onClick={() => handleEdit(product)}
                               sx={{ 
                                 color: '#97553B',
+                                backgroundColor: alpha('#97553B', 0.1),
                                 '&:hover': { 
-                                  color: '#5E3219',
-                                  transform: 'scale(1.1)'
+                                  backgroundColor: alpha('#97553B', 0.2),
+                                  transform: 'scale(1.1)',
                                 },
-                                transition: 'all 0.3s ease'
+                                transition: 'all 0.3s ease',
                               }}
                             >
-                              <EditIcon />
+                              <EditIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
-                          <Tooltip title="Delete Product">
+                          <Tooltip title="Delete Product" arrow>
                             <IconButton 
+                              size="small"
                               onClick={() => handleDelete(product._id)}
                               sx={{ 
                                 color: '#dc3545',
+                                backgroundColor: alpha('#dc3545', 0.1),
                                 '&:hover': { 
-                                  color: '#c82333',
-                                  transform: 'scale(1.1)'
+                                  backgroundColor: alpha('#dc3545', 0.2),
+                                  transform: 'scale(1.1)',
                                 },
-                                transition: 'all 0.3s ease'
+                                transition: 'all 0.3s ease',
                               }}
                             >
-                              <DeleteIcon />
+                              <DeleteIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
                         </Box>

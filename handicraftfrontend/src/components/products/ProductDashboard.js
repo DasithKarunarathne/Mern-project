@@ -182,7 +182,7 @@ const ProductDashboard = () => {
         if (response && response.data) {
           setProducts(response.data);
           setFilteredProducts(response.data);
-          setError(null); // Clear any previous errors
+          setError(null);
         } else {
           throw new Error('Invalid response format');
         }
@@ -192,7 +192,7 @@ const ProductDashboard = () => {
           setRetryCount(prev => prev + 1);
           setTimeout(() => {
             fetchProducts();
-          }, 2000 * (retryCount + 1)); // Exponential backoff
+          }, 2000 * (retryCount + 1));
         } else {
           setError("Failed to load products. Please try again later.");
         }

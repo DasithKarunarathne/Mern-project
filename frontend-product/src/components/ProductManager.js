@@ -1,7 +1,12 @@
 // src/components/ProductManager.js
 import React, { useState, useEffect } from 'react';
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import { Routes, Route, Navigate } from 'react-router-dom';
+=======
+import { useLocation, useNavigate } from 'react-router-dom';
+import { createProduct, updateProduct } from '../services/api'; // Adjust path if needed
+>>>>>>> Stashed changes
 =======
 import { useLocation, useNavigate } from 'react-router-dom';
 import { createProduct, updateProduct } from '../services/api'; // Adjust path if needed
@@ -10,6 +15,7 @@ import {
   Box,
   Typography,
   Button,
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
   Paper,
   Container,
@@ -43,6 +49,10 @@ import {
   Description as DescriptionIcon
 } from '@mui/icons-material';
 import { getProducts, createProduct, updateProduct, deleteProduct } from '../services/api';
+=======
+  CircularProgress,
+} from '@mui/material';
+>>>>>>> Stashed changes
 =======
   CircularProgress,
 } from '@mui/material';
@@ -147,6 +157,7 @@ const validateImage = (file) => {
 
 const ProductManager = () => {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   const theme = useTheme();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -160,10 +171,15 @@ const ProductManager = () => {
     category: '',
   });
 =======
+=======
+>>>>>>> Stashed changes
   const navigate = useNavigate();
   const location = useLocation();
   const editingProduct = location.state?.editingProduct || null;
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   const [formData, setFormData] = useState({
     name: editingProduct?.name || '',
@@ -173,6 +189,7 @@ const ProductManager = () => {
     category: editingProduct?.category || '',
     image: null,
   });
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
@@ -194,6 +211,12 @@ const ProductManager = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+=======
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+>>>>>>> Stashed changes
     if (editingProduct) {
       setFormData({
         name: editingProduct.name,
@@ -203,6 +226,7 @@ const ProductManager = () => {
         category: editingProduct.category,
         image: null,
       });
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
     }
   }, [editingProduct]);
@@ -283,8 +307,10 @@ const ProductManager = () => {
           severity: 'warning'
         });
       }
+=======
+>>>>>>> Stashed changes
     }
-  };
+  }, [editingProduct]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -386,8 +412,13 @@ const ProductManager = () => {
         });
       }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       handleCloseDialog();
       fetchProducts();
+=======
+      setFormData({ name: '', description: '', price: '', stockQuantity: '', category: '', image: null });
+      navigate('/manager'); // Updated path
+>>>>>>> Stashed changes
 =======
       setFormData({ name: '', description: '', price: '', stockQuantity: '', category: '', image: null });
       navigate('/manager'); // Updated path
@@ -403,6 +434,7 @@ const ProductManager = () => {
     }
   };
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
@@ -425,6 +457,8 @@ const ProductManager = () => {
     return theme.palette.success.main;
   };
 
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
   return (
