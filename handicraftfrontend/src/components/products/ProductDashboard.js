@@ -91,13 +91,13 @@ const ProductGrid = styled(Box)(({ theme }) => ({
 const CarouselContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
   width: '100%',
-  height: '300px',
+  height: '350px',
   overflow: 'hidden',
   borderRadius: '12px',
   marginBottom: theme.spacing(3),
   boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
   [theme.breakpoints.down('sm')]: {
-    height: '200px',
+    height: '250px',
   },
 }));
 
@@ -123,12 +123,12 @@ const CarouselContent = styled(Box)(({ theme }) => ({
   bottom: 0,
   left: 0,
   right: 0,
-  padding: theme.spacing(2),
+  padding: theme.spacing(2.5),
   background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
   color: 'white',
   textAlign: 'center',
   [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(1),
+    padding: theme.spacing(1.5),
   },
 }));
 
