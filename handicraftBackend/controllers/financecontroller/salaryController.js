@@ -88,6 +88,10 @@ export const salarycalculation = async (req, res) => {
             // Calculate net salary: basicSalary + totalOvertimePay - epf
             const netSalary = employee.basicSalary + totalOvertimePay - epf;
 
+            // Calculate due date (last day of the month)
+            const [year, monthNum] = month.split('-').map(Number);
+            const dueDate = new Date(year, monthNum, 0); // Last day of the month
+
             // Create a new salary record
             const salary = new Salary({
                 employeeId: employee.empID, // Ensure empID is assigned to employeeId
@@ -103,6 +107,7 @@ export const salarycalculation = async (req, res) => {
                 netSalary,
                 status: "Pending",
                 paymentDate: null,
+                dueDate: dueDate  // Added dueDate
             });
 
             salRecords.push(salary);
@@ -161,15 +166,16 @@ export const markSalPaid = async (req, res) => {
         return res.status(500).json({ message: "Cash balance not initialized" });
       }
   
-      // Update salary status
+      // Update salary status and payment date
       salary.status = "Completed";
       salary.paymentDate = new Date();
+      // Note: We don't modify dueDate as it represents when the salary was due
       await salary.save();
   
       // Update CashBook (outflow for salary payment)
       const cashBookEntry = new CashBook({
         date: new Date(),
-        description: `Salary payment for ${salary.employeeName} - ${salary.month}`,
+        description: `Salary payment for ${salary.employeeName} - ${salary.month} (Due: ${salary.dueDate.toISOString().split('T')[0]})`,
         amount: salary.netSalary,
         type: "outflow",
         category: "salary",
@@ -188,7 +194,7 @@ export const markSalPaid = async (req, res) => {
       // Update Ledger
       const ledgerEntry = new Ledger({
         date: new Date(),
-        description: `Salary payment for ${salary.employeeName} - ${salary.month}`,
+        description: `Salary payment for ${salary.employeeName} - ${salary.month} (Due: ${salary.dueDate.toISOString().split('T')[0]})`,
         amount: salary.netSalary,
         category: "Salary",
         source: "Cash Book",
@@ -197,9 +203,54 @@ export const markSalPaid = async (req, res) => {
       });
       await ledgerEntry.save();
   
-      res.status(200).json({ success: true, message: "Salary marked as paid and recorded in financials" });
+      res.status(200).json({ 
+        success: true, 
+        message: "Salary marked as paid and recorded in financials",
+        paymentDetails: {
+          dueDate: salary.dueDate,
+          paymentDate: salary.paymentDate,
+          amount: salary.netSalary
+        }
+      });
     } catch (error) {
       console.error("Error marking salary as paid:", error);
       res.status(500).json({ success: false, message: "Error marking salary as paid", error: error.message });
     }
   };
+
+export const getTotalSalariesPaid = async (req, res) => {
+    try {
+        const { month, year } = req.query;
+        const monthYear = `${year}-${month.toString().padStart(2, '0')}`;
+
+        // Get all completed salary payments for the current month
+        const completedSalaries = await Salary.find({
+            month: monthYear,
+            status: "Completed"
+        });
+
+        // Get unique employee IDs from all salary records for this month
+        const allSalaries = await Salary.find({ month: monthYear });
+        const uniqueEmployeeIds = [...new Set(allSalaries.map(salary => salary.employeeId))];
+
+        // Calculate total paid amount
+        const totalPaid = completedSalaries.reduce((sum, salary) => sum + salary.netSalary, 0);
+
+        res.status(200).json({
+            success: true,
+            totalPaid,
+            paidCount: completedSalaries.length,
+            totalEmployees: uniqueEmployeeIds.length,
+            percentagePaid: uniqueEmployeeIds.length > 0 
+                ? ((completedSalaries.length / uniqueEmployeeIds.length) * 100).toFixed(1) 
+                : 0
+        });
+    } catch (error) {
+        console.error("Error fetching total salaries paid:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Error fetching total salaries paid", 
+            error: error.message 
+        });
+    }
+};

@@ -9,7 +9,6 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { Link as RouterLink } from 'react-router-dom';
-import LogoutButton from './LogoutButton';
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
   backgroundColor: 'rgba(93, 64, 55, 0.95)',
@@ -51,7 +50,6 @@ const ManagerHeader = ({ title, breadcrumbs = [] }) => {
             </Breadcrumbs>
           )}
         </Box>
-        <LogoutButton />
       </Toolbar>
     </StyledAppBar>
   );

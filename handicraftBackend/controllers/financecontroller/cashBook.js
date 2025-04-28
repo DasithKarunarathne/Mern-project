@@ -82,8 +82,6 @@ export const addCashBookEntry = async (req, res) => {
   }
 };
 
-
-
 // Get all cash book entries
 export const getCashBookEntries = async (req, res) => {
   try {
@@ -132,6 +130,59 @@ export const getcashBookentriesbyMonth = async (req, res) => {
       success: false,
       message: "Failed to fetch cash book entries.",
       error: error.message,
+    });
+  }
+};
+
+// Get monthly summary of income and expenses
+export const getMonthlySummary = async (req, res) => {
+  try {
+    const { month, year } = req.query;
+    const monthNum = parseInt(month);
+    const yearNum = parseInt(year);
+
+    // Validate month and year
+    if (isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
+      return res.status(400).json({ message: "Invalid month. Must be between 1 and 12." });
+    }
+    if (isNaN(yearNum) || yearNum < 2000 || yearNum > 9999) {
+      return res.status(400).json({ message: "Invalid year. Must be between 2000 and 9999." });
+    }
+
+    // Calculate the start and end dates for the given month and year
+    const startDate = new Date(yearNum, monthNum - 1, 1);
+    const endDate = new Date(yearNum, monthNum, 0, 23, 59, 59, 999);
+
+    // Get all transactions for the month
+    const transactions = await CashBook.find({
+      date: {
+        $gte: startDate,
+        $lte: endDate,
+      },
+    });
+
+    // Calculate totals
+    const totalIncome = transactions
+      .filter(t => t.type === "inflow")
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const totalExpenses = transactions
+      .filter(t => t.type === "outflow")
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    res.status(200).json({
+      success: true,
+      totalIncome,
+      totalExpenses,
+      netCashFlow: totalIncome - totalExpenses,
+      transactionCount: transactions.length
+    });
+  } catch (error) {
+    console.error("Error getting monthly summary:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get monthly summary",
+      error: error.message
     });
   }
 };

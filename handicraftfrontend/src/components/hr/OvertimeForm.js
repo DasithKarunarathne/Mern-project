@@ -222,11 +222,11 @@ const OvertimeForm = () => {
 
       <FormCard>
         <CardContent>
-          <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit}>
             <Grid container spacing={3}>
               <Grid item xs={12}>
                 <FormControl fullWidth error={!!errors.employeeId}>
-                  <InputLabel>Employee</InputLabel>
+          <InputLabel>Employee</InputLabel>
                   <CustomSelect
                     name="employeeId"
                     value={formData.employeeId}
@@ -238,29 +238,29 @@ const OvertimeForm = () => {
                       </InputAdornment>
                     }
                   >
-                    <MenuItem value="">Select Employee</MenuItem>
-                    {employees.length > 0 ? (
-                      employees.map((employee) => (
-                        <MenuItem key={employee._id} value={employee._id}>
-                          {employee.empname} (ID: {employee.empID})
+            <MenuItem value="">Select Employee</MenuItem>
+            {employees.length > 0 ? (
+              employees.map((employee) => (
+                <MenuItem key={employee._id} value={employee._id}>
+                  {employee.empname} (ID: {employee.empID})
                           <Typography variant="body2" color="text.secondary">
                             Overtime Rate: LKR {employee.overtimeRate}/hr
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
                             Total Overtime Pay: LKR {employee.totalOvertimePay?.toLocaleString() || '0'}
                           </Typography>
-                        </MenuItem>
-                      ))
-                    ) : (
-                      <MenuItem disabled>No employees available</MenuItem>
-                    )}
+                </MenuItem>
+              ))
+            ) : (
+              <MenuItem disabled>No employees available</MenuItem>
+            )}
                   </CustomSelect>
                   {errors.employeeId && (
                     <Typography color="error" variant="caption" sx={{ mt: 1 }}>
                       {errors.employeeId}
                     </Typography>
                   )}
-                </FormControl>
+        </FormControl>
               </Grid>
 
               <Grid item xs={12} sm={6}>
@@ -269,11 +269,17 @@ const OvertimeForm = () => {
                   name="overtimeHours"
                   type="number"
                   value={formData.overtimeHours}
-                  onChange={handleChange}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Only allow positive numbers and maximum 24 hours
+                    if (value === '' || (parseFloat(value) >= 0 && parseFloat(value) <= 24)) {
+                      handleChange(e);
+                    }
+                  }}
                   fullWidth
                   required
                   error={!!errors.overtimeHours}
-                  helperText={errors.overtimeHours}
+                  helperText={errors.overtimeHours || "Maximum 24 hours per day"}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -281,21 +287,32 @@ const OvertimeForm = () => {
                       </InputAdornment>
                     ),
                   }}
+                  inputProps={{
+                    min: 0,
+                    max: 24,
+                    step: 0.5,
+                    onKeyDown: (e) => {
+                      // Prevent negative sign and 'e' for scientific notation
+                      if (e.key === '-' || e.key === 'e') {
+                        e.preventDefault();
+                      }
+                    },
+                  }}
                 />
               </Grid>
 
               <Grid item xs={12} sm={6}>
                 <CustomTextField
-                  label="Date"
-                  name="date"
-                  type="date"
-                  value={formData.date}
-                  onChange={handleChange}
-                  fullWidth
-                  required
-                  error={!!errors.date}
-                  helperText={errors.date}
-                  InputLabelProps={{ shrink: true }}
+          label="Date"
+          name="date"
+          type="date"
+          value={formData.date}
+          onChange={handleChange}
+          fullWidth
+          required
+          error={!!errors.date}
+          helperText={errors.date}
+          InputLabelProps={{ shrink: true }}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -327,10 +344,10 @@ const OvertimeForm = () => {
                       "Add Overtime Record"
                     )}
                   </ActionButton>
-                </Box>
+        </Box>
               </Grid>
             </Grid>
-          </form>
+      </form>
         </CardContent>
       </FormCard>
     </FormContainer>

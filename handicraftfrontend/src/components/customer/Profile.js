@@ -1,368 +1,250 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom'; // Add Link for navigation
+import {
+  Box,
+  Container,
+  Typography,
+  TextField,
+  Button,
+  Paper,
+  Grid,
+  Avatar,
+  IconButton,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from '@mui/material';
+import { Edit, Delete, Save, Cancel } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+
+// API base URL
+const API_URL = 'http://localhost:5000/api/customer';
 
 function Profile() {
-    const [user, setUser] = useState(null);
-    const [error, setError] = useState(null);
+  const navigate = useNavigate();
+  const [userData, setUserData] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
-    const [formData, setFormData] = useState({
-        fullName: '',
-        username: '',
-        email: '',
-    });
-
-    const navigate = useNavigate();
+  const [editedData, setEditedData] = useState({});
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
     useEffect(() => {
-        fetchProfile();
-    }, []);
-
-    const fetchProfile = async () => {
         const token = localStorage.getItem('token');
-        if (token) {
-            try {
-                const res = await axios.get('/api/auth/profile', {
-                    headers: { 'x-auth-token': token },
-                });
-                setUser(res.data);
-                setFormData({
-                    fullName: res.data.fullName,
-                    username: res.data.username,
-                    email: res.data.email,
-                });
-            } catch (err) {
-                setError(err.response?.data?.msg || 'Error loading profile');
-            }
-        } else {
-            setError('Please login first');
-        }
-    };
-
-    const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
-
-    const onSubmit = async e => {
-        e.preventDefault();
-        const token = localStorage.getItem('token');
-        try {
-            const res = await axios.put('/api/auth/profile', formData, {
-                headers: { 'x-auth-token': token },
-            });
-            setUser(res.data);
-            setIsEditing(false);
-            alert('Profile updated successfully');
-        } catch (err) {
-            console.error(err.response.data);
-            alert(err.response.data.msg || 'Update failed');
-        }
-    };
-
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        navigate('/customer/login');
-    };
-
-    if (error) {
-        return (
-            <div
-                style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    minHeight: '100vh',
-                    background: 'linear-gradient(135deg, #4a90e2, #87ceeb)',
-                    color: 'white',
-                    fontSize: '18px',
-                }}
-            >
-                {error}
-            </div>
-        );
+    if (!token) {
+      navigate('/customer/login');
+      return;
     }
 
-    if (!user) {
+    const fetchUserData = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/auth/profile`, {
+          headers: { 'x-auth-token': token }
+        });
+        setUserData(response.data);
+        setEditedData(response.data);
+            } catch (err) {
+        if (err.response?.status === 401) {
+          localStorage.removeItem('token');
+          navigate('/customer/login');
+        } else {
+          setError('Failed to fetch profile data');
+          console.error('Error fetching profile:', err);
+        }
+      }
+    };
+
+    fetchUserData();
+  }, [navigate]);
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleCancel = () => {
+    setEditedData(userData);
+    setIsEditing(false);
+    setError('');
+  };
+
+  const handleChange = (e) => {
+    setEditedData({
+      ...editedData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSave = async () => {
+    try {
+        const token = localStorage.getItem('token');
+      const response = await axios.put(`${API_URL}/auth/profile`, editedData, {
+        headers: { 'x-auth-token': token }
+            });
+      setUserData(response.data);
+            setIsEditing(false);
+      setSuccess('Profile updated successfully');
+      setTimeout(() => setSuccess(''), 3000);
+        } catch (err) {
+      if (err.response?.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/customer/login');
+      } else {
+        setError(err.response?.data?.msg || 'Failed to update profile');
+      }
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`${API_URL}/auth/profile`, {
+        headers: { 'x-auth-token': token }
+      });
+      localStorage.removeItem('token');
+      navigate('/');
+    } catch (err) {
+      if (err.response?.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/customer/login');
+      } else {
+        setError(err.response?.data?.msg || 'Failed to delete account');
+      }
+    }
+    setDeleteDialogOpen(false);
+  };
+
+  if (!userData) {
         return (
-            <div
-                style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    minHeight: '100vh',
-                    background: 'linear-gradient(135deg, #4a90e2, #87ceeb)',
-                    color: 'white',
-                    fontSize: '18px',
-                }}
-            >
-                Loading...
-            </div>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+        <Typography>Loading...</Typography>
+      </Box>
         );
     }
 
     return (
-        <div
-            style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                minHeight: '100vh',
-                background: 'linear-gradient(135deg, #4a90e2, #87ceeb)',
-                position: 'relative',
-                overflow: 'hidden',
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Paper sx={{ p: 4, borderRadius: 2, boxShadow: 3 }}>
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+        
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+          <Avatar
+            sx={{
+              width: 100,
+              height: 100,
+              bgcolor: '#4a90e2',
+              fontSize: '2rem',
+              mr: 3
             }}
-        >
-            <div
-                style={{
-                    width: '500px',
-                    background: 'white',
-                    borderRadius: '20px',
-                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
-                    padding: '40px',
-                    textAlign: 'center',
-                }}
-            >
-                <h1
-                    style={{
-                        fontSize: '28px',
-                        color: '#333',
-                        marginBottom: '10px',
-                    }}
-                >
-                    Welcome, {user.fullName}!
-                </h1>
-                <p
-                    style={{
-                        fontSize: '16px',
-                        color: '#666',
-                        marginBottom: '30px',
-                    }}
-                >
-                    Manage your profile details below
-                </p>
+          >
+            {userData.fullName?.charAt(0).toUpperCase()}
+          </Avatar>
+          <Box>
+            <Typography variant="h4" gutterBottom>
+              Profile Settings
+            </Typography>
+            <Typography variant="body1" color="textSecondary">
+              Manage your account information
+            </Typography>
+          </Box>
+        </Box>
 
-                {isEditing ? (
-                    <form onSubmit={onSubmit}>
-                        <div
-                            style={{
-                                marginBottom: '20px',
-                                textAlign: 'left',
-                            }}
-                        >
-                            <label
-                                style={{
-                                    display: 'block',
-                                    fontSize: '14px',
-                                    color: '#333',
-                                    marginBottom: '5px',
-                                }}
-                            >
-                                Full Name:
-                            </label>
-                            <input
-                                type="text"
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Full Name"
                                 name="fullName"
-                                value={formData.fullName}
-                                onChange={onChange}
-                                required
-                                style={{
-                                    width: '100%',
-                                    padding: '10px',
-                                    border: '1px solid #ddd',
-                                    borderRadius: '5px',
-                                    fontSize: '14px',
-                                }}
-                            />
-                        </div>
-                        <div
-                            style={{
-                                marginBottom: '20px',
-                                textAlign: 'left',
-                            }}
-                        >
-                            <label
-                                style={{
-                                    display: 'block',
-                                    fontSize: '14px',
-                                    color: '#333',
-                                    marginBottom: '5px',
-                                }}
-                            >
-                                Username:
-                            </label>
-                            <input
-                                type="text"
+              value={editedData.fullName || ''}
+              onChange={handleChange}
+              disabled={!isEditing}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Username"
                                 name="username"
-                                value={formData.username}
-                                onChange={onChange}
-                                required
-                                style={{
-                                    width: '100%',
-                                    padding: '10px',
-                                    border: '1px solid #ddd',
-                                    borderRadius: '5px',
-                                    fontSize: '14px',
-                                }}
-                            />
-                        </div>
-                        <div
-                            style={{
-                                marginBottom: '20px',
-                                textAlign: 'left',
-                            }}
-                        >
-                            <label
-                                style={{
-                                    display: 'block',
-                                    fontSize: '14px',
-                                    color: '#333',
-                                    marginBottom: '5px',
-                                }}
-                            >
-                                Email:
-                            </label>
-                            <input
+              value={editedData.username || ''}
+              onChange={handleChange}
+              disabled={!isEditing}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Email"
+              name="email"
                                 type="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={onChange}
-                                required
-                                style={{
-                                    width: '100%',
-                                    padding: '10px',
-                                    border: '1px solid #ddd',
-                                    borderRadius: '5px',
-                                    fontSize: '14px',
-                                }}
-                            />
-                        </div>
-                        <div
-                            style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                gap: '10px',
-                            }}
-                        >
-                            <button
-                                type="submit"
-                                style={{
-                                    width: '100%',
-                                    padding: '10px',
-                                    border: 'none',
-                                    borderRadius: '5px',
-                                    fontSize: '16px',
-                                    cursor: 'pointer',
-                                    background: '#4a90e2',
-                                    color: 'white',
-                                }}
-                            >
-                                Save
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setIsEditing(false)}
-                                style={{
-                                    width: '100%',
-                                    padding: '10px',
-                                    border: '1px solid #4a90e2',
-                                    borderRadius: '5px',
-                                    fontSize: '16px',
-                                    cursor: 'pointer',
-                                    background: 'transparent',
-                                    color: '#4a90e2',
-                                }}
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </form>
-                ) : (
-                    <div
-                        style={{
-                            textAlign: 'left',
-                            marginBottom: '30px',
-                        }}
-                    >
-                        <p
-                            style={{
-                                fontSize: '16px',
-                                color: '#333',
-                                marginBottom: '10px',
-                            }}
-                        >
-                            <strong>Full Name:</strong> {user.fullName}
-                        </p>
-                        <p
-                            style={{
-                                fontSize: '16px',
-                                color: '#333',
-                                marginBottom: '10px',
-                            }}
-                        >
-                            <strong>Username:</strong> {user.username}
-                        </p>
-                        <p
-                            style={{
-                                fontSize: '16px',
-                                color: '#333',
-                                marginBottom: '20px',
-                            }}
-                        >
-                            <strong>Email:</strong> {user.email}
-                        </p>
-                        <button
-                            onClick={() => setIsEditing(true)}
-                            style={{
-                                width: '100%',
-                                padding: '10px',
-                                border: 'none',
-                                borderRadius: '5px',
-                                fontSize: '16px',
-                                cursor: 'pointer',
-                                background: '#4a90e2',
-                                color: 'white',
-                                marginBottom: '10px',
-                            }}
+              value={editedData.email || ''}
+              onChange={handleChange}
+              disabled={!isEditing}
+            />
+          </Grid>
+        </Grid>
+
+        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'space-between' }}>
+          <Box>
+            {!isEditing ? (
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<Edit />}
+                onClick={handleEdit}
+                sx={{ mr: 2 }}
                         >
                             Edit Profile
-                        </button>
-                        {user.isAdmin && (
-                            <Link to="/customer/admin">
-                                <button
-                                    style={{
-                                        width: '100%',
-                                        padding: '10px',
-                                        border: 'none',
-                                        borderRadius: '5px',
-                                        fontSize: '16px',
-                                        cursor: 'pointer',
-                                        background: '#28a745',
-                                        color: 'white',
-                                        marginBottom: '10px',
-                                    }}
-                                >
-                                    Go to Admin Dashboard
-                                </button>
-                            </Link>
-                        )}
-                    </div>
-                )}
-
-                <button
-                    onClick={handleLogout}
-                    style={{
-                        width: '100%',
-                        padding: '10px',
-                        border: '1px solid #ff4d4d',
-                        borderRadius: '5px',
-                        fontSize: '16px',
-                        cursor: 'pointer',
-                        background: 'transparent',
-                        color: '#ff4d4d',
-                    }}
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={<Save />}
+                  onClick={handleSave}
+                  sx={{ mr: 2 }}
                 >
-                    Logout
-                </button>
-            </div>
-        </div>
+                  Save Changes
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<Cancel />}
+                  onClick={handleCancel}
+                >
+                  Cancel
+                </Button>
+              </>
+            )}
+          </Box>
+          <Button
+            variant="outlined"
+            color="error"
+            startIcon={<Delete />}
+            onClick={() => setDeleteDialogOpen(true)}
+          >
+            Delete Account
+          </Button>
+        </Box>
+      </Paper>
+
+      {/* Delete Account Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+        <DialogTitle>Delete Account</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete your account? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleDelete} color="error" variant="contained">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
     );
 }
 

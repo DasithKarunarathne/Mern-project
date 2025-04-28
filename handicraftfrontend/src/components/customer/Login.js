@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 
+// Set a base URL for Axios
+axios.defaults.baseURL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
+
 function Login() {
   const [formData, setFormData] = useState({ username: "", password: "" });
 
@@ -11,12 +14,12 @@ function Login() {
   const onSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("/api/auth/login", formData);
+      const res = await axios.post("/api/customer/auth/login", formData);
       localStorage.setItem("token", res.data.token);
-      window.location.href = "/customer/profile";//check if this is the correct path
+      window.location.href = "/"; // Redirect to home page after successful login
     } catch (err) {
-      console.error(err.response.data);
-      alert(err.response.data.msg || "Login failed");
+      console.error(err.response?.data || err.message);
+      alert(err.response?.data?.msg || "Login failed");
     }
   };
 

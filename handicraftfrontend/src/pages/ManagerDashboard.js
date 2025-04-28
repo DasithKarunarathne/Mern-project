@@ -11,6 +11,7 @@ import {
   Button,
   useTheme,
   useMediaQuery,
+  Paper,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import {
@@ -19,7 +20,6 @@ import {
   Inventory as InventoryIcon,
   Category as ProductIcon,
 } from '@mui/icons-material';
-import ManagerHeader from '../components/common/ManagerHeader';
 
 const DashboardContainer = styled(Container)(({ theme }) => ({
   paddingTop: theme.spacing(4),
@@ -93,6 +93,15 @@ const ManagerDashboard = () => {
       icon: <InventoryIcon sx={{ fontSize: 32 }} />,
       path: '/inventory',
       color: '#5D4037',
+      menuItems: [
+        { label: 'View Inventory', path: '/inventory/display' },
+        { label: 'Add Inventory', path: '/inventory/add' },
+        { label: 'Update Inventory', path: '/inventory/update' },
+        { label: 'Delete Inventory', path: '/inventory/delete' },
+        { label: 'Check Quality', path: '/inventory/check' },
+        { label: 'Restock Items', path: '/inventory/restock' },
+        { label: 'Inventory Reports', path: '/inventory/report' },
+      ],
     },
   };
 
@@ -102,15 +111,8 @@ const ManagerDashboard = () => {
   if (!section) return null;
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        background: `linear-gradient(135deg, rgba(139, 69, 19, 0.1), rgba(210, 180, 140, 0.1))`,
-      }}
-    >
-      <ManagerHeader title={section.title} />
-
-      <DashboardContainer maxWidth="lg">
+    <Box sx={{ flexGrow: 1, p: 3 }}>
+      <Container maxWidth="lg">
         <Typography
           variant={isMobile ? 'h4' : 'h3'}
           component="h1"
@@ -126,47 +128,89 @@ const ManagerDashboard = () => {
           {section.title} Dashboard
         </Typography>
 
-        <Grid container justifyContent="center">
-          <Grid item xs={12} sm={8} md={6}>
-            <ManagerCard>
-              <CardContent sx={{ flexGrow: 1, textAlign: 'center' }}>
-                <IconWrapper sx={{ mx: 'auto', bgcolor: section.color }}>
-                  {section.icon}
-                </IconWrapper>
-                <Typography
-                  gutterBottom
-                  variant="h5"
-                  component="h2"
-                  sx={{ fontWeight: 600 }}
-                >
-                  {section.title}
-                </Typography>
-                <Typography color="text.secondary" paragraph>
-                  {section.description}
-                </Typography>
-              </CardContent>
-              <CardActions sx={{ justifyContent: 'center', pb: 3 }}>
-                <Button
-                  component={RouterLink}
-                  to={section.path}
-                  variant="contained"
-                  size="large"
-                  sx={{
-                    borderRadius: '12px',
-                    px: 4,
-                    backgroundColor: section.color,
-                    '&:hover': {
-                      backgroundColor: theme.palette.primary.dark,
-                    },
-                  }}
-                >
-                  Access Dashboard
-                </Button>
-              </CardActions>
-            </ManagerCard>
-          </Grid>
+        <Grid container spacing={3}>
+          {section.menuItems ? (
+            // If menuItems exist, render a grid of menu items
+            section.menuItems.map((item, index) => (
+              <Grid item xs={12} sm={6} md={4} key={index}>
+                <ManagerCard>
+                  <CardContent sx={{ flexGrow: 1, textAlign: 'center' }}>
+                    <IconWrapper sx={{ mx: 'auto', bgcolor: section.color }}>
+                      {section.icon}
+                    </IconWrapper>
+                    <Typography
+                      gutterBottom
+                      variant="h5"
+                      component="h2"
+                      sx={{ fontWeight: 600 }}
+                    >
+                      {item.label}
+                    </Typography>
+                  </CardContent>
+                  <CardActions sx={{ justifyContent: 'center', pb: 3 }}>
+                    <Button
+                      component={RouterLink}
+                      to={item.path}
+                      variant="contained"
+                      size="large"
+                      sx={{
+                        borderRadius: '12px',
+                        px: 4,
+                        backgroundColor: section.color,
+                        '&:hover': {
+                          backgroundColor: theme.palette.primary.dark,
+                        },
+                      }}
+                    >
+                      Access
+                    </Button>
+                  </CardActions>
+                </ManagerCard>
+              </Grid>
+            ))
+          ) : (
+            // Otherwise, render the default single card
+            <Grid item xs={12} sm={8} md={6} sx={{ mx: 'auto' }}>
+              <ManagerCard>
+                <CardContent sx={{ flexGrow: 1, textAlign: 'center' }}>
+                  <IconWrapper sx={{ mx: 'auto', bgcolor: section.color }}>
+                    {section.icon}
+                  </IconWrapper>
+                  <Typography
+                    gutterBottom
+                    variant="h5"
+                    component="h2"
+                    sx={{ fontWeight: 600 }}
+                  >
+                    {section.title}
+                  </Typography>
+                  <Typography color="text.secondary" paragraph>
+                    {section.description}
+                  </Typography>
+                </CardContent>
+                <CardActions sx={{ justifyContent: 'center', pb: 3 }}>
+                  <Button
+                    component={RouterLink}
+                    to={section.path}
+                    variant="contained"
+                    size="large"
+                    sx={{
+                      borderRadius: '12px',
+                      px: 4,
+                      backgroundColor: section.color,
+                      '&:hover': {
+                        backgroundColor: theme.palette.primary.dark,
+                      },
+                    }}
+                  >
+                    Access Dashboard
+                  </Button>
+                </CardActions>
+              </ManagerCard>
+            </Grid>
+          )}
         </Grid>
-      </DashboardContainer>
+      </Container>
     </Box>
   );
 };

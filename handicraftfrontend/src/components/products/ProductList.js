@@ -276,19 +276,6 @@ const ProductList = () => {
                   LKR {product.price.toFixed(2)}
                 </Typography>
 
-                <Divider sx={{ my: 3 }} />
-
-                <Typography
-                  variant="body1"
-                  sx={{
-                    color: theme.palette.text.secondary,
-                    mb: 3,
-                    lineHeight: 1.8,
-                  }}
-                >
-                  {product.description}
-                </Typography>
-
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
                   <Rating
                     value={4.5}
@@ -301,11 +288,24 @@ const ProductList = () => {
                   </Typography>
                 </Box>
 
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    mb: 3,
+                    lineHeight: 1.8,
+                  }}
+                >
+                  {product.description}
+                </Typography>
+
                 <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
                   <ActionButton
                     variant="contained"
                     fullWidth
                     onClick={handleBuyNow}
+                    disabled={loading}
+                    startIcon={<LocalShippingIcon />}
                     sx={{
                       backgroundColor: theme.palette.primary.main,
                       '&:hover': {
@@ -316,10 +316,18 @@ const ProductList = () => {
                     Buy Now
                   </ActionButton>
                   <ActionButton
-                    variant="outlined"
+                    variant="contained"
+                    color="secondary"
                     fullWidth
                     startIcon={<ShoppingCartIcon />}
                     onClick={handleAddToCart}
+                    disabled={loading}
+                    sx={{
+                      backgroundColor: theme.palette.secondary.main,
+                      '&:hover': {
+                        backgroundColor: theme.palette.secondary.dark,
+                      },
+                    }}
                   >
                     Add to Cart
                   </ActionButton>

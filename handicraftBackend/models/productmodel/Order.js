@@ -30,6 +30,19 @@ const orderSchema = new mongoose.Schema({
   refundedAt: { type: Date },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
+  dueDate: { type: Date, default: function() { 
+    // Default due date is 30 days from creation
+    const date = new Date();
+    date.setDate(date.getDate() + 30);
+    return date;
+  }},
+  paymentStatus: { 
+    type: String, 
+    enum: ['unpaid', 'partially_paid', 'paid'], 
+    default: 'unpaid' 
+  },
+  amountPaid: { type: Number, default: 0 },
+  remainingBalance: { type: Number, default: function() { return this.total; } }
 });
 
 const Order = mongoose.model('Order', orderSchema);

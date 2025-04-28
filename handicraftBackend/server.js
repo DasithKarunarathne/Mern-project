@@ -19,7 +19,11 @@ import financialsRoutes from "./routes/financeroutes/financialstatementsRoutes.j
 import authRoutes from "./routes/customerroutes/auth.js";
 
 // Inventory routes
-import inventoryroute from "./routes/inventoryroutes/inventories.js";
+import inventoryRoutes from "./routes/inventoryroutes/inventories.js";
+import restockRoutes from "./routes/inventoryroutes/restock.js";
+
+// Chatbot routes
+import chatbotRoutes from "./routes/customerroutes/chat.js";
 
 dotenv.config();
 
@@ -31,13 +35,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Serve static files from the uploads directory
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "Uploads")));
 
 const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
-  origin: ["http://localhost:3000", "http://localhost:3001"],
+  origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:3002"], // Added for chatbot frontend
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "x-admin-key", "Authorization", "x-auth-token"],
@@ -57,7 +61,7 @@ app.use("/api/Salary", salaryRoutes);
 app.use("/api/Pettycash", pettyCashRoutes);
 app.use("/api/cashbook", cashBookRoutes);
 app.use("/api/ledger", ledgerRoutes);
-app.use('/api/financialStatements', financialsRoutes);
+app.use("/api/financialStatements", financialsRoutes);
 
 // HR routes
 app.use("/api/employee", employeeRoutes);
@@ -66,10 +70,12 @@ app.use("/api/employee", employeeRoutes);
 app.use("/api/product", productRoutes);
 
 // Customer
-app.use("/api/auth", authRoutes);
+app.use("/api/customer/auth", authRoutes);
+app.use("/api/customer/chat", chatbotRoutes);
 
 // Inventory routes
-app.use("/inventory", inventoryroute);
+app.use("/inventory", inventoryRoutes);
+app.use("/inventory/restock", restockRoutes);
 
 // Start server
 const startServer = async () => {

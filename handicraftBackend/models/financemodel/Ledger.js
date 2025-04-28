@@ -7,9 +7,9 @@ amount:{type:Number, required:true},
 category:{type:String},
 source:{type:String, enum: ['Petty Cash', 'Other', 'Cash Book'],required:true},
 transactionId:{type:mongoose.Schema.Types.ObjectId, required:true},
-transactiontype:{type:String, required:true}//Type of 
+transactiontype:{type:String, required:true},//Type of 
 // transaction (e.g., 'Pettycash', 'SalaryPayment', 'OrderPayment')
-
+status: { type: String, enum: ['Pending', 'Completed'], default: 'Completed' } // Added status field
 });
 
 const Ledger = mongoose.model('ledger',LedgerSchema );

@@ -20,9 +20,9 @@ function Register() {
     e.preventDefault();
     console.log("Form data being sent:", formData); // Debugging
     try {
-      const res = await axios.post("/api/auth/register", formData);
+      const res = await axios.post("/api/customer/auth/register", formData);
       localStorage.setItem("token", res.data.token);
-      window.location.href = "/customer/profile";
+      window.location.href = "/"; // Redirect to home page after successful registration
     } catch (err) {
       console.error("Error response:", err.response?.data || err.message);
       alert(err.response?.data?.msg || "Registration failed");
@@ -227,7 +227,7 @@ function Register() {
             >
               Register
             </button>
-            <Link to="/login">
+            <Link to="/customer/login">
               <button
                 type="button"
                 style={{
@@ -241,7 +241,7 @@ function Register() {
                   color: "#4a90e2",
                 }}
               >
-                Login
+                Already have an account? Login
               </button>
             </Link>
           </form>

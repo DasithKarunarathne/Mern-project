@@ -14,7 +14,8 @@ const salaryShcema = new mongoose.Schema({
     epf12: { type: Number, default: 0 },
     netSalary: { type: Number },
     status: { type: String, enum: ["Pending", "Completed"], default: "Pending" },
-    paymentDate: { type: Date }
+    paymentDate: { type: Date },
+    dueDate: { type: Date, required: true }
 },{timestamps:true});
 
 //module.exports = mongoose.model("Salary", salaryShcema);

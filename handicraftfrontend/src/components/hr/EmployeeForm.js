@@ -25,7 +25,6 @@ import PeopleIcon from "@mui/icons-material/People";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import DescriptionIcon from "@mui/icons-material/Description";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import ManagerHeader from "../common/ManagerHeader";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
@@ -74,6 +73,22 @@ const ActionButton = styled(Button)(({ theme }) => ({
   },
 }));
 
+const employeeTypes = [
+  "Lacemaker",
+  "Mask Maker",
+  "Wood Carver",
+  "Metal Worker / Brass Worker",
+  "Potter",
+  "Handloom Weaver",
+  "Batik Artist",
+  "Jeweler",
+  "Cane Craftsman",
+  "Coir Craftsman",
+  "Palm Leaf Craftsman",
+  "Painter",
+  "Stone Carver"
+];
+
 const EmployeeForm = ({ onEmployeeAdded }) => {
   const [formData, setFormData] = useState({
     empID: "",
@@ -114,8 +129,29 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
     if (!formData.empID) tempErrors.empID = "Employee ID is required";
     if (!formData.empname) tempErrors.empname = "Name is required";
     if (!formData.role) tempErrors.role = "Role is required";
-    if (!formData.basicSalary) tempErrors.basicSalary = "Basic Salary is required";
-    if (!formData.overtimeRate) tempErrors.overtimeRate = "Overtime Rate is required";
+    
+    // Basic Salary validation
+    if (!formData.basicSalary) {
+      tempErrors.basicSalary = "Basic Salary is required";
+    } else if (isNaN(formData.basicSalary)) {
+      tempErrors.basicSalary = "Basic Salary must be a number";
+    } else if (parseFloat(formData.basicSalary) < 0) {
+      tempErrors.basicSalary = "Basic Salary cannot be negative";
+    } else if (parseFloat(formData.basicSalary) < 25000) {
+      tempErrors.basicSalary = "Basic Salary must be at least LKR 25,000";
+    }
+
+    // Overtime Rate validation
+    if (!formData.overtimeRate) {
+      tempErrors.overtimeRate = "Overtime Rate is required";
+    } else if (isNaN(formData.overtimeRate)) {
+      tempErrors.overtimeRate = "Overtime Rate must be a number";
+    } else if (parseFloat(formData.overtimeRate) < 0) {
+      tempErrors.overtimeRate = "Overtime Rate cannot be negative";
+    } else if (parseFloat(formData.overtimeRate) < 250) {
+      tempErrors.overtimeRate = "Overtime Rate must be at least LKR 250 per hour";
+    }
+
     if (!formData.gender) tempErrors.gender = "Gender is required";
     if (!formData.contactNumber) tempErrors.contactNumber = "Contact number is required";
     if (!formData.contactNumber.match(/^\d{10}$/)) tempErrors.contactNumber = "Contact number must be 10 digits";
@@ -181,14 +217,8 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
   };
 
   return (
-    <Box>
-      <ManagerHeader 
-        title="Add Employee" 
-        breadcrumbs={[
-          { label: 'HR', path: '/hr' },
-        ]}
-      />
-      <FormContainer>
+    <Box sx={{ flexGrow: 1, p: 3 }}>
+      <Container maxWidth="lg">
         <Stepper activeStep={0} alternativeLabel sx={{ mb: 4 }}>
           <Step>
             <StepLabel>Add Employee</StepLabel>
@@ -282,26 +312,55 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
           label="Name"
           name="empname"
           value={formData.empname}
-          onChange={handleChange}
+                  onChange={(e) => {
+                    // Only allow letters and spaces
+                    const value = e.target.value;
+                    if (value === '' || /^[A-Za-z\s]+$/.test(value)) {
+                      handleChange(e);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    // Prevent numbers and special characters
+                    const isLetter = /^[A-Za-z\s]$/.test(e.key);
+                    const isAllowedKey = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key);
+                    if (!isLetter && !isAllowedKey) {
+                      e.preventDefault();
+                    }
+                  }}
           fullWidth
           required
           error={!!errors.empname}
           helperText={errors.empname}
           disabled={loading}
+                  inputProps={{
+                    pattern: "[A-Za-z\\s]+",
+                    title: "Only letters and spaces are allowed"
+                  }}
         />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <CustomTextField
-          label="Role"
-          name="role"
-          value={formData.role}
-          onChange={handleChange}
-          fullWidth
-          required
-          error={!!errors.role}
-          helperText={errors.role}
-          disabled={loading}
-        />
+                  select
+                  label="Role"
+                  name="role"
+                  value={formData.role}
+                  onChange={handleChange}
+                  fullWidth
+                  required
+                  error={!!errors.role}
+                  helperText={errors.role}
+                  disabled={loading}
+                  SelectProps={{
+                    native: true,
+                  }}
+                >
+                  <option value="">Select Role</option>
+                  {employeeTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </CustomTextField>
               </Grid>
               <Grid item xs={12} sm={6}>
                 <CustomTextField
@@ -315,10 +374,18 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
           error={!!errors.basicSalary}
           helperText={errors.basicSalary}
           disabled={loading}
+          inputProps={{
+                    min: 0,
+                    onKeyDown: (e) => {
+                      if (e.key === '-' || e.key === 'e') {
+                        e.preventDefault();
+                      }
+                    },
+                  }}
                   InputProps={{
                     startAdornment: <InputAdornment position="start">LKR</InputAdornment>,
-          }}
-        />
+                  }}
+                />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <CustomTextField
@@ -332,10 +399,18 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
           error={!!errors.overtimeRate}
           helperText={errors.overtimeRate}
           disabled={loading}
+          inputProps={{
+                    min: 0,
+                    onKeyDown: (e) => {
+                      if (e.key === '-' || e.key === 'e') {
+                        e.preventDefault();
+                      }
+                    },
+                  }}
                   InputProps={{
                     startAdornment: <InputAdornment position="start">LKR</InputAdornment>,
-          }}
-        />
+                  }}
+                />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <CustomTextField
@@ -461,7 +536,7 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
             {loading ? "Adding..." : "Add Employee"}
           </ActionButton>
         </Box>
-      </FormContainer>
+      </Container>
     </Box>
   );
 };

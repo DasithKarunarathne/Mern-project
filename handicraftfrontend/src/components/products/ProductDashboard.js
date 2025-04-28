@@ -27,6 +27,7 @@ import {
   IconButton,
   Rating,
   Stack,
+  Paper,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
@@ -38,9 +39,12 @@ import {
   Visibility as ViewIcon,
   ShoppingCart as CartIcon,
   FavoriteBorder as WishlistIcon,
+  ArrowBackIos,
+  ArrowForwardIos,
 } from "@mui/icons-material";
 import WhyChooseUs from './WhyChooseUs';
 import config from '../../config';
+import FloatingChatbot from '../customer/FloatingChatbot';
 
 const StyledContainer = styled(Container)(({ theme }) => ({
   padding: theme.spacing(4),
@@ -146,6 +150,97 @@ const ProductGrid = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2),
 }));
 
+const CarouselContainer = styled(Box)(({ theme }) => ({
+  position: 'relative',
+  width: '100%',
+  height: '300px',
+  overflow: 'hidden',
+  borderRadius: '12px',
+  marginBottom: theme.spacing(3),
+  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+  [theme.breakpoints.down('sm')]: {
+    height: '200px',
+  },
+}));
+
+const CarouselSlide = styled(Paper)(({ theme }) => ({
+  position: 'absolute',
+  width: '100%',
+  height: '100%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat',
+  transition: 'opacity 0.5s ease-in-out',
+  opacity: 0,
+  '&.active': {
+    opacity: 1,
+  },
+}));
+
+const CarouselContent = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  right: 0,
+  padding: theme.spacing(2),
+  background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
+  color: 'white',
+  textAlign: 'center',
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(1),
+  },
+}));
+
+const CarouselButton = styled(Button)(({ theme }) => ({
+  position: 'absolute',
+  top: '50%',
+  transform: 'translateY(-50%)',
+  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  color: 'white',
+  '&:hover': {
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+  },
+}));
+
+const PrevButton = styled(CarouselButton)(({ theme }) => ({
+  left: theme.spacing(2),
+}));
+
+const NextButton = styled(CarouselButton)(({ theme }) => ({
+  right: theme.spacing(2),
+}));
+
+const carouselItems = [
+  {
+    image: '/images/carousel/handicraft.jpg',
+    title: 'Traditional Sri Lankan Handicrafts',
+    description: 'Discover the rich heritage of Sri Lankan craftsmanship, where each piece tells a story of our ancient traditions and cultural legacy.'
+  },
+  {
+    image: '/images/carousel/wood-carving.jpg',
+    title: 'Authentic Wood Carvings',
+    description: 'Experience the intricate beauty of Sri Lankan wood carvings, crafted with precision and passion by our skilled artisans.'
+  },
+  {
+    image: '/images/carousel/batik.jpg',
+    title: 'Handmade Batik & Textiles',
+    description: 'Explore our collection of vibrant batik fabrics and handloom textiles, each piece showcasing unique Sri Lankan patterns and colors.'
+  },
+  {
+    image: '/images/carousel/pottery.jpg',
+    title: 'Traditional Pottery & Ceramics',
+    description: 'Admire the timeless elegance of Sri Lankan pottery, where traditional techniques meet contemporary designs.'
+  },
+  {
+    image: '/images/carousel/jewelry.jpg',
+    title: 'Handcrafted Jewelry',
+    description: 'Discover exquisite Sri Lankan jewelry, crafted with precious metals and gemstones, reflecting our island\'s natural beauty.'
+  }
+];
+
 const getImageUrl = (imagePath) => {
   if (!imagePath) return config.DEFAULT_PRODUCT_IMAGE;
   
@@ -170,10 +265,18 @@ const ProductDashboard = () => {
   const [loginDialog, setLoginDialog] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const MAX_RETRIES = 3;
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
   
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  useEffect(() => {
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    setIsLoggedIn(!!token);
+  }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -218,6 +321,21 @@ const ProductDashboard = () => {
     }
     setFilteredProducts(filtered);
   }, [searchTerm, selectedCategory, products]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % carouselItems.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const handlePrevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + carouselItems.length) % carouselItems.length);
+  };
+
+  const handleNextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % carouselItems.length);
+  };
 
   const handleViewDetails = (productId) => {
     navigate(`/product/${productId}`);
@@ -379,43 +497,74 @@ const ProductDashboard = () => {
         Heritage Hands
       </Typography>
 
-      <Alert 
-        severity="info" 
-        sx={{ 
-          mb: 3, 
-          borderRadius: 2,
-          backgroundColor: 'rgba(229, 246, 253, 0.9)',
-        }}
-      >
-        Please log in or register to purchase items. You can browse our collection as a guest.
-      </Alert>
+      {!isLoggedIn && (
+        <>
+          <CarouselContainer>
+            {carouselItems.map((item, index) => (
+              <CarouselSlide
+                key={index}
+                className={index === currentSlide ? 'active' : ''}
+                sx={{
+                  backgroundImage: `url(${item.image})`,
+                }}
+              >
+                <CarouselContent>
+                  <Typography variant="h4" sx={{ mb: 2, fontWeight: 700 }}>
+                    {item.title}
+                  </Typography>
+                  <Typography variant="h6">
+                    {item.description}
+                  </Typography>
+                </CarouselContent>
+              </CarouselSlide>
+            ))}
+            <PrevButton onClick={handlePrevSlide}>
+              <ArrowBackIos />
+            </PrevButton>
+            <NextButton onClick={handleNextSlide}>
+              <ArrowForwardIos />
+            </NextButton>
+          </CarouselContainer>
 
-      <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mb: 4 }}>
-        <Button
-          variant="contained"
-          startIcon={<LoginIcon />}
-          onClick={() => navigate('/customer/login')}
-          sx={{
-            borderRadius: '12px',
-            textTransform: 'none',
-            fontWeight: 600,
-          }}
-        >
-          Login
-        </Button>
-        <Button
-          variant="outlined"
-          startIcon={<RegisterIcon />}
-          onClick={() => navigate('/customer/register')}
-          sx={{
-            borderRadius: '12px',
-            textTransform: 'none',
-            fontWeight: 600,
-          }}
-        >
-          Register
-        </Button>
-      </Box>
+          <Alert 
+            severity="info" 
+            sx={{ 
+              mb: 3, 
+              borderRadius: 2,
+              backgroundColor: 'rgba(229, 246, 253, 0.9)',
+            }}
+          >
+            Please log in or register to view product details and make purchases. You can browse our collection as a guest.
+          </Alert>
+
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mb: 4 }}>
+            <Button
+              variant="contained"
+              startIcon={<LoginIcon />}
+              onClick={() => navigate('/customer/login')}
+              sx={{
+                borderRadius: '12px',
+                textTransform: 'none',
+                fontWeight: 600,
+              }}
+            >
+              Login
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<RegisterIcon />}
+              onClick={() => navigate('/customer/register')}
+              sx={{
+                borderRadius: '12px',
+                textTransform: 'none',
+                fontWeight: 600,
+              }}
+            >
+              Register
+            </Button>
+          </Box>
+        </>
+      )}
 
       <SearchContainer>
         <TextField
@@ -453,15 +602,95 @@ const ProductDashboard = () => {
         </StyledFormControl>
       </SearchContainer>
 
-      {renderContent()}
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+          <CircularProgress size={60} thickness={4} />
+        </Box>
+      ) : filteredProducts.length === 0 ? (
+        <Fade in>
+          <Box sx={{ textAlign: 'center', mt: 8 }}>
+            <Typography variant="h6" color="text.secondary">
+              No products found matching your criteria.
+            </Typography>
+          </Box>
+        </Fade>
+      ) : (
+        <Fade in>
+          <ProductGrid>
+            {filteredProducts.map((product) => {
+              const imageUrl = product.image 
+                ? `http://localhost:5000${product.image}` 
+                : "https://via.placeholder.com/280x200?text=Product+Image";
+              
+              return (
+                <ProductCard key={product._id}>
+                  <CardMedia
+                    component="img"
+                    image={imageUrl}
+                    alt={product.name}
+                    onError={(e) => {
+                      e.target.src = "https://via.placeholder.com/280x200?text=Image+Not+Found";
+                    }}
+                    sx={{
+                      height: 200,
+                      objectFit: 'cover'
+                    }}
+                  />
+                  <CardContent>
+                    <Typography variant="h6" noWrap sx={{ mb: 1 }}>
+                      {product.name}
+                    </Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                      <Typography variant="h6" color="primary">
+                        LKR {product.price?.toFixed(2)}
+                      </Typography>
+                      <Chip
+                        label={product.category}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                      />
+                    </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Button
+                        variant="contained"
+                        startIcon={<ViewIcon />}
+                        onClick={() => isLoggedIn ? handleViewDetails(product._id) : handleLoginPrompt()}
+                        sx={{
+                          borderRadius: '8px',
+                          textTransform: 'none',
+                        }}
+                      >
+                        View Details
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        onClick={isLoggedIn ? () => navigate('/product/delivery', { state: { singleProduct: { productId: product._id, quantity: 1, price: product.price } } }) : handleLoginPrompt}
+                        sx={{
+                          borderRadius: '8px',
+                          textTransform: 'none',
+                        }}
+                      >
+                        Buy Now
+                      </Button>
+                    </Box>
+                  </CardContent>
+                </ProductCard>
+              );
+            })}
+          </ProductGrid>
+        </Fade>
+      )}
 
       <WhyChooseUs />
+
+      <FloatingChatbot />
 
       <Dialog open={loginDialog} onClose={() => setLoginDialog(false)}>
         <DialogTitle>Login Required</DialogTitle>
         <DialogContent>
           <Typography>
-            Please log in or create an account to purchase items.
+            Please log in or create an account to view product details and make purchases.
           </Typography>
         </DialogContent>
         <DialogActions>

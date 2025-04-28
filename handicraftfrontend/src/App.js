@@ -19,7 +19,7 @@ import MonthlyOvertime from "./components/hr/MonthlyOvertime";
 // Finance Components
 import Dashboard from "./components/finance/Pages/Dashboard";
 
-// Product Components (from frontend-product)
+// Product Components
 import ProductDashboard from "./components/products/ProductDashboard.js";
 import ProductList from "./components/products/ProductList";
 import Cart from "./components/products/Cart";
@@ -37,22 +37,24 @@ import Register from "./components/customer/Register";
 import Login from "./components/customer/Login";
 import Profile from "./components/customer/Profile";
 import AdminDashboard from "./components/customer/AdminDashboard";
-
-// Inventory Components
-import AddInventories from "./components/inventory/addInventories.js";
-import ReadInventories from "./components/inventory/readinventories";
-import UpdateInventories from "./components/inventory/updateinventories";
-import DeleteInventories from "./components/inventory/deleteinventories";
-import InventoryReport from "./components/inventory/inventoryreports";
-import RestockPage from "./components/inventory/restockPage";
+import Chatbot from "./components/customer/Chatbot";
 
 // Manager Components
 import ManagerDashboard from "./pages/ManagerDashboard";
 
+// Inventory Components
+import AddInventories from "./components/inventory/addInventories.js";
+import ReadInventories from "./components/inventory/readinventories.js";
+import UpdateInventories from "./components/inventory/updateinventories.js";
+import DeleteInventories from "./components/inventory/deleteinventories.js";
+import InventoryReport from "./components/inventory/inventoryreports.js";
+import RestockPage from "./components/inventory/restockPage.js";
+import CheckInventoryQuality from "./components/inventory/checkinventories.js";
+
 // Define PrivateRoute Component with manager type check
 const PrivateRoute = ({ element, allowedManagerTypes }) => {
-  const managerType = sessionStorage.getItem('managerType');
-  
+  const managerType = sessionStorage.getItem("managerType");
+
   if (!managerType) {
     return <Navigate to="/manager/login" />;
   }
@@ -103,6 +105,7 @@ function App() {
             <Route path="/customer/login" element={<Login />} />
             <Route path="/customer/profile" element={<Profile />} />
             <Route path="/customer/admin" element={<AdminDashboard />} />
+            <Route path="/customer/chat" element={<Chatbot />} /> {/* Added chatbot route */}
             <Route path="/product/cart" element={<Cart />} />
             <Route path="/product/delivery" element={<DeliveryDetails />} />
             <Route path="/product/order-summary" element={<OrderSummary />} />
@@ -113,32 +116,46 @@ function App() {
             {/* Manager Routes */}
             <Route path="/manager/login" element={<ManagerLogin />} />
             <Route path="/manager" element={<PrivateRoute element={<ManagerDashboard />} />} />
-            
+
             {/* HR Routes */}
-            <Route path="/hr/*" element={<PrivateRoute element={<EmployeeForm />} allowedManagerTypes={['hr']} />} />
-            <Route path="/hr/list" element={<PrivateRoute element={<EmployeeList />} allowedManagerTypes={['hr']} />} />
-            <Route path="/hr/overtime" element={<PrivateRoute element={<OvertimeForm />} allowedManagerTypes={['hr']} />} />
-            <Route path="/hr/overtime/monthly" element={<PrivateRoute element={<MonthlyOvertime />} allowedManagerTypes={['hr']} />} />
+            <Route path="/hr/*" element={<PrivateRoute element={<EmployeeForm />} allowedManagerTypes={["hr"]} />} />
+            <Route path="/hr/list" element={<PrivateRoute element={<EmployeeList />} allowedManagerTypes={["hr"]} />} />
+            <Route path="/hr/overtime" element={<PrivateRoute element={<OvertimeForm />} allowedManagerTypes={["hr"]} />} />
+            <Route
+              path="/hr/overtime/monthly"
+              element={<PrivateRoute element={<MonthlyOvertime />} allowedManagerTypes={["hr"]} />}
+            />
             <Route
               path="/hr/overtime/monthly/:year/:month"
-              element={<PrivateRoute element={<MonthlyOvertime />} allowedManagerTypes={['hr']} />}
+              element={<PrivateRoute element={<MonthlyOvertime />} allowedManagerTypes={["hr"]} />}
             />
 
             {/* Finance Routes */}
-            <Route path="/finance/dashboard/*" element={<PrivateRoute element={<Dashboard />} allowedManagerTypes={['finance']} />} />
+            <Route
+              path="/finance/dashboard/*"
+              element={<PrivateRoute element={<Dashboard />} allowedManagerTypes={["finance"]} />}
+            />
 
             {/* Product Management Routes */}
-            <Route path="/product/manager" element={<PrivateRoute element={<ProductManager />} allowedManagerTypes={['product']} />} />
-            <Route path="/product/admin/refund-management" element={<PrivateRoute element={<RefundManagement />} allowedManagerTypes={['product']} />} />
+            <Route
+              path="/product/manager"
+              element={<PrivateRoute element={<ProductManager />} allowedManagerTypes={["product"]} />}
+            />
+            <Route
+              path="/product/admin/refund-management"
+              element={<PrivateRoute element={<RefundManagement />} allowedManagerTypes={["product"]} />}
+            />
 
             {/* Inventory Routes */}
-            <Route path="/inventory" element={<PrivateRoute element={<Navigate to="/inventory/display" />} allowedManagerTypes={['inventory']} />} />
-            <Route path="/inventory/add" element={<PrivateRoute element={<AddInventories />} allowedManagerTypes={['inventory']} />} />
-            <Route path="/inventory/display" element={<PrivateRoute element={<ReadInventories />} allowedManagerTypes={['inventory']} />} />
-            <Route path="/inventory/update/:id" element={<PrivateRoute element={<UpdateInventories />} allowedManagerTypes={['inventory']} />} />
-            <Route path="/inventory/delete/:id" element={<PrivateRoute element={<DeleteInventories />} allowedManagerTypes={['inventory']} />} />
-            <Route path="/inventory/restock/:id" element={<PrivateRoute element={<RestockPage />} allowedManagerTypes={['inventory']} />} />
-            <Route path="/inventory/report" element={<PrivateRoute element={<InventoryReport />} allowedManagerTypes={['inventory']} />} />
+            <Route path="/inventory" element={<PrivateRoute element={<ReadInventories />} allowedManagerTypes={["inventory"]} />} />
+            <Route path="/inventory/add" element={<PrivateRoute element={<AddInventories />} allowedManagerTypes={["inventory"]} />} />
+            <Route path="/inventory/check" element={<PrivateRoute element={<CheckInventoryQuality />} allowedManagerTypes={["inventory"]} />} />
+            <Route path="/inventory/display" element={<PrivateRoute element={<ReadInventories />} allowedManagerTypes={["inventory"]} />} />
+            <Route path="/inventory/update/:id" element={<PrivateRoute element={<UpdateInventories />} allowedManagerTypes={["inventory"]} />} />
+            <Route path="/inventory/delete/:id" element={<PrivateRoute element={<DeleteInventories />} allowedManagerTypes={["inventory"]} />} />
+            <Route path="/inventory/restock" element={<PrivateRoute element={<ReadInventories />} allowedManagerTypes={["inventory"]} />} />
+            <Route path="/inventory/restock/:id" element={<PrivateRoute element={<RestockPage />} allowedManagerTypes={["inventory"]} />} />
+            <Route path="/inventory/report" element={<PrivateRoute element={<InventoryReport />} allowedManagerTypes={["inventory"]} />} />
 
             {/* Catch-All Route */}
             <Route path="*" element={<div>404 - Route Not Found</div>} />
