@@ -89,11 +89,11 @@ export const requestRefund = (orderId, refundReason, refundComments) =>
 export const getUserOrders = (userId) => axiosInstance.get(`/orders/user/${userId}`);
 export const getOrderById = (orderId) => axiosInstance.get(`/orders/${orderId}`);
 export const approveRefund = (orderId) =>
-  axiosInstance.put(`/orders/${orderId}/approve-refund`, null, {
+  axiosInstance.patch(`/orders/${orderId}/approve-refund`, null, {
     headers: { 'x-admin-key': 'mock-admin-key' },
   });
 export const denyRefund = (orderId) =>
-  axiosInstance.put(`/orders/${orderId}/deny-refund`, null, {
+  axiosInstance.patch(`/orders/${orderId}/deny-refund`, null, {
     headers: { 'x-admin-key': 'mock-admin-key' },
   });
 export const getPendingRefunds = () =>

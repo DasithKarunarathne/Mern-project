@@ -156,98 +156,143 @@ export default function InventoryReport() {
 
     const styles = {
         container: {
-            maxWidth: "1200px",
-            margin: "0 auto",
-            padding: "15px",
-            fontFamily: "Arial, sans-serif",
-            fontSize: "12px"
+            maxWidth: '1200px',
+            margin: '2rem auto',
+            padding: '2rem',
+            backgroundColor: '#ffffff',
+            borderRadius: '12px',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
         },
         header: {
-            textAlign: "center",
-            color: "#2c3e50",
-            marginBottom: "15px"
+            color: '#5D4037',
+            marginBottom: '2rem',
+            textAlign: 'center',
+            fontSize: '1.8rem',
+            fontWeight: '600'
         },
-        summaryCards: {
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: "10px",
-            marginBottom: "15px"
+        filterContainer: {
+            display: 'flex',
+            gap: '1rem',
+            marginBottom: '2rem',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            alignItems: 'center'
         },
-        card: {
-            backgroundColor: "white",
-            padding: "10px",
-            borderRadius: "6px",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-            textAlign: "center"
-        },
-        cardTitle: {
-            fontSize: "12px",
-            color: "#666",
-            marginBottom: "5px"
-        },
-        cardValue: {
-            fontSize: "16px",
-            color: "#2c3e50",
-            fontWeight: "bold"
-        },
-        section: {
-            backgroundColor: "white",
-            padding: "10px",
-            borderRadius: "6px",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-            marginBottom: "10px"
-        },
-        sectionTitle: {
-            fontSize: "14px",
-            color: "#2c3e50",
-            marginBottom: "10px"
-        },
-        chartsGrid: {
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "10px",
-            marginBottom: "15px"
+        filterInput: {
+            padding: '0.75rem 1rem',
+            border: '1px solid #BCAAA4',
+            borderRadius: '8px',
+            fontSize: '1rem',
+            minWidth: '200px',
+            transition: 'all 0.3s ease',
+            '&:focus': {
+                outline: 'none',
+                borderColor: '#8D6E63',
+                boxShadow: '0 0 0 3px rgba(141, 110, 99, 0.1)'
+            }
         },
         table: {
-            width: "100%",
-            borderCollapse: "collapse",
-            marginTop: "10px",
-            fontSize: "11px"
+            width: '100%',
+            borderCollapse: 'collapse',
+            marginTop: '1rem',
+            backgroundColor: '#fff',
+            borderRadius: '8px',
+            overflow: 'hidden',
+            boxShadow: '0 1px 4px rgba(0, 0, 0, 0.1)'
         },
         th: {
-            backgroundColor: "#f8f9fa",
-            padding: "8px",
-            textAlign: "left",
-            borderBottom: "1px solid #dee2e6",
-            fontSize: "11px"
+            backgroundColor: '#8D6E63',
+            color: '#fff',
+            padding: '1rem',
+            textAlign: 'left',
+            fontWeight: '500'
         },
         td: {
-            padding: "8px",
-            borderBottom: "1px solid #dee2e6",
-            fontSize: "11px"
-        },
-        downloadButton: {
-            backgroundColor: "#4CAF50",
-            color: "white",
-            padding: "10px 20px",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-            fontSize: "16px",
-            marginTop: "20px"
-        },
-        chartsSection: {
-            backgroundColor: "white",
-            padding: "20px",
-            borderRadius: "8px",
-            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-            marginBottom: "20px"
+            padding: '1rem',
+            borderBottom: '1px solid #EFEBE9',
+            color: '#5D4037'
         },
         tr: {
-            backgroundColor: "#f8f9fa",
-            padding: "8px",
-            textAlign: "left",
-            borderBottom: "1px solid #dee2e6"
+            '&:hover': {
+                backgroundColor: '#EFEBE9'
+            }
+        },
+        exportButton: {
+            padding: '0.75rem 1.5rem',
+            backgroundColor: '#8D6E63',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '1rem',
+            fontWeight: '500',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+                backgroundColor: '#6D4C41',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 4px 12px rgba(141, 110, 99, 0.3)'
+            }
+        },
+        chartContainer: {
+            marginTop: '3rem',
+            padding: '2rem',
+            backgroundColor: '#fff',
+            borderRadius: '12px',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+        },
+        chartTitle: {
+            color: '#5D4037',
+            marginBottom: '1.5rem',
+            textAlign: 'center',
+            fontSize: '1.4rem',
+            fontWeight: '600'
+        },
+        noResults: {
+            textAlign: 'center',
+            padding: '2rem',
+            color: '#5D4037',
+            fontSize: '1.1rem'
+        },
+        error: {
+            color: '#D32F2F',
+            backgroundColor: '#FFEBEE',
+            padding: '1rem',
+            borderRadius: '8px',
+            marginBottom: '1rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+        },
+        loading: {
+            textAlign: 'center',
+            padding: '2rem',
+            color: '#5D4037',
+            fontSize: '1.1rem'
+        },
+        pagination: {
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '0.5rem',
+            marginTop: '2rem'
+        },
+        pageButton: {
+            padding: '0.5rem 1rem',
+            backgroundColor: '#EFEBE9',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            color: '#5D4037',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+                backgroundColor: '#D7CCC8'
+            },
+            '&.active': {
+                backgroundColor: '#8D6E63',
+                color: 'white'
+            }
         }
     };
 
@@ -323,16 +368,27 @@ export default function InventoryReport() {
                     {/* Inventory Levels Chart */}
                     <div style={styles.section}>
                         <h3 style={styles.sectionTitle}>Inventory Levels</h3>
-                        <Line 
-                            data={monthlyTrendData}
-                            options={{
-                                responsive: true,
-                                plugins: {
-                                    legend: { position: 'top' },
-                                    title: { display: false }
-                                }
-                            }}
-                        />
+                        <div style={{ width: '400px', height: '300px', margin: '0 auto' }}>
+                            <Line 
+                                data={monthlyTrendData}
+                                options={{
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: { 
+                                            position: 'top',
+                                            labels: {
+                                                boxWidth: 10,
+                                                font: {
+                                                    size: 10
+                                                }
+                                            }
+                                        },
+                                        title: { display: false }
+                                    }
+                                }}
+                            />
+                        </div>
                     </div>
 
                     {/* Stock Status Chart */}

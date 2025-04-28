@@ -91,7 +91,7 @@ export default function RestockPage() {
 
             <form onSubmit={handleSubmit} style={styles.form}>
                 <div style={styles.formGroup}>
-                    <label htmlFor="minimumQuantity">Minimum Quantity:</label>
+                    <label htmlFor="minimumQuantity" style={styles.label}>Minimum Quantity:</label>
                     <input
                         type="number"
                         id="minimumQuantity"
@@ -100,11 +100,12 @@ export default function RestockPage() {
                         onChange={handleInputChange}
                         required
                         min="0"
+                        style={styles.input}
                     />
                 </div>
 
                 <div style={styles.formGroup}>
-                    <label htmlFor="restockLevel">Restock Level:</label>
+                    <label htmlFor="restockLevel" style={styles.label}>Restock Level:</label>
                     <input
                         type="number"
                         id="restockLevel"
@@ -113,11 +114,12 @@ export default function RestockPage() {
                         onChange={handleInputChange}
                         required
                         min="0"
+                        style={styles.input}
                     />
                 </div>
 
                 <div style={styles.formGroup}>
-                    <label htmlFor="restockDate">Restock Date:</label>
+                    <label htmlFor="restockDate" style={styles.label}>Restock Date:</label>
                     <input
                         type="date"
                         id="restockDate"
@@ -125,6 +127,7 @@ export default function RestockPage() {
                         value={restockData.restockDate}
                         onChange={handleInputChange}
                         required
+                        style={styles.input}
                     />
                 </div>
 
@@ -151,19 +154,15 @@ const styles = {
         margin: '2rem auto',
         padding: '2rem',
         backgroundColor: '#ffffff',
-        borderRadius: '8px',
-        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+        borderRadius: '12px',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
     },
     header: {
-        color: '#333',
+        color: '#5D4037',
         marginBottom: '2rem',
-        textAlign: 'center'
-    },
-    itemInfo: {
-        marginBottom: '2rem',
-        padding: '1rem',
-        backgroundColor: '#f8f9fa',
-        borderRadius: '4px'
+        textAlign: 'center',
+        fontSize: '1.8rem',
+        fontWeight: '600'
     },
     form: {
         display: 'flex',
@@ -175,59 +174,101 @@ const styles = {
         flexDirection: 'column',
         gap: '0.5rem'
     },
-    'formGroup label': {
+    label: {
         fontWeight: '600',
-        color: '#555'
-    },
-    'formGroup input': {
-        padding: '0.75rem',
-        border: '1px solid #ddd',
-        borderRadius: '4px',
+        color: '#5D4037',
         fontSize: '1rem'
+    },
+    input: {
+        padding: '0.75rem 1rem',
+        border: '1px solid #BCAAA4',
+        borderRadius: '8px',
+        fontSize: '1rem',
+        transition: 'all 0.3s ease',
+        '&:focus': {
+            outline: 'none',
+            borderColor: '#8D6E63',
+            boxShadow: '0 0 0 3px rgba(141, 110, 99, 0.1)'
+        }
+    },
+    itemInfo: {
+        marginBottom: '2rem',
+        padding: '1.5rem',
+        backgroundColor: '#EFEBE9',
+        borderRadius: '8px',
+        color: '#5D4037'
+    },
+    infoRow: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        marginBottom: '0.5rem',
+        fontSize: '1rem'
+    },
+    infoLabel: {
+        fontWeight: '600'
     },
     buttonContainer: {
         display: 'flex',
         gap: '1rem',
         justifyContent: 'center',
-        marginTop: '1rem'
+        marginTop: '1.5rem'
     },
     submitButton: {
-        padding: '1rem 2rem',
-        backgroundColor: '#4a90e2',
+        padding: '0.75rem 1.5rem',
+        backgroundColor: '#8D6E63',
         color: 'white',
         border: 'none',
-        borderRadius: '4px',
+        borderRadius: '8px',
         fontSize: '1rem',
-        fontWeight: '600',
-        cursor: 'pointer'
+        fontWeight: '500',
+        cursor: 'pointer',
+        transition: 'all 0.3s ease',
+        '&:hover': {
+            backgroundColor: '#6D4C41',
+            transform: 'translateY(-2px)',
+            boxShadow: '0 4px 12px rgba(141, 110, 99, 0.3)'
+        }
     },
     cancelButton: {
-        padding: '1rem 2rem',
-        backgroundColor: '#e74c3c',
+        padding: '0.75rem 1.5rem',
+        backgroundColor: '#A1887F',
         color: 'white',
         border: 'none',
-        borderRadius: '4px',
+        borderRadius: '8px',
         fontSize: '1rem',
-        fontWeight: '600',
-        cursor: 'pointer'
+        fontWeight: '500',
+        cursor: 'pointer',
+        transition: 'all 0.3s ease',
+        '&:hover': {
+            backgroundColor: '#8D6E63',
+            transform: 'translateY(-2px)',
+            boxShadow: '0 4px 12px rgba(161, 136, 127, 0.3)'
+        }
     },
     error: {
-        color: '#e74c3c',
-        backgroundColor: '#fdecea',
+        color: '#D32F2F',
+        backgroundColor: '#FFEBEE',
         padding: '1rem',
-        borderRadius: '4px',
-        marginBottom: '1rem'
+        borderRadius: '8px',
+        marginBottom: '1rem',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5rem'
     },
     success: {
-        color: '#27ae60',
-        backgroundColor: '#e8f8f5',
+        color: '#388E3C',
+        backgroundColor: '#E8F5E9',
         padding: '1rem',
-        borderRadius: '4px',
-        marginBottom: '1rem'
+        borderRadius: '8px',
+        marginBottom: '1rem',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5rem'
     },
     loading: {
         textAlign: 'center',
         padding: '2rem',
-        color: '#666'
+        color: '#5D4037',
+        fontSize: '1.1rem'
     }
 };

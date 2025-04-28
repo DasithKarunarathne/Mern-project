@@ -41,11 +41,18 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
-  origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:3002"], // Added for chatbot frontend
+  origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:3002"],
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "x-admin-key", "Authorization", "x-auth-token"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "x-admin-key", "Authorization", "x-auth-token", "Accept", "Origin", "X-Requested-With"],
+  exposedHeaders: ["Content-Range", "X-Content-Range"],
+  maxAge: 600,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
+
+// Handle OPTIONS requests
+app.options('*', cors());
 
 // Database connection
 mongoose

@@ -267,7 +267,7 @@ const Layout = ({ children }) => {
         return [
           { label: 'View Inventory', path: '/inventory/display' },
           { label: 'Add Inventory', path: '/inventory/add' },
-          { label: 'Inventory Reports', path: '/inventory/reports' },
+          { label: 'Inventory Reports', path: '/inventory/report' },
         ];
       default:
         return [];

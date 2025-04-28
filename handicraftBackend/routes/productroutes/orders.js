@@ -276,8 +276,8 @@ router.post('/:id/request-refund', async (req, res) => {
   }
 });
 
-// PUT /api/orders/:id/approve-refund - Product manager approves the refund
-router.put('/:id/approve-refund', authenticateAdmin, async (req, res) => {
+// PATCH /api/orders/:id/approve-refund - Product manager approves the refund
+router.patch('/:id/approve-refund', authenticateAdmin, async (req, res) => {
   try {
     // Validate that the id is a valid ObjectId
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
@@ -333,8 +333,8 @@ router.put('/:id/approve-refund', authenticateAdmin, async (req, res) => {
   }
 });
 
-// PUT /api/orders/:id/deny-refund - Product manager denies the refund
-router.put('/:id/deny-refund', authenticateAdmin, async (req, res) => {
+// PATCH /api/orders/:id/deny-refund - Product manager denies the refund
+router.patch('/:id/deny-refund', authenticateAdmin, async (req, res) => {
   try {
     // Validate that the id is a valid ObjectId
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
