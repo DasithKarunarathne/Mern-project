@@ -25,6 +25,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import PaymentIcon from '@mui/icons-material/Payment';
+import axios from 'axios';
 
 const DeliveryContainer = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(4),
@@ -71,6 +72,33 @@ const DeliveryCard = styled(Card)(({ theme }) => ({
   },
 }));
 
+const validationRules = {
+  name: {
+    pattern: /^[A-Za-z\s.'-]+$/,
+    minLength: 3,
+    maxLength: 50,
+    message: 'Name must contain only letters, spaces, and basic punctuation (.-\')'
+  },
+  phone: {
+    pattern: /^(?:\+94|0)?[0-9]{9,10}$/,
+    message: 'Enter a valid Sri Lankan phone number (e.g., 0771234567 or +94771234567)'
+  },
+  address: {
+    pattern: /^[A-Za-z0-9\s,.-]+$/,
+    minLength: 10,
+    maxLength: 200,
+    message: 'Address must contain only letters, numbers, spaces, and basic punctuation (,.-)'
+  },
+  postalCode: {
+    pattern: /^[0-9]{5}$/,
+    message: 'Postal code must be exactly 5 digits'
+  },
+  email: {
+    pattern: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+    message: 'Enter a valid email address'
+  }
+};
+
 const DeliveryDetails = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
@@ -91,37 +119,130 @@ const DeliveryDetails = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
+  const [isCalculatingCharge, setIsCalculatingCharge] = useState(false);
+
+  const validateField = (name, value) => {
+    const rule = validationRules[name];
+    if (!value.trim()) {
+      return `${name.charAt(0).toUpperCase() + name.slice(1)} is required`;
+    }
+
+    if (rule.minLength && value.length < rule.minLength) {
+      return `${name.charAt(0).toUpperCase() + name.slice(1)} must be at least ${rule.minLength} characters`;
+    }
+
+    if (rule.maxLength && value.length > rule.maxLength) {
+      return `${name.charAt(0).toUpperCase() + name.slice(1)} must not exceed ${rule.maxLength} characters`;
+    }
+
+    if (!rule.pattern.test(value)) {
+      return rule.message;
+    }
+
+    return '';
+  };
 
   const validate = () => {
     const newErrors = {};
-    if (!deliveryData.name) newErrors.name = 'Name is required';
-    if (!deliveryData.address) newErrors.address = 'Address is required';
-    if (!deliveryData.phone || !/^\d{10}$/.test(deliveryData.phone))
-      newErrors.phone = 'Valid 10-digit phone number is required';
-    if (!deliveryData.postalCode || !/^\d{5}$/.test(deliveryData.postalCode))
-      newErrors.postalCode = 'Valid 5-digit postal code is required';
-    if (!deliveryData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(deliveryData.email))
-      newErrors.email = 'Valid email is required';
+    let isValid = true;
+
+    Object.keys(deliveryData).forEach(field => {
+      const error = validateField(field, deliveryData[field]);
+      if (error) {
+        newErrors[field] = error;
+        isValid = false;
+      }
+    });
+
+    // Additional validation for postal code
+    if (!newErrors.postalCode && !province) {
+      newErrors.postalCode = 'Invalid postal code. Please enter a valid Sri Lankan postal code';
+      isValid = false;
+    }
+
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return isValid;
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setDeliveryData({ ...deliveryData, [name]: value });
-    setErrors({ ...errors, [name]: '' });
+    let formattedValue = value;
+
+    // Format input based on field type
+    switch (name) {
+      case 'name':
+        // Remove any numbers or special characters except allowed ones
+        formattedValue = value.replace(/[^A-Za-z\s.'-]/g, '');
+        break;
+      case 'phone':
+        // Format phone number
+        formattedValue = value.replace(/[^0-9+]/g, '');
+        if (formattedValue.startsWith('0') && formattedValue.length > 10) {
+          formattedValue = formattedValue.slice(0, 10);
+        } else if (formattedValue.startsWith('+94') && formattedValue.length > 12) {
+          formattedValue = formattedValue.slice(0, 12);
+        }
+        break;
+      case 'postalCode':
+        // Only allow numbers and limit to 5 digits
+        formattedValue = value.replace(/[^0-9]/g, '').slice(0, 5);
+        break;
+      case 'email':
+        // Convert to lowercase
+        formattedValue = value.toLowerCase();
+        break;
+      default:
+        break;
+    }
+
+    setDeliveryData({ ...deliveryData, [name]: formattedValue });
+    
+    // Real-time validation
+    const error = validateField(name, formattedValue);
+    setErrors(prev => ({ ...prev, [name]: error }));
   };
 
   const fetchDeliveryCharge = async (postalCode) => {
+    setIsCalculatingCharge(true);
     try {
+      console.log('Fetching delivery charge for postal code:', postalCode);
       const response = await getDeliveryCharge(postalCode);
-      setProvince(response.data.province);
-      setDeliveryCharge(response.data.deliveryCharge);
+      console.log('Delivery charge response:', response.data);
+      
+      if (response.data && typeof response.data.deliveryCharge === 'number') {
+        setProvince(response.data.province || 'Unknown');
+        setDeliveryCharge(response.data.deliveryCharge);
+        setErrors(prev => ({ ...prev, postalCode: '' }));
+      } else {
+        setErrors(prev => ({
+          ...prev,
+          postalCode: 'Unable to calculate delivery charge for this postal code'
+        }));
+        setProvince('Unknown');
+        setDeliveryCharge(0);
+      }
     } catch (error) {
       console.error('Error fetching delivery charge:', error);
+      console.error('Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      
+      // Set appropriate error message based on the error type
+      let errorMessage = 'Failed to calculate delivery charge. Please try again.';
+      if (error.response?.status === 400) {
+        errorMessage = 'Invalid postal code. Please enter a valid Sri Lankan postal code.';
+      } else if (error.response?.status === 404) {
+        errorMessage = 'Delivery is not available for this postal code.';
+      }
+      
+      setErrors(prev => ({ ...prev, postalCode: errorMessage }));
       setProvince('Unknown');
-      setDeliveryCharge(700);
-      toast.error('Failed to calculate delivery charge. Using default charge of LKR 700.');
+      setDeliveryCharge(0);
+      toast.error(errorMessage);
+    } finally {
+      setIsCalculatingCharge(false);
     }
   };
 
@@ -131,12 +252,18 @@ const DeliveryDetails = () => {
     } else {
       setProvince('');
       setDeliveryCharge(0);
+      if (deliveryData.postalCode.length > 0) {
+        setErrors(prev => ({
+          ...prev,
+          postalCode: 'Postal code must be exactly 5 digits'
+        }));
+      }
     }
   }, [deliveryData.postalCode]);
 
   const handleSubmit = async () => {
     if (!validate()) {
-      toast.error('Please fill all required fields correctly.');
+      toast.error('Please correct all errors before proceeding.');
       return;
     }
 
@@ -280,7 +407,7 @@ const DeliveryDetails = () => {
               <Grid container spacing={3}>
                 <Grid item xs={12} sm={6}>
                   <CustomTextField
-                    label="Name"
+                    label="Full Name"
                     name="name"
                     value={deliveryData.name}
                     onChange={handleChange}
@@ -289,6 +416,12 @@ const DeliveryDetails = () => {
                     error={!!errors.name}
                     helperText={errors.name}
                     disabled={loading}
+                    placeholder="Enter your full name"
+                    InputProps={{
+                      inputProps: {
+                        maxLength: validationRules.name.maxLength
+                      }
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -300,13 +433,19 @@ const DeliveryDetails = () => {
                     fullWidth
                     required
                     error={!!errors.phone}
-                    helperText={errors.phone}
+                    helperText={errors.phone || "Format: 0771234567 or +94771234567"}
                     disabled={loading}
+                    placeholder="Enter your phone number"
+                    InputProps={{
+                      startAdornment: deliveryData.phone.startsWith('+94') ? null : (
+                        <InputAdornment position="start">🇱🇰</InputAdornment>
+                      )
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12}>
                   <CustomTextField
-                    label="Address"
+                    label="Delivery Address"
                     name="address"
                     value={deliveryData.address}
                     onChange={handleChange}
@@ -317,6 +456,12 @@ const DeliveryDetails = () => {
                     disabled={loading}
                     multiline
                     rows={3}
+                    placeholder="Enter your complete delivery address"
+                    InputProps={{
+                      inputProps: {
+                        maxLength: validationRules.address.maxLength
+                      }
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -328,13 +473,19 @@ const DeliveryDetails = () => {
                     fullWidth
                     required
                     error={!!errors.postalCode}
-                    helperText={errors.postalCode}
+                    helperText={errors.postalCode || "Enter 5-digit postal code"}
                     disabled={loading}
+                    placeholder="Enter 5-digit postal code"
+                    InputProps={{
+                      inputProps: {
+                        maxLength: 5
+                      }
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <CustomTextField
-                    label="Email (for notifications)"
+                    label="Email Address"
                     name="email"
                     value={deliveryData.email}
                     onChange={handleChange}
@@ -343,6 +494,8 @@ const DeliveryDetails = () => {
                     error={!!errors.email}
                     helperText={errors.email}
                     disabled={loading}
+                    placeholder="Enter your email address"
+                    type="email"
                   />
                 </Grid>
               </Grid>
@@ -359,19 +512,28 @@ const DeliveryDetails = () => {
               </Box>
               {deliveryData.postalCode && (
                 <Box sx={{ mt: 2 }}>
-                  <Typography variant="body1" sx={{ mb: 1 }}>
-                    <strong>Province:</strong> {province}
-                  </Typography>
-                  <Typography variant="body1" sx={{ mb: 2 }}>
-                    <strong>Delivery Charge:</strong> LKR {deliveryCharge.toFixed(2)}
-                  </Typography>
+                  {isCalculatingCharge ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
+                      <CircularProgress size={24} />
+                    </Box>
+                  ) : (
+                    <>
+                      <Typography variant="body1" sx={{ mb: 1 }}>
+                        <strong>Province:</strong> {province}
+                      </Typography>
+                      <Typography variant="body1" sx={{ mb: 2 }}>
+                        <strong>Delivery Charge:</strong>{' '}
+                        {deliveryCharge > 0 ? `LKR ${deliveryCharge.toFixed(2)}` : 'Not available'}
+                      </Typography>
+                    </>
+                  )}
                 </Box>
               )}
               <SubmitButton
                 variant="contained"
                 onClick={handleSubmit}
                 fullWidth
-                disabled={loading}
+                disabled={loading || isCalculatingCharge || deliveryCharge === 0}
                 sx={{
                   backgroundColor: theme.palette.primary.main,
                   '&:hover': {

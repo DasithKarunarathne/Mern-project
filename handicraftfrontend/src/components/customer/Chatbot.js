@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import { Typography, TextField, Button, Box, Alert } from "@mui/material";
 import ChatMessage from "./ChatMessage";
 
@@ -10,13 +9,12 @@ const api = axios.create({
   baseURL: `${BACKEND_URL}/api/customer/chat`,
 });
 
-function Chatbot() {
+const Chatbot = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [error, setError] = useState(null);
   const [isBackendAvailable, setIsBackendAvailable] = useState(true);
   const messagesEndRef = useRef(null);
-  const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
   // Check if backend is available
@@ -36,20 +34,14 @@ function Chatbot() {
     checkBackend();
   }, []);
 
-  // Check for authentication
-  useEffect(() => {
-    if (!token) {
-      navigate("/customer/login");
-    }
-  }, [token, navigate]);
-
   const fetchMessages = async () => {
+    if (!token) return;
+    
     try {
       const response = await api.get("/messages", {
         headers: { "x-auth-token": token },
         cache: "no-store",
       });
-      console.log("FETCH - Messages from backend:", response.data);
       setMessages(response.data);
       scrollToBottom();
     } catch (error) {
@@ -72,10 +64,9 @@ function Chatbot() {
 
   const sendMessage = async (e) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || !token) return;
 
     try {
-      console.log("SEND - Sending message:", input);
       await api.post("/message", { text: input }, { headers: { "x-auth-token": token } });
       setInput("");
       await fetchMessages();
@@ -85,10 +76,10 @@ function Chatbot() {
   };
 
   const clearMessages = async () => {
+    if (!token) return;
+
     try {
-      console.log("CLEAR - Attempting to clear messages...");
-      const response = await api.delete("/messages", { headers: { "x-auth-token": token } });
-      console.log("CLEAR - Response:", response.data);
+      await api.delete("/messages", { headers: { "x-auth-token": token } });
       setMessages([]);
       await fetchMessages();
     } catch (error) {
@@ -100,6 +91,16 @@ function Chatbot() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  if (!token) {
+    return (
+      <Box sx={{ p: 3, textAlign: 'center' }}>
+        <Typography variant="body1" color="text.secondary">
+          Please log in to use the chat feature.
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box
@@ -200,6 +201,6 @@ function Chatbot() {
       </Box>
     </Box>
   );
-}
+};
 
 export default Chatbot;
