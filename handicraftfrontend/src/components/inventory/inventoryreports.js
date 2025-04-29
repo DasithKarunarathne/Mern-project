@@ -16,6 +16,7 @@ import {
 import { Pie, Line } from 'react-chartjs-2';
 import { HERITAGE_HANDS_LOGO } from '../hr/logo';
 import autoTable from "jspdf-autotable";
+import axios from "axios";
 
 // Register ChartJS components
 ChartJS.register(
@@ -53,18 +54,18 @@ export default function InventoryReport() {
     const fetchReportData = async () => {
         try {
             // Fetch inventory data with stats
-            const inventoryResponse = await fetch("http://localhost:5000/inventory/?withStats=true");
-            if (!inventoryResponse.ok) {
+            const inventoryResponse = await axios.get("http://localhost:5000/inventory/?withStats=true");
+            if (!inventoryResponse.data.success) {
                 throw new Error(`Error: ${inventoryResponse.status}`);
             }
-            const inventoryData = await inventoryResponse.json();
+            const inventoryData = inventoryResponse.data;
             
             // Fetch restock data
-            const restockResponse = await fetch("http://localhost:5000/inventory/restock/");
-            if (!restockResponse.ok) {
+            const restockResponse = await axios.get("http://localhost:5000/inventory/restock/");
+            if (!restockResponse.data.success) {
                 throw new Error(`Error: ${restockResponse.status}`);
             }
-            const restockData = await restockResponse.json();
+            const restockData = restockResponse.data;
 
             // Process inventory data
             const inventories = inventoryData.inventories || [];
@@ -76,11 +77,18 @@ export default function InventoryReport() {
                 lowStock: inventories.filter(item => item.qty < 20).length
             };
 
-            // Process restock data
+            // Process restock data - only count restocks for items that exist in inventory
+            const inventoryIds = new Set(inventories.map(item => item._id));
             const restockStatus = {
-                pending: restockData.restocks.filter(item => item.status === 'pending').length,
-                inTransit: restockData.restocks.filter(item => item.status === 'in_transit').length,
-                completed: restockData.restocks.filter(item => item.status === 'completed').length
+                pending: restockData.restocks?.filter(item => 
+                    item.status === 'pending' && inventoryIds.has(item.itemId)
+                ).length || 0,
+                inTransit: restockData.restocks?.filter(item => 
+                    item.status === 'in_transit' && inventoryIds.has(item.itemId)
+                ).length || 0,
+                completed: restockData.restocks?.filter(item => 
+                    item.status === 'completed' && inventoryIds.has(item.itemId)
+                ).length || 0
             };
 
             // Generate monthly trend data

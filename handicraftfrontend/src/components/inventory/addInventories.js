@@ -133,7 +133,7 @@ export default function AddInventories() {
         }
 
         sessionStorage.setItem("pendingInventory", JSON.stringify(inventory));
-        navigate("/checkinventories");
+        navigate("/inventory/check");
     };
 
     const handleSubmit = async (e) => {
@@ -173,7 +173,7 @@ export default function AddInventories() {
                 alert("Inventory item added successfully!");
                 sessionStorage.removeItem("verifiedInventory");
                 sessionStorage.removeItem("pendingInventory");
-                navigate("/display");
+                navigate("/inventory/display");
             } else {
                 throw new Error(response.data.error || "Failed to add inventory item");
             }
@@ -439,7 +439,7 @@ export default function AddInventories() {
                     </button>
                     <button
                         type="button"
-                        onClick={() => navigate("/display")}
+                        onClick={() => navigate("/inventory/display")}
                         style={styles.cancelButton}
                     >
                         Cancel

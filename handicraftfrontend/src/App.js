@@ -149,13 +149,14 @@ function App() {
             {/* Inventory Routes */}
             <Route path="/inventory" element={<PrivateRoute element={<ReadInventories />} allowedManagerTypes={["inventory"]} />} />
             <Route path="/inventory/add" element={<PrivateRoute element={<AddInventories />} allowedManagerTypes={["inventory"]} />} />
-            <Route path="/inventory/check" element={<PrivateRoute element={<CheckInventoryQuality />} allowedManagerTypes={["inventory"]} />} />
             <Route path="/inventory/display" element={<PrivateRoute element={<ReadInventories />} allowedManagerTypes={["inventory"]} />} />
             <Route path="/inventory/update/:id" element={<PrivateRoute element={<UpdateInventories />} allowedManagerTypes={["inventory"]} />} />
             <Route path="/inventory/delete/:id" element={<PrivateRoute element={<DeleteInventories />} allowedManagerTypes={["inventory"]} />} />
             <Route path="/inventory/restock" element={<PrivateRoute element={<ReadInventories />} allowedManagerTypes={["inventory"]} />} />
             <Route path="/inventory/restock/:id" element={<PrivateRoute element={<RestockPage />} allowedManagerTypes={["inventory"]} />} />
+            <Route path="/inventory/check" element={<PrivateRoute element={<CheckInventoryQuality />} allowedManagerTypes={["inventory"]} />} />
             <Route path="/inventory/report" element={<PrivateRoute element={<InventoryReport />} allowedManagerTypes={["inventory"]} />} />
+            <Route path="/add" element={<PrivateRoute element={<AddInventories />} allowedManagerTypes={["inventory"]} />} />
 
             {/* Catch-All Route */}
             <Route path="*" element={<div>404 - Route Not Found</div>} />

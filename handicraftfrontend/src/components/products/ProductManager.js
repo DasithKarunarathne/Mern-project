@@ -77,7 +77,8 @@ const ProductManager = () => {
     }
     if (name === 'stockQuantity') {
       // Prevent negative values and decimals
-      if (value && (parseInt(value, 10) < 0 || value.includes('.'))) return;
+      const stockValue = parseFloat(value);
+      if (isNaN(stockValue) || stockValue < 0 || !Number.isInteger(stockValue)) return;
     }
     setFormData({ ...formData, [name]: value });
   };
@@ -112,11 +113,11 @@ const ProductManager = () => {
     if (isNaN(price) || price <= 0) {
       return "Price must be a positive number.";
     }
-    const stock = parseInt(formData.stockQuantity, 10);
+    const stock = parseFloat(formData.stockQuantity);
     if (isNaN(stock) || stock < 0) {
-      return "Stock Quantity must be a non-negative integer.";
+      return "Stock Quantity must be a non-negative number.";
     }
-    if (formData.stockQuantity.includes('.')) {
+    if (!Number.isInteger(stock)) {
       return "Stock Quantity must be an integer.";
     }
     if (!formData.category.trim()) {
@@ -529,10 +530,10 @@ const ProductManager = () => {
             onChange={handleInputChange}
             required
             disabled={loading}
-            error={((isNaN(parseInt(formData.stockQuantity, 10)) || parseInt(formData.stockQuantity, 10) < 0 || formData.stockQuantity.includes('.')) && error)}
+            error={((isNaN(parseFloat(formData.stockQuantity)) || parseFloat(formData.stockQuantity) < 0 || !Number.isInteger(parseFloat(formData.stockQuantity))) && error)}
             helperText={
-              (isNaN(parseInt(formData.stockQuantity, 10)) || parseInt(formData.stockQuantity, 10) < 0) && error ? "Stock must be non-negative" :
-              (formData.stockQuantity && formData.stockQuantity.includes('.')) ? "No decimals allowed" :
+              (isNaN(parseFloat(formData.stockQuantity)) || parseFloat(formData.stockQuantity) < 0) && error ? "Stock must be non-negative" :
+              (!Number.isInteger(parseFloat(formData.stockQuantity))) ? "No decimals allowed" :
               ""
             }
             InputProps={{ inputProps: { min: 0, step: 1 } }}

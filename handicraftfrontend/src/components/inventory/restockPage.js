@@ -34,7 +34,7 @@ export default function RestockPage() {
             }
         } catch (err) {
             console.error('Error fetching inventory:', err);
-            setError('Failed to fetch inventory item');
+            setError(err.response?.data?.error || 'Failed to fetch inventory item');
         } finally {
             setLoading(false);
         }
@@ -48,21 +48,43 @@ export default function RestockPage() {
         }));
     };
 
+    const validateForm = () => {
+        if (!restockData.restockLevel || restockData.restockLevel <= 0) {
+            setError('Restock level must be greater than 0');
+            return false;
+        }
+        if (!restockData.restockDate) {
+            setError('Please select a restock date');
+            return false;
+        }
+        return true;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         setSuccess('');
 
+        if (!validateForm()) {
+            return;
+        }
+
         try {
-            await axios.post('http://localhost:5000/inventory/restock/create', {
+            const response = await axios.post('http://localhost:5000/inventory/restock/create', {
                 itemId: id,
                 ...restockData
             });
-            setSuccess('Order sent to supplier successfully!');
-            setTimeout(() => {
-                navigate('/display');
-            }, 2000);
+            
+            if (response.data && response.data.success) {
+                setSuccess('Order sent to supplier successfully!');
+                setTimeout(() => {
+                    navigate('/inventory');
+                }, 2000);
+            } else {
+                throw new Error('Failed to create restock order');
+            }
         } catch (err) {
+            console.error('Error creating restock order:', err);
             setError(err.response?.data?.error || 'Failed to create restock order');
         }
     };
@@ -112,7 +134,7 @@ export default function RestockPage() {
                         value={restockData.restockLevel}
                         onChange={handleInputChange}
                         required
-                        min="0"
+                        min="1"
                     />
                 </div>
 
@@ -125,6 +147,7 @@ export default function RestockPage() {
                         value={restockData.restockDate}
                         onChange={handleInputChange}
                         required
+                        min={new Date().toISOString().split('T')[0]}
                     />
                 </div>
 
@@ -134,7 +157,7 @@ export default function RestockPage() {
                     </button>
                     <button
                         type="button"
-                        onClick={() => navigate('/display')}
+                        onClick={() => navigate('/inventory')}
                         style={styles.cancelButton}
                     >
                         Cancel
