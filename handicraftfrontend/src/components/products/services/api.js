@@ -108,8 +108,8 @@ export const getPendingRefunds = () =>
 
 // Delivery-related API functions
 export const getDeliveryCharge = (postalCode) =>
-  axiosInstance.get(`/delivery/charge/${postalCode}`);
-export const saveDeliveryDetails = (data) => axiosInstance.post('/delivery', data);
+  axiosInstance.get(`/product/delivery/charge/${postalCode}`);
+export const saveDeliveryDetails = (data) => axiosInstance.post('/product/delivery', data);
 
 // Email-related API functions
 export const sendOtpEmail = (email, name, otp) => 

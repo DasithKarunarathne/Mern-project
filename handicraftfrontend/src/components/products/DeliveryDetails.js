@@ -94,10 +94,21 @@ const DeliveryDetails = () => {
 
   const validate = () => {
     const newErrors = {};
-    if (!deliveryData.name) newErrors.name = 'Name is required';
+    // Name validation - only letters and spaces allowed
+    if (!deliveryData.name) {
+      newErrors.name = 'Name is required';
+    } else if (!/^[A-Za-z\s]+$/.test(deliveryData.name)) {
+      newErrors.name = 'Name can only contain letters and spaces';
+    }
+
+    // Phone validation - exactly 10 digits
+    if (!deliveryData.phone) {
+      newErrors.phone = 'Phone number is required';
+    } else if (!/^\d{10}$/.test(deliveryData.phone)) {
+      newErrors.phone = 'Phone number must be exactly 10 digits';
+    }
+
     if (!deliveryData.address) newErrors.address = 'Address is required';
-    if (!deliveryData.phone || !/^\d{10}$/.test(deliveryData.phone))
-      newErrors.phone = 'Valid 10-digit phone number is required';
     if (!deliveryData.postalCode || !/^\d{5}$/.test(deliveryData.postalCode))
       newErrors.postalCode = 'Valid 5-digit postal code is required';
     if (!deliveryData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(deliveryData.email))
@@ -108,17 +119,61 @@ const DeliveryDetails = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+    // Name validation - only allow letters and spaces
+    if (name === 'name') {
+      if (!/^[A-Za-z\s]*$/.test(value)) {
+        return; // Don't update if input contains anything other than letters and spaces
+      }
+    }
+    
+    // Phone validation - only allow numbers and limit to 10 digits
+    if (name === 'phone') {
+      if (!/^\d*$/.test(value)) {
+        return; // Don't update if input contains non-digits
+      }
+      if (value.length > 10) {
+        return; // Don't update if length would exceed 10 digits
+      }
+    }
+
     setDeliveryData({ ...deliveryData, [name]: value });
     setErrors({ ...errors, [name]: '' });
   };
 
   const fetchDeliveryCharge = async (postalCode) => {
     try {
-      const response = await getDeliveryCharge(postalCode);
-      setProvince(response.data.province);
-      setDeliveryCharge(response.data.deliveryCharge);
+      // Postal code ranges and their corresponding charges
+      const deliveryCharges = [
+        { province: 'Western', start: 100, end: 1599, charge: 300 },
+        { province: 'Western', start: 11000, end: 12999, charge: 300 },
+        { province: 'Central', start: 20000, end: 22999, charge: 400 },
+        { province: 'Southern', start: 80000, end: 82999, charge: 450 },
+        { province: 'North Western', start: 60000, end: 61999, charge: 500 },
+        { province: 'North Central', start: 50000, end: 51999, charge: 550 },
+        { province: 'Uva', start: 90000, end: 91999, charge: 600 },
+        { province: 'Sabaragamuwa', start: 70000, end: 71999, charge: 550 },
+        { province: 'Eastern', start: 30000, end: 32999, charge: 650 },
+        { province: 'Eastern', start: 31000, end: 31999, charge: 650 },
+        { province: 'Northern', start: 40000, end: 43999, charge: 700 },
+      ];
+
+      const postalCodeNum = parseInt(postalCode, 10);
+      const region = deliveryCharges.find(
+        r => postalCodeNum >= r.start && postalCodeNum <= r.end
+      );
+
+      if (region) {
+        setProvince(region.province);
+        setDeliveryCharge(region.charge);
+        toast.success(`Delivery charge for ${region.province} province: LKR ${region.charge}`);
+      } else {
+        setProvince('Other');
+        setDeliveryCharge(700);
+        toast.info('Using default delivery charge of LKR 700');
+      }
     } catch (error) {
-      console.error('Error fetching delivery charge:', error);
+      console.error('Error calculating delivery charge:', error);
       setProvince('Unknown');
       setDeliveryCharge(700);
       toast.error('Failed to calculate delivery charge. Using default charge of LKR 700.');
@@ -287,8 +342,12 @@ const DeliveryDetails = () => {
                     fullWidth
                     required
                     error={!!errors.name}
-                    helperText={errors.name}
+                    helperText={errors.name || 'Only letters and spaces allowed'}
                     disabled={loading}
+                    inputProps={{
+                      pattern: '[A-Za-z\\s]*',
+                      title: 'Only letters and spaces allowed'
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -300,8 +359,13 @@ const DeliveryDetails = () => {
                     fullWidth
                     required
                     error={!!errors.phone}
-                    helperText={errors.phone}
+                    helperText={errors.phone || 'Enter exactly 10 digits'}
                     disabled={loading}
+                    inputProps={{
+                      pattern: '\\d{10}',
+                      title: 'Enter exactly 10 digits',
+                      maxLength: 10
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12}>

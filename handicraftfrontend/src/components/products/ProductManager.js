@@ -45,6 +45,8 @@ const ProductManager = () => {
   const [editingProduct, setEditingProduct] = useState(null);
   const navigate = useNavigate();
 
+  const nameCategoryRegex = /^[A-Za-z ]*$/;
+
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -65,6 +67,18 @@ const ProductManager = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    if (name === 'name' || name === 'category') {
+      // Only allow letters and spaces
+      if (!nameCategoryRegex.test(value)) return;
+    }
+    if (name === 'price') {
+      // Prevent negative values
+      if (value && parseFloat(value) < 0) return;
+    }
+    if (name === 'stockQuantity') {
+      // Prevent negative values and decimals
+      if (value && (parseInt(value, 10) < 0 || value.includes('.'))) return;
+    }
     setFormData({ ...formData, [name]: value });
   };
 
@@ -88,6 +102,9 @@ const ProductManager = () => {
     if (!formData.name.trim()) {
       return "Name is required.";
     }
+    if (!nameCategoryRegex.test(formData.name)) {
+      return "Name can only contain letters and spaces.";
+    }
     if (!formData.description.trim()) {
       return "Description is required.";
     }
@@ -97,10 +114,16 @@ const ProductManager = () => {
     }
     const stock = parseInt(formData.stockQuantity, 10);
     if (isNaN(stock) || stock < 0) {
-      return "Stock Quantity must be a non-negative number.";
+      return "Stock Quantity must be a non-negative integer.";
+    }
+    if (formData.stockQuantity.includes('.')) {
+      return "Stock Quantity must be an integer.";
     }
     if (!formData.category.trim()) {
       return "Category is required.";
+    }
+    if (!nameCategoryRegex.test(formData.category)) {
+      return "Category can only contain letters and spaces.";
     }
     return null; // No errors
   };
@@ -460,8 +483,12 @@ const ProductManager = () => {
             onChange={handleInputChange}
             required
             disabled={loading}
-            error={!formData.name.trim() && error}
-            helperText={!formData.name.trim() && error ? "Name is required" : ""}
+            error={(!formData.name.trim() || (formData.name && !nameCategoryRegex.test(formData.name))) && error}
+            helperText={
+              !formData.name.trim() && error ? "Name is required" :
+              (formData.name && !nameCategoryRegex.test(formData.name)) ? "Only letters and spaces allowed" :
+              ""
+            }
           />
           <TextField
             label="Description"
@@ -483,8 +510,16 @@ const ProductManager = () => {
             onChange={handleInputChange}
             required
             disabled={loading}
-            error={(isNaN(parseFloat(formData.price)) || parseFloat(formData.price) <= 0) && error}
-            helperText={(isNaN(parseFloat(formData.price)) || parseFloat(formData.price) <= 0) && error ? "Price must be positive" : ""}
+            error={((isNaN(parseFloat(formData.price)) || parseFloat(formData.price) <= 0) && error) || (formData.price && parseFloat(formData.price) < 0)}
+            helperText={
+              (isNaN(parseFloat(formData.price)) || parseFloat(formData.price) <= 0) && error ? "Price must be positive" :
+              (formData.price && parseFloat(formData.price) < 0) ? "No minus values allowed" :
+              ""
+            }
+            InputProps={{
+              startAdornment: <span style={{ marginRight: 4 }}>LKR</span>,
+              inputProps: { min: 0, step: '0.01' },
+            }}
           />
           <TextField
             label="Stock Quantity"
@@ -494,8 +529,13 @@ const ProductManager = () => {
             onChange={handleInputChange}
             required
             disabled={loading}
-            error={(isNaN(parseInt(formData.stockQuantity, 10)) || parseInt(formData.stockQuantity, 10) < 0) && error}
-            helperText={(isNaN(parseInt(formData.stockQuantity, 10)) || parseInt(formData.stockQuantity, 10) < 0) && error ? "Stock must be non-negative" : ""}
+            error={((isNaN(parseInt(formData.stockQuantity, 10)) || parseInt(formData.stockQuantity, 10) < 0 || formData.stockQuantity.includes('.')) && error)}
+            helperText={
+              (isNaN(parseInt(formData.stockQuantity, 10)) || parseInt(formData.stockQuantity, 10) < 0) && error ? "Stock must be non-negative" :
+              (formData.stockQuantity && formData.stockQuantity.includes('.')) ? "No decimals allowed" :
+              ""
+            }
+            InputProps={{ inputProps: { min: 0, step: 1 } }}
           />
           <TextField
             label="Category"
@@ -504,8 +544,12 @@ const ProductManager = () => {
             onChange={handleInputChange}
             required
             disabled={loading}
-            error={!formData.category.trim() && error}
-            helperText={!formData.category.trim() && error ? "Category is required" : ""}
+            error={(!formData.category.trim() || (formData.category && !nameCategoryRegex.test(formData.category))) && error}
+            helperText={
+              !formData.category.trim() && error ? "Category is required" :
+              (formData.category && !nameCategoryRegex.test(formData.category)) ? "Only letters and spaces allowed" :
+              ""
+            }
           />
           <input
             type="file"

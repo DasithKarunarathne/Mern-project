@@ -1,12 +1,19 @@
-const mongoose = require('mongoose');
-const DeliveryCharge = require('./models/DeliveryCharge');
-require('dotenv').config();
+import mongoose from 'mongoose';
+import DeliveryCharge from './models/productmodel/DeliveryCharge.js';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import path from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const MONGO_URL = 'mongodb+srv://admin:admin123@cluster0.aqvxpxj.mongodb.net/handicraft?retryWrites=true&w=majority';
 
 const seedDeliveryCharges = async () => {
   try {
     // Connect to MongoDB with additional options
-    console.log('Connecting to MongoDB with URL:', process.env.MONGO_URL.replace(/:([^@]+)@/, ':<password>@')); // Log URL with password redacted
-    await mongoose.connect(process.env.MONGO_URL, {
+    console.log('Connecting to MongoDB...');
+    await mongoose.connect(MONGO_URL, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
@@ -37,7 +44,7 @@ const seedDeliveryCharges = async () => {
     console.error('Error seeding delivery charges:', err);
   } finally {
     await mongoose.connection.close();
-    console.log('MongoDB connection closed');
+    console.log('Database connection closed');
   }
 };
 

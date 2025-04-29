@@ -105,18 +105,80 @@ const Payment = () => {
 
   const { items, deliveryData, total, deliveryCharge } = state;
 
+  const formatExpiryDate = (value) => {
+    // Remove any non-digit characters
+    const digits = value.replace(/\D/g, '');
+    
+    // Format as MM/YY
+    if (digits.length >= 2) {
+      return `${digits.slice(0, 2)}/${digits.slice(2, 4)}`;
+    }
+    return digits;
+  };
+
   const handleChange = (e) => {
-    setCardDetails({ ...cardDetails, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    // Card number validation - only numbers, max 16 digits
+    if (name === 'cardNumber') {
+      const numbers = value.replace(/\D/g, '');
+      if (numbers.length <= 16) {
+        setCardDetails({ ...cardDetails, cardNumber: numbers });
+      }
+      return;
+    }
+
+    // Expiry date validation - MM/YY format
+    if (name === 'expiry') {
+      const formatted = formatExpiryDate(value);
+      if (formatted.length <= 5) {
+        setCardDetails({ ...cardDetails, expiry: formatted });
+      }
+      return;
+    }
+
+    // CVV validation - only numbers, 3-4 digits
+    if (name === 'cvv') {
+      const numbers = value.replace(/\D/g, '');
+      if (numbers.length <= 4) {
+        setCardDetails({ ...cardDetails, cvv: numbers });
+      }
+      return;
+    }
   };
 
   const validate = () => {
     let tempErrors = {};
-    if (!cardDetails.cardNumber || !/^\d{16}$/.test(cardDetails.cardNumber))
-      tempErrors.cardNumber = 'Valid 16-digit card number is required';
-    if (!cardDetails.expiry || !/^(0[1-9]|1[0-2])\/\d{2}$/.test(cardDetails.expiry))
-      tempErrors.expiry = 'Valid expiry (MM/YY) is required';
-    if (!cardDetails.cvv || !/^\d{3}$/.test(cardDetails.cvv))
-      tempErrors.cvv = 'Valid 3-digit CVV is required';
+    
+    // Card number validation
+    if (!cardDetails.cardNumber) {
+      tempErrors.cardNumber = 'Card number is required';
+    } else if (!/^\d{16}$/.test(cardDetails.cardNumber)) {
+      tempErrors.cardNumber = 'Card number must be exactly 16 digits';
+    }
+
+    // Expiry date validation
+    if (!cardDetails.expiry) {
+      tempErrors.expiry = 'Expiry date is required';
+    } else if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(cardDetails.expiry)) {
+      tempErrors.expiry = 'Invalid expiry date (MM/YY)';
+    } else {
+      // Check if the expiry date is in the future
+      const [month, year] = cardDetails.expiry.split('/');
+      const expiry = new Date(2000 + parseInt(year), parseInt(month) - 1);
+      const today = new Date();
+      if (expiry < today) {
+        tempErrors.expiry = 'Card has expired';
+      }
+    }
+
+    // CVV validation
+    if (!cardDetails.cvv) {
+      tempErrors.cvv = 'CVV is required';
+    } else if (!/^\d{3,4}$/.test(cardDetails.cvv)) {
+      tempErrors.cvv = 'CVV must be 3 or 4 digits';
+    }
+
     setErrors(tempErrors);
     return Object.keys(tempErrors).length === 0;
   };
@@ -269,10 +331,15 @@ const Payment = () => {
                     onChange={handleChange}
                     label="Card Number"
                     error={!!errors.cardNumber}
-                    helperText={errors.cardNumber}
+                    helperText={errors.cardNumber || 'Enter 16 digits'}
                     required
                     disabled={loading}
                     fullWidth
+                    inputProps={{
+                      inputMode: 'numeric',
+                      maxLength: 16,
+                      pattern: '\\d*'
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -280,12 +347,16 @@ const Payment = () => {
                     name="expiry"
                     value={cardDetails.expiry}
                     onChange={handleChange}
-                    label="Expiry Date (MM/YY)"
+                    label="Expiry Date"
                     error={!!errors.expiry}
-                    helperText={errors.expiry}
+                    helperText={errors.expiry || 'MM/YY'}
                     required
                     disabled={loading}
                     fullWidth
+                    placeholder="MM/YY"
+                    inputProps={{
+                      maxLength: 5
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -295,10 +366,15 @@ const Payment = () => {
                     onChange={handleChange}
                     label="CVV"
                     error={!!errors.cvv}
-                    helperText={errors.cvv}
+                    helperText={errors.cvv || '3-4 digits'}
                     required
                     disabled={loading}
                     fullWidth
+                    inputProps={{
+                      inputMode: 'numeric',
+                      maxLength: 4,
+                      pattern: '\\d*'
+                    }}
                   />
                 </Grid>
               </Grid>
