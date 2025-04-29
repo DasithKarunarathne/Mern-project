@@ -51,14 +51,14 @@ export default function InventoryReport() {
     const fetchReportData = async () => {
         try {
             // Fetch inventory data with stats
-            const inventoryResponse = await fetch("http://localhost:8070/inventories/?withStats=true");
+            const inventoryResponse = await fetch("http://localhost:8070/api/inventories/?withStats=true");
             if (!inventoryResponse.ok) {
                 throw new Error(`Error: ${inventoryResponse.status}`);
             }
             const inventoryData = await inventoryResponse.json();
             
             // Fetch restock data
-            const restockResponse = await fetch("http://localhost:8070/restock/");
+            const restockResponse = await fetch("http://localhost:8070/api/restock/");
             if (!restockResponse.ok) {
                 throw new Error(`Error: ${restockResponse.status}`);
             }
@@ -74,11 +74,17 @@ export default function InventoryReport() {
                 lowStock: inventories.filter(item => item.qty < 20).length
             };
 
-            // Process restock data
+            // Process restock data - only count active restock orders
+            const activeRestocks = restockData.restocks.filter(restock => 
+                restock.status !== 'completed' && 
+                inventories.some(inv => inv._id === restock.itemId && inv.qty < 20)
+            );
+
+            // Count restock statuses only from active restock orders
             const restockStatus = {
-                pending: restockData.restocks.filter(item => item.status === 'pending').length,
-                inTransit: restockData.restocks.filter(item => item.status === 'in_transit').length,
-                completed: restockData.restocks.filter(item => item.status === 'completed').length
+                pending: activeRestocks.filter(restock => restock.status === 'pending').length,
+                inTransit: activeRestocks.filter(restock => restock.status === 'in_transit').length,
+                completed: activeRestocks.filter(restock => restock.status === 'completed').length
             };
 
             // Generate monthly trend data

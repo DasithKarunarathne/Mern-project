@@ -5,13 +5,20 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const inventoryRouter = require("./routes/inventories");
 const restockRouter = require("./routes/restock");
+const supplierRouter = require("./routes/supplier");
 
 dotenv.config();
 
 const app = express();
 
+// CORS configuration
+app.use(cors({
+    origin: ['http://localhost:3000', 'http://localhost:3001'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    credentials: true
+}));
+
 // Middleware
-app.use(cors());
 app.use(bodyParser.json());
 
 const PORT = process.env.PORT || 8070;
@@ -26,8 +33,15 @@ mongoose.connect(URL, {
 .catch(err => console.error("MongoDB Connection Error:", err));
 
 // Routes
-app.use("/inventories", inventoryRouter);
-app.use("/restock", restockRouter);
+app.use("/api/inventories", inventoryRouter);
+app.use("/api/restock", restockRouter);
+app.use("/api/suppliers", supplierRouter);
+
+// Debug middleware to log all requests
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`);
+    next();
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {

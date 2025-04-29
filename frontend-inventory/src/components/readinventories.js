@@ -75,6 +75,23 @@ export default function ReadInventories() {
                 backgroundColor: "#2980b9"
             }
         },
+        supplierButton: {
+            padding: "10px 20px",
+            backgroundColor: "#9b59b6",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer",
+            fontSize: "15px",
+            fontWeight: "500",
+            transition: "all 0.3s",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            "&:hover": {
+                backgroundColor: "#8e44ad"
+            }
+        },
         searchContainer: {
             display: "flex",
             justifyContent: "flex-end",
@@ -337,18 +354,33 @@ export default function ReadInventories() {
     useEffect(() => {
         fetchInventories();
         fetchRestockStatus();
+        // Add interval to check supplier status
+        const interval = setInterval(checkSupplierStatus, 5000);
+        return () => clearInterval(interval);
     }, []);
 
     useEffect(() => {
         // Check for low stock items when inventories are loaded
         if (inventories.length > 0) {
-            const lowStockItems = inventories.filter(item => item.qty < 20);
+            const lowStockItems = inventories.filter(item => {
+                const qty = Number(item.qty) || 0;
+                const currentRestockStatus = restockStatus[item._id];
+                
+                // Only include items that are:
+                // 1. Below threshold (qty < 20)
+                // 2. AND either have no restock status OR have a 'pending' status
+                return qty < 20 && (!currentRestockStatus || currentRestockStatus === 'pending');
+            });
+            
             if (lowStockItems.length > 0) {
                 setLowStockItems(lowStockItems);
                 setShowLowStockPopup(true);
+            } else {
+                // Close the popup if there are no low stock items
+                setShowLowStockPopup(false);
             }
         }
-    }, [inventories]);
+    }, [inventories, restockStatus]);
 
     useEffect(() => {
         const filtered = inventories.filter(item =>
@@ -361,7 +393,7 @@ export default function ReadInventories() {
     const fetchInventories = async () => {
         try {
             setLoading(true);
-            const response = await axios.get("http://localhost:8070/inventories");
+            const response = await axios.get("http://localhost:8070/api/inventories");
             if (response.data && response.data.success) {
                 setInventories(response.data.inventories);
                 setFilteredInventories(response.data.inventories);
@@ -376,16 +408,36 @@ export default function ReadInventories() {
 
     const fetchRestockStatus = async () => {
         try {
-            const response = await axios.get("http://localhost:8070/restock");
+            const response = await axios.get("http://localhost:8070/api/restock");
             if (response.data && response.data.success) {
                 const statusMap = {};
                 response.data.restocks.forEach(restock => {
-                    statusMap[restock.itemId] = restock.status;
+                    // Store all statuses except 'successful' ones
+                    if (restock.status !== 'successful') {
+                        statusMap[restock.itemId] = restock.status;
+                    }
                 });
                 setRestockStatus(statusMap);
             }
         } catch (err) {
             console.error("Error fetching restock status:", err);
+        }
+    };
+
+    const checkSupplierStatus = async () => {
+        try {
+            const response = await axios.get("http://localhost:8070/api/suppliers");
+            const suppliers = response.data;
+            suppliers.forEach(async (supplier) => {
+                if (supplier.isChecked) {
+                    await axios.patch(`http://localhost:8070/api/restock/${supplier._id}`, {
+                        status: 'successful'
+                    });
+                    fetchRestockStatus();
+                }
+            });
+        } catch (error) {
+            console.error("Error checking supplier status:", error);
         }
     };
 
@@ -407,7 +459,7 @@ export default function ReadInventories() {
     const handleDelete = async (id) => {
         if (window.confirm("Are you sure you want to delete this item?")) {
             try {
-                await axios.delete(`http://localhost:8070/inventories/delete/${id}`);
+                await axios.delete(`http://localhost:8070/api/inventories/delete/${id}`);
                 fetchInventories();
             } catch (err) {
                 setErrorMessage(err.response?.data?.error || "Failed to delete item");
@@ -484,6 +536,12 @@ export default function ReadInventories() {
                     >
                         <span>📊</span> Generate Report
                     </button>
+                    <button
+                        style={styles.supplierButton}
+                        onClick={() => navigate("/supplier-management")}
+                    >
+                        Supplier Management
+                    </button>
                 </div>
             </div>
 
@@ -522,12 +580,13 @@ export default function ReadInventories() {
                             {filteredInventories.length > 0 ? (
                                 filteredInventories.map(item => {
                                     const isLowStock = item.qty < 20;
+                                    const currentRestockStatus = restockStatus[item._id];
                                     return (
                                         <tr
                                             key={item._id}
                                             style={{
                                                 ...styles.tableRow,
-                                                backgroundColor: isLowStock ? "#fff5f5" : "inherit"
+                                                backgroundColor: isLowStock && !currentRestockStatus ? "#fff5f5" : "inherit"
                                             }}
                                         >
                                             <td style={styles.tableCell}>{item.itemno}</td>
@@ -538,11 +597,11 @@ export default function ReadInventories() {
                                                     <span 
                                                         style={{
                                                             ...styles.stockIndicator,
-                                                            backgroundColor: isLowStock ? "#e74c3c" : "#27ae60"
+                                                            backgroundColor: isLowStock && !currentRestockStatus ? "#e74c3c" : "#27ae60"
                                                         }}
                                                     />
                                                     {item.qty}
-                                                    {isLowStock && !restockStatus[item._id] && (
+                                                    {isLowStock && !currentRestockStatus && (
                                                         <button
                                                             style={styles.lowStockButton}
                                                             onClick={() => handleRestock(item)}
@@ -561,19 +620,19 @@ export default function ReadInventories() {
                                                 {new Date(item.inventorydate).toLocaleDateString()}
                                             </td>
                                             <td style={styles.tableCell}>
-                                                {restockStatus[item._id] && (
+                                                {currentRestockStatus && (
                                                     <div style={styles.restockStatus}>
                                                         <span 
                                                             style={{
                                                                 ...styles.statusIndicator,
                                                                 backgroundColor: 
-                                                                    restockStatus[item._id] === 'in_transit' ? "#e67e22" :
-                                                                    restockStatus[item._id] === 'completed' ? "#27ae60" : "#95a5a6"
+                                                                    currentRestockStatus === 'in_transit' ? "#e67e22" :
+                                                                    currentRestockStatus === 'successful' ? "#27ae60" : "#95a5a6"
                                                             }}
                                                         />
                                                         <span style={styles.statusText}>
-                                                            {restockStatus[item._id] === 'in_transit' ? 'In Transit' :
-                                                             restockStatus[item._id] === 'completed' ? 'Completed' : 'Pending'}
+                                                            {currentRestockStatus === 'in_transit' ? 'In Transit' :
+                                                             currentRestockStatus === 'successful' ? 'Successful' : 'Pending'}
                                                         </span>
                                                     </div>
                                                 )}

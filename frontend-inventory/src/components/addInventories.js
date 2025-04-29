@@ -168,7 +168,7 @@ export default function AddInventories() {
         };
 
         try {
-            const response = await axios.post("http://localhost:8070/inventories/add", payload);
+            const response = await axios.post("http://localhost:8070/api/inventories/add", payload);
             if (response.data.success) {
                 alert("Inventory item added successfully!");
                 sessionStorage.removeItem("verifiedInventory");

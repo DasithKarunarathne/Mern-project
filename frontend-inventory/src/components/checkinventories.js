@@ -112,22 +112,22 @@ export default function CheckInventoryQuality() {
             let isUnique = true;
             
             try {
-                const response = await axios.get('http://localhost:8070/inventories');
+                // Use the correct API endpoint
+                const response = await axios.get('http://localhost:8070/api/inventories');
                 const existingInventory = response.data.success ? response.data.inventories : [];
                 
-                // Filter out any items that are not in the active inventory
-                const activeInventory = existingInventory.filter(item => item.isActive !== false);
-                
-                const isDuplicate = activeInventory.some(existingItem => 
+                // Check for duplicates in current active inventory
+                const isDuplicate = existingInventory.some(existingItem => 
                     existingItem.itemno.toString() === item.itemno.toString()
                 );
                 
                 if (isDuplicate) {
-                    uniqueIssues.push(`Item number ${item.itemno} already exists in active inventory`);
+                    uniqueIssues.push(`Item number ${item.itemno} already exists in inventory`);
                     isUnique = false;
                 }
             } catch (err) {
-                uniqueIssues.push('Could not check for duplicate item numbers');
+                console.error("Error checking for duplicates:", err);
+                uniqueIssues.push('Could not verify item number uniqueness. Please try again.');
                 isUnique = false;
             }
             

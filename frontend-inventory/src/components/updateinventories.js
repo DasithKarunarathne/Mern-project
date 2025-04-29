@@ -26,7 +26,7 @@ export default function UpdateInventories() {
         setLoading(true);
         setErrorMessage("");
         try {
-            const response = await fetch(`http://localhost:8070/inventories/item/${id}`);
+            const response = await fetch(`http://localhost:8070/api/inventories/item/${id}`);
             if (!response.ok) {
                 throw new Error(`Error: ${response.status}`);
             }
@@ -68,25 +68,49 @@ export default function UpdateInventories() {
         setErrorMessage("");
 
         try {
-            const response = await fetch(`http://localhost:8070/inventories/update/${id}`, {
+            // Validate the data before sending
+            if (!formData.itemno || !formData.itemname || !formData.price || !formData.quantity || !formData.description) {
+                throw new Error("Please fill in all required fields");
+            }
+
+            const updateData = {
+                itemno: formData.itemno,
+                itemname: formData.itemname,
+                price: parseFloat(formData.price),
+                qty: parseInt(formData.quantity, 10),
+                itemdescription: formData.description,
+                inventorydate: formData.inventorydate ? new Date(formData.inventorydate) : new Date(),
+                lastrestockdate: new Date(),
+                isActive: true
+            };
+
+            // Validate numeric fields
+            if (isNaN(updateData.price) || updateData.price < 0) {
+                throw new Error("Price must be a positive number");
+            }
+            if (isNaN(updateData.qty) || updateData.qty < 0) {
+                throw new Error("Quantity must be a positive number");
+            }
+
+            console.log("Sending update request:", updateData);
+
+            const response = await fetch(`http://localhost:8070/api/inventories/update/${id}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({
-                    itemno: formData.itemno,
-                    itemname: formData.itemname,
-                    price: parseFloat(formData.price),
-                    qty: parseInt(formData.quantity, 10),
-                    itemdescription: formData.description,
-                    inventorydate: formData.inventorydate
-                })
+                body: JSON.stringify(updateData)
             });
 
             const data = await response.json();
+            console.log("Update response:", data);
             
-            if (!response.ok || !data.success) {
-                throw new Error(data.error || "Failed to update item");
+            if (!response.ok) {
+                throw new Error(data.error || data.details || "Failed to update item");
+            }
+
+            if (!data.success) {
+                throw new Error(data.error || "Update failed");
             }
 
             setSuccessMessage("Inventory updated successfully!");
@@ -94,7 +118,8 @@ export default function UpdateInventories() {
                 navigate("/display");
             }, 1500);
         } catch (err) {
-            setErrorMessage(err.message);
+            console.error("Update error:", err);
+            setErrorMessage(err.message || "An error occurred while updating the inventory");
         } finally {
             setLoading(false);
         }

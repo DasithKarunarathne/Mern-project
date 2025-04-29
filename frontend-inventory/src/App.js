@@ -7,6 +7,7 @@ import DeleteInventories from "./components/deleteinventories";
 import InventoryReport from "./components/inventoryreports";
 import RestockPage from "./components/restockPage";
 import CheckInventoryQuality from "./components/checkinventories";
+import SupplierManagement from "./components/SupplierManagement";
 
 function App() {
     return (
@@ -38,6 +39,9 @@ function App() {
                     <Route path="/restock/:id" element={<RestockPage />} />
 
                     <Route path="/report" element={<InventoryReport />} />
+
+                    {/* Route for supplier management */}
+                    <Route path="/supplier-management" element={<SupplierManagement />} />
                 </Routes>
             </div>
         </Router>

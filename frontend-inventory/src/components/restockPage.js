@@ -22,7 +22,7 @@ export default function RestockPage() {
     const fetchInventory = async () => {
         try {
             setLoading(true);
-            const response = await axios.get(`http://localhost:8070/inventories/item/${id}`);
+            const response = await axios.get(`http://localhost:8070/api/inventories/item/${id}`);
             if (response.data && response.data.success && response.data.inventory) {
                 setInventory(response.data.inventory);
                 setRestockData(prev => ({
@@ -54,8 +54,9 @@ export default function RestockPage() {
         setSuccess('');
 
         try {
-            await axios.post('http://localhost:8070/restock/create', {
+            await axios.post('http://localhost:8070/api/restock/create', {
                 itemId: id,
+                status: 'pending',
                 ...restockData
             });
             setSuccess('Order sent to supplier successfully!');
