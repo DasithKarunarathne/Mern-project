@@ -93,17 +93,6 @@ const ActionButton = styled(Button)(({ theme }) => ({
   },
 }));
 
-const getImageUrl = (imagePath) => {
-  if (!imagePath) return config.DEFAULT_PRODUCT_IMAGE;
-  try {
-    const url = new URL(imagePath);
-    return imagePath; // If it's already a full URL, return as is
-  } catch {
-    // If it's a relative path, prepend the image base URL
-    return `${config.IMAGE_BASE_URL}${imagePath.startsWith('/') ? '' : '/'}${imagePath}`;
-  }
-};
-
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -235,15 +224,19 @@ const Cart = () => {
             {cartItems.map((item) => {
               if (!item.productId) return null;
               
+              const imageUrl = item.productId.image 
+                ? `http://localhost:5000${item.productId.image}` 
+                : config.DEFAULT_PRODUCT_IMAGE;
+              
               return (
                 <CartCard key={item._id}>
                   <CardContent>
                     <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                       <ProductImage
-                        image={getImageUrl(item.productId.image)}
+                        image={imageUrl}
                         title={item.productId.name}
                         onError={(e) => {
-                          e.target.onerror = null;
+                          e.target.onerror = null; // Prevent infinite loop
                           e.target.src = config.DEFAULT_PRODUCT_IMAGE;
                         }}
                       />

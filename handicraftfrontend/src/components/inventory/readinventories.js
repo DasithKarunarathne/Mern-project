@@ -15,298 +15,322 @@ export default function ReadInventories() {
 
     const styles = {
         container: {
-            padding: '2rem',
-            backgroundColor: '#f5f5f5',
-            minHeight: '100vh'
+            padding: "25px",
+            maxWidth: "1400px",
+            margin: "0 auto",
+            fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+            backgroundColor: "#f5f7fa",
+            minHeight: "100vh"
         },
         header: {
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '2rem',
-            padding: '1.5rem',
-            backgroundColor: '#ffffff',
-            borderRadius: '12px',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "25px",
+            flexWrap: "wrap",
+            gap: "15px"
         },
         headerTitle: {
-            fontSize: '1.8rem',
-            fontWeight: '600',
-            color: '#5D4037',
-            margin: '0'
+            fontSize: "28px",
+            fontWeight: "600",
+            color: "#2c3e50",
+            margin: "0"
         },
         headerActions: {
-            display: 'flex',
-            gap: '1rem'
+            display: "flex",
+            gap: "15px",
+            flexWrap: "wrap"
         },
         primaryButton: {
-            padding: '0.75rem 1.5rem',
-            backgroundColor: '#8D6E63',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontSize: '1rem',
-            fontWeight: '500',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            transition: 'all 0.3s ease',
-            '&:hover': {
-                backgroundColor: '#6D4C41',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 4px 12px rgba(141, 110, 99, 0.3)'
+            padding: "10px 20px",
+            backgroundColor: "#27ae60",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer",
+            fontSize: "15px",
+            fontWeight: "500",
+            transition: "all 0.3s",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            "&:hover": {
+                backgroundColor: "#219653"
             }
         },
         secondaryButton: {
-            padding: '0.75rem 1.5rem',
-            backgroundColor: '#A1887F',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontSize: '1rem',
-            fontWeight: '500',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            transition: 'all 0.3s ease',
-            '&:hover': {
-                backgroundColor: '#8D6E63',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 4px 12px rgba(161, 136, 127, 0.3)'
+            padding: "10px 20px",
+            backgroundColor: "#8B4513",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer",
+            fontSize: "15px",
+            fontWeight: "500",
+            transition: "all 0.3s",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            "&:hover": {
+                backgroundColor: "#654321"
             }
         },
         searchContainer: {
-            marginBottom: '2rem',
-            padding: '1.5rem',
-            backgroundColor: '#ffffff',
-            borderRadius: '12px',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+            display: "flex",
+            justifyContent: "flex-end",
+            marginBottom: "20px"
         },
         searchInput: {
-            padding: '0.75rem 1rem',
-            borderRadius: '8px',
-            border: '1px solid #BCAAA4',
-            width: '100%',
-            fontSize: '1rem',
-            transition: 'all 0.3s ease',
-            '&:focus': {
-                outline: 'none',
-                borderColor: '#8D6E63',
-                boxShadow: '0 0 0 3px rgba(141, 110, 99, 0.1)'
+            padding: "12px 15px",
+            border: "1px solid #ddd",
+            borderRadius: "6px",
+            width: "300px",
+            fontSize: "15px",
+            outline: "none",
+            transition: "all 0.3s",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+            "&:focus": {
+                borderColor: "#8B4513",
+                boxShadow: "0 0 0 2px rgba(139,69,19,0.2)"
             }
+        },
+        errorMessage: {
+            color: "#e74c3c",
+            backgroundColor: "#fdecea",
+            padding: "15px",
+            borderRadius: "6px",
+            marginBottom: "20px",
+            borderLeft: "4px solid #e74c3c",
+            fontWeight: "500"
+        },
+        loadingState: {
+            padding: "30px",
+            textAlign: "center",
+            color: "#7f8c8d",
+            fontSize: "18px"
         },
         tableContainer: {
-            backgroundColor: '#ffffff',
-            borderRadius: '12px',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-            overflow: 'hidden',
-            margin: '2rem 0'
+            overflowX: "auto",
+            borderRadius: "8px",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+            backgroundColor: "white"
         },
         table: {
-            width: '100%',
-            borderCollapse: 'separate',
-            borderSpacing: 0,
-            backgroundColor: '#ffffff'
+            width: "100%",
+            borderCollapse: "collapse",
+            minWidth: "900px"
         },
-        th: {
-            backgroundColor: '#8D6E63',
-            color: 'white',
-            padding: '1.2rem 1rem',
-            textAlign: 'left',
-            fontWeight: '600',
-            fontSize: '1rem',
-            position: 'sticky',
-            top: 0,
-            zIndex: 10
+        tableHeader: {
+            backgroundColor: "#8B4513",
+            color: "white"
         },
-        td: {
-            padding: '1rem',
-            borderBottom: '1px solid #EFEBE9',
-            fontSize: '0.95rem',
-            color: '#5D4037'
+        tableHeaderCell: {
+            padding: "15px",
+            textAlign: "left",
+            fontWeight: "600",
+            fontSize: "15px"
         },
-        tr: {
-            transition: 'all 0.3s ease',
-            backgroundColor: '#ffffff',
-            '&:hover': {
-                backgroundColor: '#EFEBE9'
+        tableRow: {
+            borderBottom: "1px solid #eee",
+            transition: "background-color 0.2s",
+            "&:hover": {
+                backgroundColor: "#f8f9fa"
             }
         },
-        lowStockRow: {
-            backgroundColor: '#FFF5F5',
-            '&:hover': {
-                backgroundColor: '#FFE5E5'
+        tableCell: {
+            padding: "15px",
+            textAlign: "left",
+            verticalAlign: "middle",
+            fontSize: "14px",
+            color: "#34495e"
+        },
+        lowStockButton: {
+            padding: "5px 10px",
+            backgroundColor: "#e67e22",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "12px",
+            fontWeight: "500",
+            marginLeft: "8px",
+            transition: "all 0.2s",
+            "&:hover": {
+                backgroundColor: "#d35400"
             }
         },
         actionCell: {
-            display: 'flex',
-            gap: '0.5rem'
+            display: "flex",
+            gap: "10px"
         },
         editButton: {
-            padding: '0.5rem 1rem',
-            backgroundColor: '#8D6E63',
-            color: 'white',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '0.9rem',
-            fontWeight: '500',
-            transition: 'all 0.3s ease',
-            '&:hover': {
-                backgroundColor: '#6D4C41',
-                transform: 'translateY(-2px)'
+            padding: "8px 15px",
+            backgroundColor: "#8B4513",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "13px",
+            fontWeight: "500",
+            transition: "all 0.2s",
+            "&:hover": {
+                backgroundColor: "#654321"
             }
         },
         deleteButton: {
-            padding: '0.5rem 1rem',
-            backgroundColor: '#A1887F',
-            color: 'white',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '0.9rem',
-            fontWeight: '500',
-            transition: 'all 0.3s ease',
-            '&:hover': {
-                backgroundColor: '#8D6E63',
-                transform: 'translateY(-2px)'
+            padding: "8px 15px",
+            backgroundColor: "#e74c3c",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "13px",
+            fontWeight: "500",
+            transition: "all 0.2s",
+            "&:hover": {
+                backgroundColor: "#c0392b"
             }
-        },
-        lowStockButton: {
-            padding: '0.5rem 1rem',
-            backgroundColor: '#D32F2F',
-            color: 'white',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '0.9rem',
-            fontWeight: '500',
-            transition: 'all 0.3s ease',
-            '&:hover': {
-                backgroundColor: '#B71C1C',
-                transform: 'translateY(-2px)'
-            }
-        },
-        stockStatus: {
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem'
-        },
-        stockIndicator: {
-            width: '8px',
-            height: '8px',
-            borderRadius: '50%',
-            display: 'inline-block'
-        },
-        inStock: {
-            backgroundColor: '#388E3C'
-        },
-        lowStock: {
-            backgroundColor: '#F57C00'
-        },
-        outOfStock: {
-            backgroundColor: '#D32F2F'
-        },
-        errorMessage: {
-            color: '#D32F2F',
-            backgroundColor: '#FFEBEE',
-            padding: '1rem',
-            borderRadius: '8px',
-            marginBottom: '1rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem'
-        },
-        loadingState: {
-            padding: '2rem',
-            textAlign: 'center',
-            color: '#5D4037',
-            fontSize: '1.1rem'
         },
         emptyState: {
-            padding: '2rem',
-            textAlign: 'center',
-            color: '#5D4037',
-            fontSize: '1.1rem'
-        },
-        popup: {
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            backgroundColor: '#ffffff',
-            padding: '2rem',
-            borderRadius: '12px',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
-            zIndex: 1000,
-            maxWidth: '500px',
-            width: '90%'
+            padding: "30px",
+            textAlign: "center",
+            color: "#7f8c8d",
+            fontSize: "16px"
         },
         popupOverlay: {
-            position: 'fixed',
+            position: "fixed",
             top: 0,
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            zIndex: 999
-        },
-        popupHeader: {
-            color: '#D32F2F',
-            fontSize: '1.5rem',
-            marginBottom: '1rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem'
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1000,
+            backdropFilter: "blur(3px)"
         },
         popupContent: {
-            marginBottom: '1.5rem'
+            backgroundColor: "white",
+            borderRadius: "10px",
+            boxShadow: "0 5px 15px rgba(0, 0, 0, 0.3)",
+            padding: "25px",
+            width: "90%",
+            maxWidth: "600px",
+            maxHeight: "80vh",
+            overflow: "auto"
         },
-        popupItem: {
-            padding: '0.75rem',
-            backgroundColor: '#FFF5F5',
-            borderRadius: '6px',
-            marginBottom: '0.5rem',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
+        popupHeader: {
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "20px",
+            paddingBottom: "15px",
+            borderBottom: "1px solid #eee"
         },
-        popupButtons: {
-            display: 'flex',
-            justifyContent: 'flex-end',
-            gap: '1rem'
+        popupTitle: {
+            fontSize: "20px",
+            fontWeight: "600",
+            color: "#e74c3c",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px"
         },
         closeButton: {
-            padding: '0.75rem 1.5rem',
-            backgroundColor: '#A1887F',
-            color: 'white',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '0.9rem',
-            fontWeight: '500',
-            transition: 'all 0.3s ease',
-            '&:hover': {
-                backgroundColor: '#8D6E63',
-                transform: 'translateY(-2px)'
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            fontSize: "24px",
+            color: "#7f8c8d",
+            transition: "color 0.2s",
+            "&:hover": {
+                color: "#e74c3c"
             }
         },
-        actionButton: {
-            padding: '0.75rem 1.5rem',
-            backgroundColor: '#D32F2F',
-            color: 'white',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '0.9rem',
-            fontWeight: '500',
-            transition: 'all 0.3s ease',
-            '&:hover': {
-                backgroundColor: '#B71C1C',
-                transform: 'translateY(-2px)'
+        popupMessage: {
+            color: "#e74c3c",
+            marginBottom: "20px",
+            fontWeight: "500",
+            fontSize: "15px"
+        },
+        lowStockList: {
+            listStyle: "none",
+            padding: 0,
+            margin: 0
+        },
+        lowStockItem: {
+            padding: "12px 0",
+            borderBottom: "1px solid #f5f5f5",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center"
+        },
+        itemName: {
+            fontWeight: "600",
+            color: "#2c3e50",
+            fontSize: "15px"
+        },
+        itemQuantity: {
+            color: "#e74c3c",
+            fontWeight: "600",
+            fontSize: "14px"
+        },
+        popupFooter: {
+            marginTop: "20px",
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: "15px",
+            borderTop: "1px solid #eee",
+            paddingTop: "20px"
+        },
+        closePopupButton: {
+            padding: "10px 20px",
+            backgroundColor: "#e74c3c",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer",
+            fontSize: "15px",
+            fontWeight: "500",
+            transition: "all 0.3s",
+            "&:hover": {
+                backgroundColor: "#c0392b"
             }
+        },
+        stockStatus: {
+            display: "flex",
+            alignItems: "center",
+            gap: "8px"
+        },
+        stockIndicator: {
+            width: "10px",
+            height: "10px",
+            borderRadius: "50%",
+            display: "inline-block"
+        },
+        restockStatus: {
+            display: "flex",
+            alignItems: "center",
+            gap: "8px"
+        },
+        statusIndicator: {
+            width: "10px",
+            height: "10px",
+            borderRadius: "50%",
+            display: "inline-block"
+        },
+        statusText: {
+            fontSize: "14px",
+            fontWeight: "500"
+        },
+        inStock: {
+            backgroundColor: "#27ae60"
+        },
+        lowStock: {
+            backgroundColor: "#e67e22"
+        },
+        outOfStock: {
+            backgroundColor: "#e74c3c"
         }
     };
 
@@ -316,10 +340,13 @@ export default function ReadInventories() {
     }, []);
 
     useEffect(() => {
-        const lowStockItems = inventories.filter(item => item.qty < 20);
-        if (lowStockItems.length > 0) {
-            setLowStockItems(lowStockItems);
-            setShowLowStockPopup(true);
+        // Check for low stock items when inventories are loaded
+        if (inventories.length > 0) {
+            const lowStockItems = inventories.filter(item => item.qty < 20);
+            if (lowStockItems.length > 0) {
+                setLowStockItems(lowStockItems);
+                setShowLowStockPopup(true);
+            }
         }
     }, [inventories]);
 
@@ -389,7 +416,7 @@ export default function ReadInventories() {
     };
 
     const handleRestock = (item) => {
-        navigate(`/inventory/restock/${item._id}`);
+        navigate(`/restock/${item._id}`);
     };
 
     const handleGenerateReport = () => {
@@ -400,60 +427,48 @@ export default function ReadInventories() {
         setSearchTerm(e.target.value);
     };
 
-    const handleClosePopup = () => {
+    const closePopup = () => {
         setShowLowStockPopup(false);
-    };
-
-    const handleRestockFromPopup = (item) => {
-        handleRestock(item);
-        setShowLowStockPopup(false);
-    };
-
-    // Add this component for the popup
-    const LowStockPopup = ({ items, onClose, onRestock }) => {
-        if (!items || items.length === 0) return null;
-
-        return (
-            <>
-                <div style={styles.popupOverlay} onClick={onClose} />
-                <div style={styles.popup}>
-                    <div style={styles.popupHeader}>
-                        <span>⚠️ Low Stock Alert</span>
-                    </div>
-                    <div style={styles.popupContent}>
-                        <p>The following items are running low on stock:</p>
-                        {items.map(item => (
-                            <div key={item._id} style={styles.popupItem}>
-                                <span>{item.itemname} - {item.qty} remaining</span>
-                                <button
-                                    style={styles.actionButton}
-                                    onClick={() => onRestock(item)}
-                                >
-                                    Restock
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                    <div style={styles.popupButtons}>
-                        <button style={styles.closeButton} onClick={onClose}>
-                            Close
-                        </button>
-                    </div>
-                </div>
-            </>
-        );
     };
 
     return (
         <div style={styles.container}>
             {showLowStockPopup && (
-                <LowStockPopup
-                    items={lowStockItems}
-                    onClose={handleClosePopup}
-                    onRestock={handleRestockFromPopup}
-                />
+                <div style={styles.popupOverlay}>
+                    <div style={styles.popupContent}>
+                        <div style={styles.popupHeader}>
+                            <h2 style={styles.popupTitle}>
+                                <span>⚠️</span> LOW STOCK WARNING
+                            </h2>
+                            <button style={styles.closeButton} onClick={closePopup}>×</button>
+                        </div>
+                        <div style={styles.popupMessage}>
+                            The following items are below their minimum stock levels:
+                        </div>
+                        <ul style={styles.lowStockList}>
+                            {lowStockItems.map(item => (
+                                <li key={item._id} style={styles.lowStockItem}>
+                                    <span style={styles.itemName}>{item.itemname}</span>
+                                    <div>
+                                        <span style={styles.itemQuantity}>
+                                            {item.qty} units (Threshold: 20)
+                                        </span>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                        <div style={styles.popupFooter}>
+                            <button
+                                style={styles.closePopupButton}
+                                onClick={closePopup}
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
-            
+
             <div style={styles.header}>
                 <h1 style={styles.headerTitle}>Inventory Management</h1>
                 <div style={styles.headerActions}>
@@ -475,9 +490,9 @@ export default function ReadInventories() {
             <div style={styles.searchContainer}>
                 <input
                     type="text"
-                    placeholder="Search inventory..."
+                    placeholder="Search by Item Number or Name..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={handleSearchChange}
                     style={styles.searchInput}
                 />
             </div>
@@ -492,15 +507,15 @@ export default function ReadInventories() {
                 <div style={styles.tableContainer}>
                     <table style={styles.table}>
                         <thead>
-                            <tr>
-                                <th style={styles.th}>Item No</th>
-                                <th style={styles.th}>Item Name</th>
-                                <th style={styles.th}>Price (Rs)</th>
-                                <th style={styles.th}>Quantity</th>
-                                <th style={styles.th}>Description</th>
-                                <th style={styles.th}>Inventory Date</th>
-                                <th style={styles.th}>Status</th>
-                                <th style={styles.th}>Actions</th>
+                            <tr style={styles.tableHeader}>
+                                <th style={styles.tableHeaderCell}>Item No</th>
+                                <th style={styles.tableHeaderCell}>Item Name</th>
+                                <th style={styles.tableHeaderCell}>Price (Rs)</th>
+                                <th style={styles.tableHeaderCell}>Quantity</th>
+                                <th style={styles.tableHeaderCell}>Description</th>
+                                <th style={styles.tableHeaderCell}>Inventory Date</th>
+                                <th style={styles.tableHeaderCell}>Restock Status</th>
+                                <th style={styles.tableHeaderCell}>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -511,13 +526,14 @@ export default function ReadInventories() {
                                         <tr
                                             key={item._id}
                                             style={{
-                                                ...(isLowStock ? styles.lowStockRow : styles.tr)
+                                                ...styles.tableRow,
+                                                backgroundColor: isLowStock ? "#fff5f5" : "inherit"
                                             }}
                                         >
-                                            <td style={styles.td}>{item.itemno}</td>
-                                            <td style={styles.td}>{item.itemname}</td>
-                                            <td style={styles.td}>Rs {item.price?.toFixed(2)}</td>
-                                            <td style={styles.td}>
+                                            <td style={styles.tableCell}>{item.itemno}</td>
+                                            <td style={styles.tableCell}>{item.itemname}</td>
+                                            <td style={styles.tableCell}>Rs {item.price?.toFixed(2)}</td>
+                                            <td style={styles.tableCell}>
                                                 <div style={styles.stockStatus}>
                                                     <span 
                                                         style={{
@@ -526,42 +542,43 @@ export default function ReadInventories() {
                                                         }}
                                                     />
                                                     {item.qty}
+                                                    {isLowStock && !restockStatus[item._id] && (
+                                                        <button
+                                                            style={styles.lowStockButton}
+                                                            onClick={() => handleRestock(item)}
+                                                        >
+                                                            Low Stock
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </td>
-                                            <td style={styles.td}>
+                                            <td style={styles.tableCell}>
                                                 {item.itemdescription?.length > 50
                                                     ? `${item.itemdescription.substring(0, 50)}...`
                                                     : item.itemdescription}
                                             </td>
-                                            <td style={styles.td}>
+                                            <td style={styles.tableCell}>
                                                 {new Date(item.inventorydate).toLocaleDateString()}
                                             </td>
-                                            <td style={styles.td}>
-                                                {restockStatus[item._id] ? (
-                                                    <div style={styles.stockStatus}>
+                                            <td style={styles.tableCell}>
+                                                {restockStatus[item._id] && (
+                                                    <div style={styles.restockStatus}>
                                                         <span 
                                                             style={{
-                                                                ...styles.stockIndicator,
+                                                                ...styles.statusIndicator,
                                                                 backgroundColor: 
                                                                     restockStatus[item._id] === 'in_transit' ? "#e67e22" :
                                                                     restockStatus[item._id] === 'completed' ? "#27ae60" : "#95a5a6"
                                                             }}
                                                         />
-                                                        {restockStatus[item._id] === 'in_transit' ? 'In Transit' :
-                                                         restockStatus[item._id] === 'completed' ? 'Completed' : 'Pending'}
+                                                        <span style={styles.statusText}>
+                                                            {restockStatus[item._id] === 'in_transit' ? 'In Transit' :
+                                                             restockStatus[item._id] === 'completed' ? 'Completed' : 'Pending'}
+                                                        </span>
                                                     </div>
-                                                ) : (
-                                                    isLowStock && (
-                                                        <button
-                                                            style={styles.actionButton}
-                                                            onClick={() => handleRestock(item)}
-                                                        >
-                                                            Restock
-                                                        </button>
-                                                    )
                                                 )}
                                             </td>
-                                            <td style={styles.td}>
+                                            <td style={styles.tableCell}>
                                                 <div style={styles.actionCell}>
                                                     <button
                                                         style={styles.editButton}
@@ -582,12 +599,10 @@ export default function ReadInventories() {
                                 })
                             ) : (
                                 <tr>
-                                    <td colSpan="8" style={styles.td}>
-                                        <div style={styles.noResults}>
-                                            {searchTerm
-                                                ? "No items found matching your search"
-                                                : "No inventory items found. Add your first item!"}
-                                        </div>
+                                    <td colSpan="8" style={styles.emptyState}>
+                                        {searchTerm
+                                            ? "No items found matching your search"
+                                            : "No inventory items found. Add your first item!"}
                                     </td>
                                 </tr>
                             )}

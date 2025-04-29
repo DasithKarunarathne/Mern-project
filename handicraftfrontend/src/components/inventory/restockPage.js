@@ -22,7 +22,7 @@ export default function RestockPage() {
     const fetchInventory = async () => {
         try {
             setLoading(true);
-            const response = await axios.get(`http://localhost:5000/inventory/restock/${id}`);
+            const response = await axios.get(`http://localhost:5000/inventory/item/${id}`);
             if (response.data && response.data.success && response.data.inventory) {
                 setInventory(response.data.inventory);
                 setRestockData(prev => ({
@@ -91,7 +91,7 @@ export default function RestockPage() {
 
             <form onSubmit={handleSubmit} style={styles.form}>
                 <div style={styles.formGroup}>
-                    <label htmlFor="minimumQuantity" style={styles.label}>Minimum Quantity:</label>
+                    <label htmlFor="minimumQuantity">Minimum Quantity:</label>
                     <input
                         type="number"
                         id="minimumQuantity"
@@ -100,12 +100,11 @@ export default function RestockPage() {
                         onChange={handleInputChange}
                         required
                         min="0"
-                        style={styles.input}
                     />
                 </div>
 
                 <div style={styles.formGroup}>
-                    <label htmlFor="restockLevel" style={styles.label}>Restock Level:</label>
+                    <label htmlFor="restockLevel">Restock Level:</label>
                     <input
                         type="number"
                         id="restockLevel"
@@ -114,12 +113,11 @@ export default function RestockPage() {
                         onChange={handleInputChange}
                         required
                         min="0"
-                        style={styles.input}
                     />
                 </div>
 
                 <div style={styles.formGroup}>
-                    <label htmlFor="restockDate" style={styles.label}>Restock Date:</label>
+                    <label htmlFor="restockDate">Restock Date:</label>
                     <input
                         type="date"
                         id="restockDate"
@@ -127,7 +125,6 @@ export default function RestockPage() {
                         value={restockData.restockDate}
                         onChange={handleInputChange}
                         required
-                        style={styles.input}
                     />
                 </div>
 
@@ -154,15 +151,19 @@ const styles = {
         margin: '2rem auto',
         padding: '2rem',
         backgroundColor: '#ffffff',
-        borderRadius: '12px',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+        borderRadius: '8px',
+        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
     },
     header: {
-        color: '#5D4037',
+        color: '#333',
         marginBottom: '2rem',
-        textAlign: 'center',
-        fontSize: '1.8rem',
-        fontWeight: '600'
+        textAlign: 'center'
+    },
+    itemInfo: {
+        marginBottom: '2rem',
+        padding: '1rem',
+        backgroundColor: '#f8f9fa',
+        borderRadius: '4px'
     },
     form: {
         display: 'flex',
@@ -174,101 +175,59 @@ const styles = {
         flexDirection: 'column',
         gap: '0.5rem'
     },
-    label: {
+    'formGroup label': {
         fontWeight: '600',
-        color: '#5D4037',
+        color: '#555'
+    },
+    'formGroup input': {
+        padding: '0.75rem',
+        border: '1px solid #ddd',
+        borderRadius: '4px',
         fontSize: '1rem'
-    },
-    input: {
-        padding: '0.75rem 1rem',
-        border: '1px solid #BCAAA4',
-        borderRadius: '8px',
-        fontSize: '1rem',
-        transition: 'all 0.3s ease',
-        '&:focus': {
-            outline: 'none',
-            borderColor: '#8D6E63',
-            boxShadow: '0 0 0 3px rgba(141, 110, 99, 0.1)'
-        }
-    },
-    itemInfo: {
-        marginBottom: '2rem',
-        padding: '1.5rem',
-        backgroundColor: '#EFEBE9',
-        borderRadius: '8px',
-        color: '#5D4037'
-    },
-    infoRow: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        marginBottom: '0.5rem',
-        fontSize: '1rem'
-    },
-    infoLabel: {
-        fontWeight: '600'
     },
     buttonContainer: {
         display: 'flex',
         gap: '1rem',
         justifyContent: 'center',
-        marginTop: '1.5rem'
+        marginTop: '1rem'
     },
     submitButton: {
-        padding: '0.75rem 1.5rem',
-        backgroundColor: '#8D6E63',
+        padding: '1rem 2rem',
+        backgroundColor: '#8B4513',
         color: 'white',
         border: 'none',
-        borderRadius: '8px',
+        borderRadius: '4px',
         fontSize: '1rem',
-        fontWeight: '500',
-        cursor: 'pointer',
-        transition: 'all 0.3s ease',
-        '&:hover': {
-            backgroundColor: '#6D4C41',
-            transform: 'translateY(-2px)',
-            boxShadow: '0 4px 12px rgba(141, 110, 99, 0.3)'
-        }
+        fontWeight: '600',
+        cursor: 'pointer'
     },
     cancelButton: {
-        padding: '0.75rem 1.5rem',
-        backgroundColor: '#A1887F',
+        padding: '1rem 2rem',
+        backgroundColor: '#e74c3c',
         color: 'white',
         border: 'none',
-        borderRadius: '8px',
+        borderRadius: '4px',
         fontSize: '1rem',
-        fontWeight: '500',
-        cursor: 'pointer',
-        transition: 'all 0.3s ease',
-        '&:hover': {
-            backgroundColor: '#8D6E63',
-            transform: 'translateY(-2px)',
-            boxShadow: '0 4px 12px rgba(161, 136, 127, 0.3)'
-        }
+        fontWeight: '600',
+        cursor: 'pointer'
     },
     error: {
-        color: '#D32F2F',
-        backgroundColor: '#FFEBEE',
+        color: '#e74c3c',
+        backgroundColor: '#fdecea',
         padding: '1rem',
-        borderRadius: '8px',
-        marginBottom: '1rem',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.5rem'
+        borderRadius: '4px',
+        marginBottom: '1rem'
     },
     success: {
-        color: '#388E3C',
-        backgroundColor: '#E8F5E9',
+        color: '#27ae60',
+        backgroundColor: '#e8f8f5',
         padding: '1rem',
-        borderRadius: '8px',
-        marginBottom: '1rem',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.5rem'
+        borderRadius: '4px',
+        marginBottom: '1rem'
     },
     loading: {
         textAlign: 'center',
         padding: '2rem',
-        color: '#5D4037',
-        fontSize: '1.1rem'
+        color: '#666'
     }
 };

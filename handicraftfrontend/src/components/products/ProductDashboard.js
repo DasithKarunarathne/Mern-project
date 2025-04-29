@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getProducts } from "../products/services/api.js";
+import { getProducts } from "../../components/products/services/api.js";
 import {
   Box,
   Typography,
@@ -24,9 +24,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  IconButton,
-  Rating,
-  Stack,
   Paper,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
@@ -37,14 +34,12 @@ import {
   Login as LoginIcon,
   HowToReg as RegisterIcon,
   Visibility as ViewIcon,
-  ShoppingCart as CartIcon,
-  FavoriteBorder as WishlistIcon,
   ArrowBackIos,
   ArrowForwardIos,
 } from "@mui/icons-material";
 import WhyChooseUs from './WhyChooseUs';
-import config from '../../config';
 import FloatingChatbot from '../customer/FloatingChatbot';
+import config from '../../config';
 
 const StyledContainer = styled(Container)(({ theme }) => ({
   padding: theme.spacing(4),
@@ -70,89 +65,21 @@ const StyledFormControl = styled(FormControl)(({ theme }) => ({
 }));
 
 const ProductCard = styled(Card)(({ theme }) => ({
-  height: '100%',
+  height: 320,
   display: 'flex',
   flexDirection: 'column',
   borderRadius: theme.spacing(2),
   transition: 'all 0.3s ease-in-out',
-  position: 'relative',
-  overflow: 'hidden',
-  backgroundColor: 'rgba(255, 255, 255, 0.95)',
   '&:hover': {
     transform: 'translateY(-8px)',
     boxShadow: '0 12px 24px rgba(0,0,0,0.15)',
-    '& .product-actions': {
-      transform: 'translateY(0)',
-      opacity: 1,
-    },
-    '& .product-image': {
-      transform: 'scale(1.05)',
-    },
   },
 }));
 
-const ProductImageWrapper = styled(Box)({
-  position: 'relative',
-  paddingTop: '75%', // 4:3 aspect ratio
-  overflow: 'hidden',
-  backgroundColor: '#f5f5f5',
-});
-
-const StyledProductImage = styled('img')({
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  width: '100%',
-  height: '100%',
-  objectFit: 'cover',
-  transition: 'transform 0.3s ease-in-out',
-});
-
-const ProductActions = styled(Stack)(({ theme }) => ({
-  position: 'absolute',
-  bottom: 0,
-  left: 0,
-  right: 0,
-  padding: theme.spacing(2),
-  background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
-  transform: 'translateY(100%)',
-  opacity: 0,
-  transition: 'all 0.3s ease-in-out',
-  zIndex: 1,
-  display: 'flex',
-  flexDirection: 'row',
-  justifyContent: 'center',
-  gap: theme.spacing(1),
-}));
-
-const ActionIconButton = styled(IconButton)(({ theme }) => ({
-  backgroundColor: 'rgba(255, 255, 255, 0.9)',
-  '&:hover': {
-    backgroundColor: 'rgba(255, 255, 255, 1)',
-    transform: 'scale(1.1)',
-  },
-}));
-
-const StyledChip = styled(Chip)(({ theme }) => ({
-  position: 'absolute',
-  top: theme.spacing(2),
-  right: theme.spacing(2),
-  zIndex: 1,
-  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-  backdropFilter: 'blur(4px)',
-  fontWeight: 600,
-  fontSize: '0.9rem',
-  padding: theme.spacing(0.5, 1),
-  boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-  border: '1px solid rgba(255,255,255,0.3)',
-  '& .MuiChip-label': {
-    padding: theme.spacing(0, 1),
-    color: theme.palette.primary.main,
-  },
-  '&:hover': {
-    backgroundColor: 'rgba(255, 255, 255, 1)',
-    transform: 'scale(1.05)',
-  },
+const ProductImage = styled(CardMedia)(({ theme }) => ({
+  height: 200,
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
 }));
 
 const ProductGrid = styled(Box)(({ theme }) => ({
@@ -167,23 +94,17 @@ const CarouselContainer = styled(Box)(({ theme }) => ({
   width: '100%',
   height: '500px',
   overflow: 'hidden',
-  borderRadius: '20px',
+  borderRadius: theme.shape.borderRadius,
+  boxShadow: theme.shadows[3],
   marginBottom: theme.spacing(4),
-  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
-  [theme.breakpoints.down('sm')]: {
-    height: '350px',
-  },
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'linear-gradient(45deg, rgba(93, 64, 55, 0.3), rgba(62, 39, 35, 0.3))',
-    zIndex: 1,
-  }
 }));
+
+const CarouselImage = styled('img')({
+  width: '100%',
+  height: '100%',
+  objectFit: 'cover',
+  objectPosition: 'center',
+});
 
 const CarouselSlide = styled(Paper)(({ theme }) => ({
   position: 'absolute',
@@ -194,13 +115,10 @@ const CarouselSlide = styled(Paper)(({ theme }) => ({
   justifyContent: 'center',
   backgroundSize: 'cover',
   backgroundPosition: 'center',
-  backgroundRepeat: 'no-repeat',
-  transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+  transition: 'opacity 0.5s ease-in-out',
   opacity: 0,
-  transform: 'scale(1.1)',
   '&.active': {
     opacity: 1,
-    transform: 'scale(1)',
   },
 }));
 
@@ -210,30 +128,9 @@ const CarouselContent = styled(Box)(({ theme }) => ({
   left: 0,
   right: 0,
   padding: theme.spacing(4),
-  background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
-  color: 'white',
-  textAlign: 'center',
-  zIndex: 2,
-  [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(2),
-  },
-  '& h4': {
-    fontSize: '2.5rem',
-    fontWeight: 700,
-    marginBottom: theme.spacing(2),
-    textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
-    [theme.breakpoints.down('sm')]: {
-      fontSize: '1.8rem',
-    },
-  },
-  '& h6': {
-    fontSize: '1.2rem',
-    opacity: 0.9,
-    textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
-    [theme.breakpoints.down('sm')]: {
-      fontSize: '1rem',
-    },
-  },
+  background: 'linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.3))',
+  color: theme.palette.common.white,
+  borderRadius: `0 0 ${theme.shape.borderRadius}px ${theme.shape.borderRadius}px`,
 }));
 
 const CarouselButton = styled(Button)(({ theme }) => ({
@@ -242,26 +139,17 @@ const CarouselButton = styled(Button)(({ theme }) => ({
   transform: 'translateY(-50%)',
   backgroundColor: 'rgba(255, 255, 255, 0.2)',
   color: 'white',
-  padding: theme.spacing(2),
-  borderRadius: '50%',
-  minWidth: 'auto',
-  zIndex: 2,
-  transition: 'all 0.3s ease',
   '&:hover': {
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    transform: 'translateY(-50%) scale(1.1)',
-  },
-  '& .MuiSvgIcon-root': {
-    fontSize: '2rem',
   },
 }));
 
 const PrevButton = styled(CarouselButton)(({ theme }) => ({
-  left: theme.spacing(3),
+  left: theme.spacing(2),
 }));
 
 const NextButton = styled(CarouselButton)(({ theme }) => ({
-  right: theme.spacing(3),
+  right: theme.spacing(2),
 }));
 
 const carouselItems = [
@@ -292,19 +180,6 @@ const carouselItems = [
   }
 ];
 
-const getImageUrl = (imagePath) => {
-  if (!imagePath) return config.DEFAULT_PRODUCT_IMAGE;
-  
-  // Check if it's already a complete URL or data URL
-  if (imagePath.startsWith('http') || imagePath.startsWith('data:')) {
-    return imagePath;
-  }
-  
-  // Remove any leading slashes to avoid double slashes in the URL
-  const cleanPath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;
-  return `${config.IMAGE_BASE_URL}/${cleanPath}`;
-};
-
 const ProductDashboard = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -313,8 +188,6 @@ const ProductDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [loginDialog, setLoginDialog] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
-  const MAX_RETRIES = 3;
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   
@@ -333,29 +206,17 @@ const ProductDashboard = () => {
       try {
         setLoading(true);
         const response = await getProducts();
-        if (response && response.data) {
-          setProducts(response.data);
-          setFilteredProducts(response.data);
-          setError(null);
-        } else {
-          throw new Error('Invalid response format');
-        }
+        setProducts(response.data);
+        setFilteredProducts(response.data);
       } catch (error) {
         console.error("Error fetching products:", error);
-        if (retryCount < MAX_RETRIES) {
-          setRetryCount(prev => prev + 1);
-          setTimeout(() => {
-            fetchProducts();
-          }, 2000 * (retryCount + 1));
-        } else {
-          setError("Failed to load products. Please try again later.");
-        }
+        setError("Failed to load products. Please try again later.");
       } finally {
         setLoading(false);
       }
     };
     fetchProducts();
-  }, [retryCount]);
+  }, []);
 
   const categories = ["All", ...new Set(products.map((product) => product.category))];
 
@@ -395,148 +256,28 @@ const ProductDashboard = () => {
     setLoginDialog(true);
   };
 
-  const handleImageError = (e) => {
-    e.target.onerror = null; // Prevent infinite loop
-    e.target.src = config.DEFAULT_PRODUCT_IMAGE;
-  };
-
-  const renderContent = () => {
-    if (loading) {
-      return (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-          <CircularProgress size={60} thickness={4} />
-        </Box>
-      );
-    }
-
-    if (error) {
-      return (
-        <Box sx={{ textAlign: 'center', mt: 4 }}>
-          <Typography variant="h6" color="error" gutterBottom>
-            {error}
-          </Typography>
-          <Button 
-            variant="contained" 
-            onClick={() => setRetryCount(0)} 
-            sx={{ mt: 2 }}
-          >
-            Retry Loading
-          </Button>
-        </Box>
-      );
-    }
-
-    if (filteredProducts.length === 0) {
-      return (
-        <Fade in>
-          <Box sx={{ textAlign: 'center', mt: 8 }}>
-            <Typography variant="h6" color="text.secondary">
-              No products found matching your criteria.
-            </Typography>
-          </Box>
-        </Fade>
-      );
-    }
-
+  if (loading) {
     return (
-      <Fade in>
-        <ProductGrid>
-          {filteredProducts.map((product) => (
-            <ProductCard key={product._id}>
-              <ProductImageWrapper>
-                <StyledProductImage
-                  className="product-image"
-                  src={getImageUrl(product.image)}
-                  alt={product.name}
-                  onError={handleImageError}
-                />
-                <StyledChip
-                  label={product.category}
-                  size="small"
-                  color="primary"
-                />
-                <ProductActions className="product-actions">
-                  <ActionIconButton
-                    onClick={() => handleViewDetails(product._id)}
-                    size="small"
-                    title="View Details"
-                  >
-                    <ViewIcon />
-                  </ActionIconButton>
-                  <ActionIconButton
-                    onClick={handleLoginPrompt}
-                    size="small"
-                    title="Add to Cart"
-                  >
-                    <CartIcon />
-                  </ActionIconButton>
-                  <ActionIconButton
-                    onClick={handleLoginPrompt}
-                    size="small"
-                    title="Add to Wishlist"
-                  >
-                    <WishlistIcon />
-                  </ActionIconButton>
-                </ProductActions>
-              </ProductImageWrapper>
-              <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Typography 
-                  variant="h6" 
-                  sx={{
-                    fontWeight: 600,
-                    fontSize: '1.1rem',
-                    mb: 1,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                    minHeight: '2.75rem',
-                  }}
-                >
-                  {product.name}
-                </Typography>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <Rating value={4.5} precision={0.5} size="small" readOnly />
-                  <Typography variant="body2" color="text.secondary">
-                    (4.5)
-                  </Typography>
-                </Stack>
-                <Typography 
-                  variant="h6" 
-                  color="primary" 
-                  sx={{
-                    fontWeight: 700,
-                    mt: 'auto',
-                    pt: 1
-                  }}
-                >
-                  LKR {(product.price || 0).toFixed(2)}
-                </Typography>
-                {product.stockQuantity <= 5 && product.stockQuantity > 0 && (
-                  <Typography variant="caption" color="error.main" sx={{ mt: 0.5 }}>
-                    Only {product.stockQuantity} left in stock!
-                  </Typography>
-                )}
-                {product.stockQuantity === 0 && (
-                  <Typography variant="caption" color="error.main" sx={{ mt: 0.5 }}>
-                    Out of stock
-                  </Typography>
-                )}
-              </CardContent>
-            </ProductCard>
-          ))}
-        </ProductGrid>
-      </Fade>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <CircularProgress size={60} thickness={4} />
+      </Box>
     );
-  };
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ textAlign: 'center', mt: 4 }}>
+        <Typography variant="h6" color="error">{error}</Typography>
+      </Box>
+    );
+  }
 
   return (
     <StyledContainer maxWidth="xl">
-      <Typography
-        variant={isMobile ? "h4" : "h3"}
-        sx={{
-          mb: 4,
+      <Typography 
+        variant={isMobile ? "h4" : "h3"} 
+        sx={{ 
+          mb: 4, 
           textAlign: "center",
           fontWeight: 700,
           background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
@@ -652,7 +393,81 @@ const ProductDashboard = () => {
         </StyledFormControl>
       </SearchContainer>
 
-      {renderContent()}
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+          <CircularProgress size={60} thickness={4} />
+        </Box>
+      ) : filteredProducts.length === 0 ? (
+        <Fade in>
+          <Box sx={{ textAlign: 'center', mt: 8 }}>
+            <Typography variant="h6" color="text.secondary">
+              No products found matching your criteria.
+            </Typography>
+          </Box>
+        </Fade>
+      ) : (
+        <Fade in>
+          <ProductGrid>
+            {filteredProducts.map((product) => {
+              const imageUrl = product.image 
+                ? `http://localhost:5000${product.image}` 
+                : config.DEFAULT_PRODUCT_IMAGE;
+              
+              return (
+                <ProductCard key={product._id}>
+                  <ProductImage
+                    image={imageUrl}
+                    title={product.name}
+                    onError={(e) => {
+                      e.target.onerror = null; // Prevent infinite loop
+                      e.target.src = config.DEFAULT_PRODUCT_IMAGE;
+                    }}
+                  />
+                  <CardContent>
+                    <Typography variant="h6" noWrap sx={{ mb: 1 }}>
+                      {product.name}
+                    </Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                      <Typography variant="h6" color="primary">
+                        LKR {product.price?.toFixed(2)}
+                      </Typography>
+                      <Chip
+                        label={product.category}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                      />
+                    </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Button
+                        variant="contained"
+                        startIcon={<ViewIcon />}
+                        onClick={() => isLoggedIn ? handleViewDetails(product._id) : handleLoginPrompt()}
+                        sx={{
+                          borderRadius: '8px',
+                          textTransform: 'none',
+                        }}
+                      >
+                        View Details
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        onClick={isLoggedIn ? () => navigate('/product/delivery', { state: { singleProduct: { productId: product._id, quantity: 1, price: product.price } } }) : handleLoginPrompt}
+                        sx={{
+                          borderRadius: '8px',
+                          textTransform: 'none',
+                        }}
+                      >
+                        Buy Now
+                      </Button>
+                    </Box>
+                  </CardContent>
+                </ProductCard>
+              );
+            })}
+          </ProductGrid>
+        </Fade>
+      )}
 
       <WhyChooseUs />
 

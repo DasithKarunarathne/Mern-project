@@ -229,108 +229,100 @@ export default function AddInventories() {
 
     const styles = {
         container: {
-            padding: "25px",
             maxWidth: "800px",
-            margin: "0 auto",
-            fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+            margin: "20px auto",
+            padding: "20px",
             backgroundColor: "#f5f5f5",
-            minHeight: "100vh"
+            borderRadius: "8px",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
         },
         header: {
-            marginBottom: "25px",
-            textAlign: "center"
-        },
-        headerTitle: {
-            fontSize: "28px",
-            fontWeight: "600",
-            color: "#5D4037",
-            margin: "0"
+            fontSize: "24px",
+            fontWeight: "bold",
+            marginBottom: "20px",
+            color: "#333",
+            borderBottom: "2px solid #8B4513",
+            paddingBottom: "10px",
         },
         form: {
-            backgroundColor: "white",
-            padding: "25px",
-            borderRadius: "12px",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
+            display: "flex",
+            flexDirection: "column",
+            gap: "20px",
         },
         formGroup: {
-            marginBottom: "20px"
+            display: "flex",
+            flexDirection: "column",
+            gap: "8px",
         },
         label: {
-            display: "block",
-            marginBottom: "8px",
-            fontWeight: "500",
-            color: "#5D4037"
+            fontWeight: "600",
+            color: "#555",
         },
         input: {
-            width: "100%",
             padding: "10px",
-            borderRadius: "8px",
-            border: "1px solid #BCAAA4",
+            border: "1px solid #ddd",
+            borderRadius: "4px",
             fontSize: "14px",
-            transition: "all 0.3s ease",
-            "&:focus": {
-                outline: "none",
-                borderColor: "#8D6E63",
-                boxShadow: "0 0 0 3px rgba(141, 110, 99, 0.1)"
-            }
+            backgroundColor: "white",
         },
-        error: {
-            color: "#D32F2F",
-            fontSize: "12px",
-            marginTop: "5px"
-        },
-        button: {
-            padding: "10px 20px",
-            backgroundColor: "#8D6E63",
-            color: "white",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer",
+        textarea: {
+            padding: "10px",
+            border: "1px solid #ddd",
+            borderRadius: "4px",
             fontSize: "14px",
-            fontWeight: "500",
-            transition: "all 0.3s ease",
-            "&:hover": {
-                backgroundColor: "#6D4C41",
-                transform: "translateY(-2px)",
-                boxShadow: "0 4px 12px rgba(141, 110, 99, 0.3)"
-            }
-        },
-        qualityCheck: {
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            marginBottom: "20px"
-        },
-        checkbox: {
-            width: "18px",
-            height: "18px",
-            cursor: "pointer"
-        },
-        checkboxLabel: {
-            color: "#5D4037",
-            cursor: "pointer"
+            minHeight: "100px",
+            resize: "vertical",
+            backgroundColor: "white",
         },
         errorMessage: {
-            color: "#D32F2F",
-            backgroundColor: "#FFEBEE",
-            padding: "10px",
-            borderRadius: "8px",
-            marginBottom: "15px"
+            color: "#e74c3c",
+            fontSize: "14px",
+            marginTop: "5px",
         },
-        successMessage: {
-            color: "#388E3C",
-            backgroundColor: "#E8F5E9",
+        buttonContainer: {
+            display: "flex",
+            gap: "10px",
+            marginTop: "20px",
+        },
+        qualityButton: {
+            padding: "10px 20px",
+            backgroundColor: "#f39c12",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+        },
+        submitButton: {
+            padding: "10px 20px",
+            backgroundColor: "#2ecc71",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            opacity: qualityVerified ? 1 : 0.5,
+            pointerEvents: qualityVerified ? "auto" : "none",
+        },
+        cancelButton: {
+            padding: "10px 20px",
+            backgroundColor: "#e74c3c",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+        },
+        qualityStatus: {
             padding: "10px",
-            borderRadius: "8px",
-            marginBottom: "15px"
-        }
+            backgroundColor: qualityVerified ? "#e8f8f5" : "#fef9e7",
+            borderRadius: "4px",
+            color: qualityVerified ? "#27ae60" : "#f39c12",
+            marginBottom: "20px",
+            fontWeight: "600",
+        },
     };
 
     return (
         <div style={styles.container}>
-            <h1 style={styles.header}>
-                <span style={styles.headerTitle}>Add New Inventory Item</span>
-            </h1>
+            <h1 style={styles.header}>Add New Inventory Item</h1>
             
             {error && <div style={styles.errorMessage}>{error}</div>}
             
@@ -348,7 +340,7 @@ export default function AddInventories() {
                             borderColor: errors.itemno ? "#e74c3c" : "#ddd"
                         }}
                     />
-                    {errors.itemno && <div style={styles.error}>{errors.itemno}</div>}
+                    {errors.itemno && <div style={styles.errorMessage}>{errors.itemno}</div>}
                 </div>
 
                 <div style={styles.formGroup}>
@@ -364,7 +356,7 @@ export default function AddInventories() {
                             borderColor: errors.itemname ? "#e74c3c" : "#ddd"
                         }}
                     />
-                    {errors.itemname && <div style={styles.error}>{errors.itemname}</div>}
+                    {errors.itemname && <div style={styles.errorMessage}>{errors.itemname}</div>}
                 </div>
 
                 <div style={styles.formGroup}>
@@ -380,7 +372,7 @@ export default function AddInventories() {
                             borderColor: errors.price ? "#e74c3c" : "#ddd"
                         }}
                     />
-                    {errors.price && <div style={styles.error}>{errors.price}</div>}
+                    {errors.price && <div style={styles.errorMessage}>{errors.price}</div>}
                 </div>
 
                 <div style={styles.formGroup}>
@@ -395,7 +387,7 @@ export default function AddInventories() {
                             borderColor: errors.qty ? "#e74c3c" : "#ddd"
                         }}
                     />
-                    {errors.qty && <div style={styles.error}>{errors.qty}</div>}
+                    {errors.qty && <div style={styles.errorMessage}>{errors.qty}</div>}
                 </div>
 
                 <div style={styles.formGroup}>
@@ -405,11 +397,11 @@ export default function AddInventories() {
                         value={inventory.itemdescription}
                         onChange={handleInputChange}
                         style={{
-                            ...styles.input,
+                            ...styles.textarea,
                             borderColor: errors.itemdescription ? "#e74c3c" : "#ddd"
                         }}
                     />
-                    {errors.itemdescription && <div style={styles.error}>{errors.itemdescription}</div>}
+                    {errors.itemdescription && <div style={styles.errorMessage}>{errors.itemdescription}</div>}
                 </div>
 
                 <div style={styles.formGroup}>
@@ -424,30 +416,23 @@ export default function AddInventories() {
                     />
                 </div>
 
-                <div style={styles.qualityCheck}>
-                    <input
-                        type="checkbox"
-                        id="qualityVerified"
-                        checked={qualityVerified}
-                        onChange={(e) => setQualityVerified(e.target.checked)}
-                        style={styles.checkbox}
-                    />
-                    <label htmlFor="qualityVerified" style={styles.checkboxLabel}>
-                        {qualityVerified ? "✅ Quality check passed" : "⚠️ Quality check required"}
-                    </label>
+                <div style={styles.qualityStatus}>
+                    {qualityVerified 
+                        ? "✅ Quality check passed" 
+                        : "⚠️ Quality check required"}
                 </div>
 
                 <div style={styles.buttonContainer}>
                     <button
                         type="button"
                         onClick={handleCheckQuality}
-                        style={styles.button}
+                        style={styles.qualityButton}
                     >
                         Check Quality
                     </button>
                     <button
                         type="submit"
-                        style={styles.button}
+                        style={styles.submitButton}
                         disabled={!qualityVerified}
                     >
                         Add Item
@@ -455,7 +440,7 @@ export default function AddInventories() {
                     <button
                         type="button"
                         onClick={() => navigate("/display")}
-                        style={styles.button}
+                        style={styles.cancelButton}
                     >
                         Cancel
                     </button>

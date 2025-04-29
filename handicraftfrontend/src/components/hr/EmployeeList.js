@@ -85,8 +85,7 @@ const EmployeeList = () => {
   const [employees, setEmployees] = useState([]);
   const [filteredEmployees, setFilteredEmployees] = useState([]);
   const [overtimeRecords, setOvertimeRecords] = useState({});
-  const [selectedEmployee, setSelectedEmployee] = useState(null);
-  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -142,19 +141,8 @@ const EmployeeList = () => {
     }
   };
 
-  const handleUpdateClick = (employee) => {
-    setSelectedEmployee(employee);
-    setUpdateDialogOpen(true);
-  };
-
-  const handleUpdateClose = () => {
-    setUpdateDialogOpen(false);
-    setSelectedEmployee(null);
-  };
-
-  const handleUpdateSuccess = () => {
-    fetchEmployees();
-    handleUpdateClose();
+  const handleUpdateClick = (id) => {
+    setSelectedEmployeeId(id === selectedEmployeeId ? null : id);
   };
 
   const handleSearchChange = (event) => {
@@ -184,22 +172,22 @@ const EmployeeList = () => {
             color="primary"
             onClick={() => navigate("/hr/add-employee")}
           >
-            Add New Employee
-          </Button>
+          Add New Employee
+        </Button>
           <Button
             variant="contained"
             color="secondary"
             onClick={() => navigate("/hr/overtime/monthly")}
           >
-            View Monthly Overtime Report
-          </Button>
+          View Monthly Overtime Report
+        </Button>
           <Button
             variant="contained"
             color="primary"
             onClick={() => navigate("/hr/overtime")}
           >
-            Add Overtime
-          </Button>
+          Add Overtime
+        </Button>
         </Box>
         <ListContainer>
           <Stepper activeStep={1} alternativeLabel sx={{ mb: 4 }}>
@@ -228,18 +216,18 @@ const EmployeeList = () => {
 
           <Box sx={{ mb: 3, display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center" }}>
             <CustomTextField
-              label="Search Employees"
-              variant="outlined"
-              value={searchTerm}
-              onChange={handleSearchChange}
-              sx={{ width: 300 }}
+          label="Search Employees"
+          variant="outlined"
+          value={searchTerm}
+          onChange={handleSearchChange}
+          sx={{ width: 300 }}
               InputProps={{
                 startAdornment: (
                   <Search color="primary" sx={{ mr: 1 }} />
                 ),
               }}
-            />
-          </Box>
+        />
+      </Box>
 
           {error && (
             <Alert severity="error" sx={{ mb: 3, borderRadius: '12px' }}>
@@ -267,20 +255,20 @@ const EmployeeList = () => {
                       }
                     }}
                   >
-                    <CardContent>
+            <CardContent>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                         <Typography variant="h6" sx={{ fontWeight: 600 }}>
                           {employee.empname}
-                        </Typography>
-                        <Box>
-                          <IconButton color="primary" onClick={() => handleUpdateClick(employee)}>
-                            <Edit />
-                          </IconButton>
-                          <IconButton color="error" onClick={() => handleDelete(employee._id)}>
-                            <Delete />
-                          </IconButton>
-                        </Box>
-                      </Box>
+                </Typography>
+                <Box>
+                  <IconButton color="primary" onClick={() => handleUpdateClick(employee._id)}>
+                    <Edit />
+                  </IconButton>
+                  <IconButton color="error" onClick={() => handleDelete(employee._id)}>
+                    <Delete />
+                  </IconButton>
+                </Box>
+              </Box>
                       
                       <Chip
                         label={`ID: ${employee.empID}`}
@@ -300,7 +288,7 @@ const EmployeeList = () => {
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
                           Overtime Rate: LKR {employee.overtimeRate}/hr
-                        </Typography>
+                    </Typography>
                         <Typography variant="body2" color="text.secondary">
                           Total Overtime Pay: LKR {employee.totalOvertimePay?.toLocaleString() || '0'}
                         </Typography>
@@ -333,9 +321,20 @@ const EmployeeList = () => {
                               </Typography>
                             </Box>
                           ))}
+                  </Box>
+              )}
+
+              {selectedEmployeeId === employee._id && (
+                        <Box sx={{ mt: 2 }}>
+                          <Divider sx={{ my: 2 }} />
+                          <EmployeeUpdateForm
+                            employee={employee}
+                            onUpdate={fetchEmployees}
+                            onCancel={() => setSelectedEmployeeId(null)}
+                          />
                         </Box>
-                      )}
-                    </CardContent>
+              )}
+            </CardContent>
                   </EmployeeCard>
                 </Grid>
               ))}
@@ -343,14 +342,6 @@ const EmployeeList = () => {
           )}
         </ListContainer>
       </Container>
-      {selectedEmployee && (
-        <EmployeeUpdateForm
-          employee={selectedEmployee}
-          onUpdate={handleUpdateSuccess}
-          onCancel={handleUpdateClose}
-          open={updateDialogOpen}
-        />
-      )}
     </Box>
   );
 };

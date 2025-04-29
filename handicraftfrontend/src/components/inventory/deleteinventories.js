@@ -36,113 +36,39 @@ export default function DeleteInventories() {
     // Styles
     const styles = {
         container: {
-            maxWidth: '800px',
-            margin: '2rem auto',
-            padding: '2rem',
-            backgroundColor: '#ffffff',
-            borderRadius: '12px',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+            maxWidth: "500px",
+            margin: "0 auto",
+            padding: "20px",
+            textAlign: "center"
         },
-        header: {
-            color: '#5D4037',
-            marginBottom: '2rem',
-            textAlign: 'center',
-            fontSize: '1.8rem',
-            fontWeight: '600'
+        confirmBox: {
+            backgroundColor: "#f9f9f9",
+            padding: "20px",
+            borderRadius: "8px",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
         },
-        searchContainer: {
-            marginBottom: '2rem',
-            display: 'flex',
-            gap: '1rem',
-            alignItems: 'center',
-            justifyContent: 'center'
+        title: {
+            fontSize: "20px",
+            marginBottom: "15px"
         },
-        searchInput: {
-            padding: '0.75rem 1rem',
-            border: '1px solid #BCAAA4',
-            borderRadius: '8px',
-            fontSize: '1rem',
-            width: '300px',
-            transition: 'all 0.3s ease',
-            '&:focus': {
-                outline: 'none',
-                borderColor: '#8D6E63',
-                boxShadow: '0 0 0 3px rgba(141, 110, 99, 0.1)'
-            }
-        },
-        table: {
-            width: '100%',
-            borderCollapse: 'collapse',
-            marginTop: '1rem',
-            backgroundColor: '#fff',
-            borderRadius: '8px',
-            overflow: 'hidden',
-            boxShadow: '0 1px 4px rgba(0, 0, 0, 0.1)'
-        },
-        th: {
-            backgroundColor: '#8D6E63',
-            color: '#fff',
-            padding: '1rem',
-            textAlign: 'left',
-            fontWeight: '500'
-        },
-        td: {
-            padding: '1rem',
-            borderBottom: '1px solid #EFEBE9',
-            color: '#5D4037'
-        },
-        tr: {
-            '&:hover': {
-                backgroundColor: '#EFEBE9'
-            }
+        button: {
+            padding: "10px 15px",
+            margin: "0 10px",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer"
         },
         deleteButton: {
-            padding: '0.5rem 1rem',
-            backgroundColor: '#D32F2F',
-            color: 'white',
-            border: 'none',
-            borderRadius: '6px',
-            fontSize: '0.9rem',
-            fontWeight: '500',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            '&:hover': {
-                backgroundColor: '#B71C1C',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)'
-            }
+            backgroundColor: "#f44336",
+            color: "white"
         },
-        noResults: {
-            textAlign: 'center',
-            padding: '2rem',
-            color: '#5D4037',
-            fontSize: '1.1rem'
+        cancelButton: {
+            backgroundColor: "#2196F3",
+            color: "white"
         },
         error: {
-            color: '#D32F2F',
-            backgroundColor: '#FFEBEE',
-            padding: '1rem',
-            borderRadius: '8px',
-            marginBottom: '1rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem'
-        },
-        success: {
-            color: '#388E3C',
-            backgroundColor: '#E8F5E9',
-            padding: '1rem',
-            borderRadius: '8px',
-            marginBottom: '1rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem'
-        },
-        loading: {
-            textAlign: 'center',
-            padding: '2rem',
-            color: '#5D4037',
-            fontSize: '1.1rem'
+            color: "#f44336",
+            marginBottom: "15px"
         }
     };
 
@@ -153,20 +79,20 @@ export default function DeleteInventories() {
             )}
 
             {loading ? (
-                <div style={styles.loading}>Deleting...</div>
+                <div>Deleting...</div>
             ) : showConfirm ? (
-                <div style={styles.itemInfo}>
-                    <h3 style={styles.header}>Confirm Deletion</h3>
+                <div style={styles.confirmBox}>
+                    <h3 style={styles.title}>Confirm Deletion</h3>
                     <p>Are you sure you want to delete this inventory item?</p>
-                    <div style={styles.buttonContainer}>
+                    <div>
                         <button 
-                            style={styles.deleteButton}
+                            style={{...styles.button, ...styles.deleteButton}}
                             onClick={handleDelete}
                         >
                             Delete
                         </button>
                         <button 
-                            style={styles.cancelButton}
+                            style={{...styles.button, ...styles.cancelButton}}
                             onClick={handleCancel}
                         >
                             Cancel

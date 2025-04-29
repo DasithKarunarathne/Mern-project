@@ -59,21 +59,6 @@ const CustomTextField = styled(TextField)(({ theme }) => ({
       borderWidth: '2px',
     },
   },
-  '& .MuiSelect-select': {
-    padding: '12px 14px',
-    display: 'flex',
-    alignItems: 'center',
-  },
-  '& .MuiInputLabel-root': {
-    backgroundColor: 'white',
-    padding: '0 4px',
-    '&.Mui-focused': {
-      color: theme.palette.primary.main,
-    },
-  },
-  '& .MuiOutlinedInput-notchedOutline': {
-    borderColor: 'rgba(0, 0, 0, 0.23)',
-  },
 }));
 
 const ActionButton = styled(Button)(({ theme }) => ({
@@ -356,15 +341,15 @@ const EmployeeForm = ({ onEmployeeAdded }) => {
               <Grid item xs={12} sm={6}>
                 <CustomTextField
                   select
-                  label="Role"
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                  fullWidth
-                  required
-                  error={!!errors.role}
-                  helperText={errors.role}
-                  disabled={loading}
+          label="Role"
+          name="role"
+          value={formData.role}
+          onChange={handleChange}
+          fullWidth
+          required
+          error={!!errors.role}
+          helperText={errors.role}
+          disabled={loading}
                   SelectProps={{
                     native: true,
                   }}

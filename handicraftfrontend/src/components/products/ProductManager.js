@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getProducts, createProduct, updateProduct, deleteProduct } from '../products/services/api.js';
+import { getProducts, createProduct, updateProduct, deleteProduct } from '../../components/products/services/api.js';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -11,202 +12,25 @@ import {
   TableHead,
   TableRow,
   CircularProgress,
-  Paper,
   IconButton,
-  Tooltip,
-  Alert,
-  TableContainer,
-  Chip,
-  InputAdornment,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  Container,
+  Grid,
+  Card,
+  CardContent,
+  Paper,
 } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import { Edit, Delete, PictureAsPdf, SwapHoriz } from '@mui/icons-material';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Chart, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import { Chart } from 'chart.js/auto';
-import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import RefundIcon from '@mui/icons-material/AssignmentReturn';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import ManagerHeader from '../common/ManagerHeader';
-import config from '../../config';
-import { alpha } from '@mui/material/styles';
 import { HERITAGE_HANDS_LOGO } from '../hr/logo';
 
-// Styled components
-const StyledPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(3),
-  margin: theme.spacing(2),
-  borderRadius: '16px',
-  boxShadow: '0 8px 32px rgba(151, 85, 59, 0.1)',
-  background: '#ffffff',
-  border: '1px solid rgba(151, 85, 59, 0.1)',
-  backdropFilter: 'blur(10px)',
-  transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
-  '&:hover': {
-    transform: 'translateY(-4px)',
-    boxShadow: '0 12px 48px rgba(151, 85, 59, 0.15)',
-  },
-}));
-
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  fontWeight: 600,
-  backgroundColor: alpha(theme.palette.primary.main, 0.02),
-  color: theme.palette.text.primary,
-  fontSize: '0.95rem',
-  padding: theme.spacing(1.5),
-  borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-  '&.image-cell': {
-    width: '200px',
-    padding: theme.spacing(1),
-  },
-  '&.name-cell': {
-    width: '250px',
-  },
-  '&.category-cell': {
-    width: '150px',
-  },
-  '&.price-cell': {
-    width: '120px',
-  },
-  '&.stock-cell': {
-    width: '100px',
-  },
-  '&.actions-cell': {
-    width: '120px',
-  },
-}));
-
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  '&:nth-of-type(odd)': {
-    backgroundColor: alpha('#DEB887', 0.05),
-  },
-  '&:hover': {
-    backgroundColor: alpha('#DEB887', 0.1),
-    transform: 'scale(1.002)',
-  },
-  transition: 'all 0.2s ease',
-}));
-
-const ActionButton = styled(Button)(({ theme }) => ({
-  borderRadius: '12px',
-  textTransform: 'none',
-  fontWeight: 600,
-  padding: theme.spacing(1.5, 3),
-  transition: 'all 0.3s ease',
-  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-  '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow: '0 6px 16px rgba(0,0,0,0.15)',
-  },
-}));
-
-const FormTextField = styled(TextField)(({ theme }) => ({
-  '& .MuiOutlinedInput-root': {
-    borderRadius: '12px',
-    transition: 'all 0.3s ease',
-    '&:hover': {
-      boxShadow: '0 4px 12px rgba(151, 85, 59, 0.08)',
-    },
-    '&.Mui-focused': {
-      boxShadow: '0 4px 12px rgba(151, 85, 59, 0.12)',
-    },
-  },
-  '& .MuiOutlinedInput-notchedOutline': {
-    borderColor: alpha('#97553B', 0.2),
-  },
-  '& .Mui-focused .MuiOutlinedInput-notchedOutline': {
-    borderColor: '#97553B',
-  },
-}));
-
-const ImagePreviewBox = styled(Box)(({ theme }) => ({
-  position: 'relative',
-  width: '180px',
-  height: '120px',
-  borderRadius: '8px',
-  overflow: 'hidden',
-  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-  transition: 'transform 0.3s ease',
-  '&:hover': {
-    transform: 'scale(1.02)',
-  },
-}));
-
-// Update validation functions
-const validateName = (name) => {
-  if (!name) return 'Product name is required';
-  if (!/^[A-Za-z\s]+$/.test(name)) return 'Only letters and spaces are allowed';
-  if (name.trim().length === 0) return 'Product name cannot be empty';
-  if (name.length > 100) return 'Product name must be less than 100 characters';
-  return '';
-};
-
-const validateDescription = (description) => {
-  if (!description) return 'Description is required';
-  if (!/^[A-Za-z0-9\s.,!?-]+$/.test(description)) {
-    return 'Description can only contain letters, numbers, and basic punctuation';
-  }
-  if (description.length > 500) return 'Description must be less than 500 characters';
-  return '';
-};
-
-const validatePrice = (price) => {
-  const numPrice = parseFloat(price);
-  if (!price) return 'Price is required';
-  if (isNaN(numPrice) || numPrice <= 0) return 'Price must be a positive number';
-  if (numPrice > 1000000) return 'Price must be less than 1,000,000';
-  return '';
-};
-
-const validateStock = (stock) => {
-  const numStock = parseInt(stock);
-  if (!stock) return 'Stock quantity is required';
-  if (isNaN(numStock) || numStock < 0) return 'Stock must be a non-negative number';
-  if (numStock > 10000) return 'Stock must be less than 10,000';
-  return '';
-};
-
-const validateCategory = (category) => {
-  if (!category) return 'Category is required';
-  if (!/^[A-Za-z\s-]+$/.test(category)) {
-    return 'Category can only contain letters, spaces, and hyphens';
-  }
-  if (category.length > 50) return 'Category must be less than 50 characters';
-  return '';
-};
-
-const validateImage = (file) => {
-  if (!file) return '';
-  const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
-  if (!validTypes.includes(file.type)) {
-    return 'Please upload a valid image (JPEG, PNG, or WEBP)';
-  }
-  if (file.size > 2 * 1024 * 1024) {
-    return 'Image size must be less than 2MB';
-  }
-  return '';
-};
-
-const getImageUrl = (imagePath) => {
-  if (!imagePath) return config.DEFAULT_PRODUCT_IMAGE;
-  try {
-    const url = new URL(imagePath);
-    return imagePath; // If it's already a full URL, return as is
-  } catch {
-    // If it's a relative path, prepend the image base URL
-    return `${config.IMAGE_BASE_URL}${imagePath.startsWith('/') ? '' : '/'}${imagePath}`;
-  }
-};
+// Register Chart.js components
+Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const ProductManager = () => {
-  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -219,13 +43,7 @@ const ProductManager = () => {
     image: null,
   });
   const [editingProduct, setEditingProduct] = useState(null);
-  const [formErrors, setFormErrors] = useState({
-    name: '',
-    description: '',
-    price: '',
-    stockQuantity: '',
-    category: ''
-  });
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchProducts();
@@ -245,102 +63,28 @@ const ProductManager = () => {
     }
   };
 
-  const handleKeyDown = (e) => {
-    if (e.target.name === 'name') {
-      const key = e.key;
-      const allowedKeys = [
-        'Backspace',
-        'Delete',
-        'ArrowLeft',
-        'ArrowRight',
-        'ArrowUp',
-        'ArrowDown',
-        'Tab',
-        'Enter',
-        'Escape',
-        ' '
-      ];
-
-      if (!allowedKeys.includes(key) && !/^[A-Za-z]$/.test(key)) {
-        e.preventDefault();
-        toast.warning('Only letters and spaces are allowed');
-      }
-    }
-  };
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
-    // Update form data
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-
-    // Validate the field
-    let validationError = '';
-    switch (name) {
-      case 'name':
-        // Remove any characters that aren't letters or spaces
-        const sanitizedValue = value.replace(/[^A-Za-z\s]/g, '');
-        if (value !== sanitizedValue) {
-          toast.warning('Only letters and spaces are allowed');
-        }
-        validationError = validateName(sanitizedValue);
-        setFormData(prev => ({
-          ...prev,
-          name: sanitizedValue
-        }));
-        break;
-      case 'description':
-        validationError = validateDescription(value);
-        break;
-      case 'price':
-        validationError = validatePrice(value);
-        break;
-      case 'stockQuantity':
-        validationError = validateStock(value);
-        break;
-      case 'category':
-        validationError = validateCategory(value);
-        break;
-      default:
-        break;
-    }
-
-    // Update form errors
-    setFormErrors(prev => ({
-      ...prev,
-      [name]: validationError
-    }));
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const imageError = validateImage(file);
-      if (imageError) {
-        toast.error(imageError);
-        e.target.value = '';
+      const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        toast.error('Please upload a valid image (JPEG, PNG, or WEBP).');
         return;
       }
-      setFormData(prev => ({ ...prev, image: file }));
+      if (file.size > 2 * 1024 * 1024) { // 2MB limit
+        toast.error('Image size must be less than 2MB.');
+        return;
+      }
     }
+    setFormData({ ...formData, image: file });
   };
 
   const validateForm = () => {
-
-    const errors = {
-      name: validateName(formData.name),
-      description: validateDescription(formData.description),
-      price: validatePrice(formData.price),
-      stockQuantity: validateStock(formData.stockQuantity),
-      category: validateCategory(formData.category)
-    };
-
-    setFormErrors(errors);
-    return !Object.values(errors).some(error => error !== '');
-
     if (!formData.name.trim()) {
       return "Name is required.";
     }
@@ -348,7 +92,7 @@ const ProductManager = () => {
       return "Description is required.";
     }
     const price = parseFloat(formData.price);
-    if (isNaN(price) || price <= 0) { 
+    if (isNaN(price) || price <= 0) {
       return "Price must be a positive number.";
     }
     const stock = parseInt(formData.stockQuantity, 10);
@@ -359,24 +103,26 @@ const ProductManager = () => {
       return "Category is required.";
     }
     return null; // No errors
-
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      toast.error('Please correct all errors before submitting');
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      toast.error(validationError);
       return;
     }
 
     setLoading(true);
+    setError(null);
+
     const data = new FormData();
-    data.append('name', formData.name.trim());
-    data.append('description', formData.description.trim());
-    data.append('price', parseFloat(formData.price).toFixed(2));
-    data.append('stockQuantity', parseInt(formData.stockQuantity));
-    data.append('category', formData.category.trim());
+    data.append('name', formData.name);
+    data.append('description', formData.description);
+    data.append('price', formData.price);
+    data.append('stockQuantity', formData.stockQuantity);
+    data.append('category', formData.category);
     if (formData.image) {
       data.append('image', formData.image);
     }
@@ -389,18 +135,12 @@ const ProductManager = () => {
         await createProduct(data);
         toast.success('Product added successfully!');
       }
-      setFormData({
-        name: '',
-        description: '',
-        price: '',
-        stockQuantity: '',
-        category: '',
-        image: null
-      });
+      setFormData({ name: '', description: '', price: '', stockQuantity: '', category: '', image: null });
       setEditingProduct(null);
       fetchProducts();
     } catch (error) {
       console.error('Error saving product:', error);
+      setError('Failed to save product: ' + (error.response?.data?.error || error.message));
       toast.error('Failed to save product: ' + (error.response?.data?.error || error.message));
     } finally {
       setLoading(false);
@@ -417,6 +157,7 @@ const ProductManager = () => {
       category: product.category,
       image: null,
     });
+    setError(null); // Clear error when editing starts
   };
 
   const handleDelete = async (id) => {
@@ -435,744 +176,426 @@ const ProductManager = () => {
     }
   };
 
-  const generatePDF = async () => {
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
+  const generateStockReport = () => {
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
 
-    // Define theme colors
-    const primaryColor = {
-        r: 93,
-        g: 64,
-        b: 55
-    }; // #5D4037 - Deep Brown
-    const secondaryColor = {
-        r: 255,
-        g: 215,
-        b: 0
-    }; // #FFD700 - Gold
-
-    // Add letterhead border
-    doc.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b);
-    doc.setLineWidth(0.5);
-    doc.rect(15, 15, pageWidth - 30, pageHeight - 30);
-
-    // Add company logo on the right (smaller size)
-    try {
-        const logoWidth = 35;
-        const logoHeight = 35;
-        const logoX = pageWidth - logoWidth - 25;
-        const logoY = 20;
-        doc.addImage(HERITAGE_HANDS_LOGO, 'PNG', logoX, logoY, logoWidth, logoHeight);
-    } catch (error) {
-        console.error('Error adding logo to PDF:', error);
-    }
-
-    // Add company header on the left
-    doc.setFontSize(22);
-    doc.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b);
-    doc.text('HERITAGE HANDS', 25, 35);
+    // Add header
+    pdf.setFontSize(24);
+    pdf.setTextColor(139, 69, 19);
+    pdf.text('Product Stock Level Report', pageWidth / 2, 25, { align: 'center' });
     
-    // Add document title
-    doc.setFontSize(16);
-    doc.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b);
-    doc.text('PRODUCT STOCK LEVELS REPORT', pageWidth/2, 60, { align: 'center' });
+    // Add date
+    pdf.setFontSize(12);
+    pdf.setTextColor(100);
+    pdf.text(new Date().toLocaleDateString(), pageWidth / 2, 35, { align: 'center' });
 
-    // Add horizontal line under the title
-    doc.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b);
-    doc.setLineWidth(0.5);
-    doc.line(pageWidth/2 - 50, 65, pageWidth/2 + 50, 65);
+    // Add summary
+    const totalProducts = products.length;
+    const lowStockProducts = products.filter(p => p.stockQuantity < 10).length;
+    const outOfStockProducts = products.filter(p => p.stockQuantity === 0).length;
+    const totalStockValue = products.reduce((sum, p) => sum + (p.price * p.stockQuantity), 0);
 
-    // Add reference number and date section
-    doc.setFontSize(10);
-    doc.setTextColor(0, 0, 0);
-    const currentDate = new Date();
-    const refNumber = `REF: HH/PRD/${currentDate.getMonth() + 1}/${currentDate.getFullYear()}`;
-    doc.text(refNumber, 25, 80);
-    
-    // Add date information in a more formal format
-    const formattedDate = currentDate.toLocaleDateString('en-US', { 
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric'
-    });
-    
-    doc.text('Date: ' + formattedDate, 25, 87);
-    doc.text('Report Period: ' + currentDate.toLocaleString('default', { month: 'long' }) + ' ' + currentDate.getFullYear(), 25, 94);
-
-    // Add a subtle divider before the charts
-    doc.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b);
-    doc.setLineWidth(0.2);
-    doc.line(25, 105, pageWidth - 25, 105);
-
-    // Create bar chart
-    const canvas = document.createElement('canvas');
-    canvas.width = 1200;
-    canvas.height = 600;
-    const ctx = canvas.getContext('2d');
-
-    const sortedProducts = [...products]
-        .sort((a, b) => b.stockQuantity - a.stockQuantity)
-        .slice(0, 8);
-
-    await new Promise((resolve) => {
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: sortedProducts.map(p => 
-                    p.name.length > 15 ? p.name.substring(0, 15) + '...' : p.name
-                ),
-                datasets: [{
-                    label: 'Stock Level',
-                    data: sortedProducts.map(p => p.stockQuantity),
-                    backgroundColor: [
-                        '#5D4037',  // Deep Brown
-                        '#8D6E63',  // Medium Brown
-                        '#A1887F',  // Light Brown
-                        '#BCAAA4',  // Lighter Brown
-                        '#D7CCC8',  // Very Light Brown
-                        '#EFEBE9',  // Off White
-                        '#D2B48C',  // Tan
-                        '#DEB887'   // Burlywood
-                    ],
-                    borderColor: '#5D4037',
-                    borderWidth: 1,
-                    borderRadius: 4,
-                    barThickness: 40
-                }]
-            },
-            options: {
-                responsive: false,
-                maintainAspectRatio: false,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Stock Levels Overview',
-                        color: '#5D4037',
-                        font: {
-                            size: 20,
-                            weight: 'bold'
-                        },
-                        padding: 20
-                    },
-                    legend: { display: false }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: '#D7CCC8'  // Very Light Brown for grid lines
-                        },
-                        ticks: {
-                            color: '#5D4037',
-                            font: {
-                                size: 12,
-                                weight: 'bold'
-                            }
-                        }
-                    },
-                    x: {
-                        grid: { display: false },
-                        ticks: {
-                            color: '#5D4037',
-                            font: {
-                                size: 12,
-                                weight: 'bold'
-                            },
-                            maxRotation: 45,
-                            minRotation: 45
-                        }
-                    }
-                }
-            }
-        });
-        
-        setTimeout(resolve, 100);
-    });
-
-    // Add chart to PDF
-    const chartImage = canvas.toDataURL('image/png', 1.0);
-    doc.addImage(chartImage, 'PNG', 25, 115, pageWidth - 50, 90);
-
-    // Add a divider after charts
-    doc.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b);
-    doc.setLineWidth(0.2);
-    doc.line(25, 220, pageWidth - 25, 220);
-
-    // Product table with updated colors and proper spacing
-    const tableStartY = 230;
-    let tableEndY = tableStartY;
-    
-    autoTable(doc, {
-        startY: tableStartY,
-        head: [['Product Name', 'Stock', 'Price (LKR)', 'Status', 'Action Required']],
-        body: products.map(p => [
-            p.name,
-            p.stockQuantity,
-            p.price.toFixed(2),
-            p.stockQuantity <= 10 ? 'Critical' :
-            p.stockQuantity <= 30 ? 'Low' :
-            p.stockQuantity <= 50 ? 'Moderate' : 'Good',
-            p.stockQuantity <= 10 ? 'Immediate Restock' :
-            p.stockQuantity <= 30 ? 'Plan Restock' :
-            p.stockQuantity <= 50 ? 'Monitor' : '-'
-        ]),
-        headStyles: {
-            fillColor: [primaryColor.r, primaryColor.g, primaryColor.b],
-            textColor: 255,
-            fontStyle: 'bold',
-            fontSize: 10,
-            halign: 'center'
-        },
-        bodyStyles: {
-            fontSize: 9,
-            textColor: [primaryColor.r, primaryColor.g, primaryColor.b]
-        },
-        alternateRowStyles: {
-            fillColor: [251, 247, 245]  // Very light brown
-        },
-        styles: {
-            cellPadding: 3,
-            lineColor: [primaryColor.r, primaryColor.g, primaryColor.b],
-            lineWidth: 0.1,
-            font: 'helvetica'
-        },
-        theme: 'grid',
-        margin: { 
-            left: 25, 
-            right: 25,
-            top: 20,
-            bottom: 60  // Increased bottom margin to prevent footer overlap
-        },
-        pageBreak: 'auto',
-        didDrawCell: function(data) {
-            if (data.section === 'body' && data.column.index === 3) {
-                if (data.cell.text[0] === 'Critical') {
-                    doc.setFillColor(139, 0, 0);  // Dark Red
-                    doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
-                    doc.setTextColor(255, 255, 255);
-                    doc.text(data.cell.text[0], data.cell.x + 2, data.cell.y + 5);
-                } else if (data.cell.text[0] === 'Low') {
-                    doc.setFillColor(255, 140, 0);  // Dark Orange
-                    doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
-                    doc.setTextColor(255, 255, 255);
-                    doc.text(data.cell.text[0], data.cell.x + 2, data.cell.y + 5);
-                } else if (data.cell.text[0] === 'Moderate') {
-                    doc.setFillColor(222, 184, 135);  // Burlywood
-                    doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
-                    doc.setTextColor(0, 0, 0);
-                    doc.text(data.cell.text[0], data.cell.x + 2, data.cell.y + 5);
-                } else if (data.cell.text[0] === 'Good') {
-                    doc.setFillColor(34, 139, 34);  // Forest Green
-                    doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
-                    doc.setTextColor(255, 255, 255);
-                    doc.text(data.cell.text[0], data.cell.x + 2, data.cell.y + 5);
-                }
-            }
-        },
-        didDrawPage: function(data) {
-            tableEndY = data.cursor.y;
-        },
-        addPageContent: function(data) {
-            // Add footer to each page
-            const footerY = pageHeight - 40;
-            
-            // Footer border
-            doc.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b);
-            doc.setLineWidth(0.2);
-            doc.line(25, footerY, pageWidth - 25, footerY);
-
-            // Footer text
-            doc.setFontSize(8);
-            doc.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b);
-            
-            // Left side
-            doc.text('Heritage Hands Pvt Ltd.', 25, footerY + 10);
-            
-            // Center
-            doc.text(
-                `Page ${data.pageNumber} of ${data.pageCount}`,
-                pageWidth / 2,
-                footerY + 10,
-                { align: 'center' }
-            );
-            
-            // Right side
-            doc.text(
-                'CONFIDENTIAL',
-                pageWidth - 25,
-                footerY + 10,
-                { align: 'right' }
-            );
-        }
-    });
-
-    // Add summary section with proper spacing
-    const summaryStartY = tableEndY + 20;
-    const currentPage = doc.internal.getNumberOfPages();
-    
-    // Check if we need a new page for the summary
-    if (summaryStartY > pageHeight - 80) {
-        doc.addPage();
-        doc.setPage(currentPage + 1);
-    }
-
-    // Set the correct Y position for summary based on current page
-    const summaryY = doc.internal.getNumberOfPages() === currentPage ? summaryStartY : 30;
-    
-    doc.setFontSize(12);
-    doc.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b);
-    doc.text('Summary', 25, summaryY);
-    
-    doc.setFontSize(10);
-    doc.setTextColor(0, 0, 0);
-    
-    // Add summary items with proper spacing
-    const summaryItems = [
-        `Total Products: ${products.length}`,
-        `Critical Stock Items: ${products.filter(p => p.stockQuantity <= 10).length}`,
-        `Low Stock Items: ${products.filter(p => p.stockQuantity <= 30).length}`,
-        `Total Stock Value: Rs. ${products.reduce((sum, p) => sum + (p.price * p.stockQuantity), 0).toLocaleString()}`
+    const summaryData = [
+      ['Total Products', totalProducts],
+      ['Low Stock Products', lowStockProducts],
+      ['Out of Stock Products', outOfStockProducts],
+      ['Total Stock Value', `Rs. ${totalStockValue.toLocaleString()}`]
     ];
 
-    summaryItems.forEach((item, index) => {
-        doc.text(item, 25, summaryY + 10 + (index * 7));
+    autoTable(pdf, {
+      startY: 45,
+      head: [['Metric', 'Value']],
+      body: summaryData,
+      theme: 'grid',
+      headStyles: {
+        fillColor: [139, 69, 19],
+        textColor: 255,
+        fontSize: 12,
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      bodyStyles: {
+        fontSize: 11,
+        cellPadding: 5,
+        halign: 'center'
+      },
+      styles: {
+        fontSize: 11,
+        cellPadding: 5,
+        lineColor: [139, 69, 19],
+        lineWidth: 0.1
+      },
+      margin: { left: 20, right: 20 }
     });
 
-    // Save PDF with formatted date
-    const dateForFilename = new Date().toISOString().split('T')[0];
-    doc.save(`Heritage_Hands_Product_Report_${dateForFilename}.pdf`);
+    // Create bar chart data
+    const chartData = products.map(product => ({
+      name: product.name,
+      stock: product.stockQuantity
+    }));
+
+    // Sort by stock level
+    chartData.sort((a, b) => b.stock - a.stock);
+
+    // Draw bar chart
+    const chartStartY = pdf.lastAutoTable.finalY + 15;
+    const chartHeight = 90;
+    const chartWidth = 170;
+    const maxBarsPerPage = 8;
+    const barWidth = chartWidth / maxBarsPerPage;
+    const maxStock = Math.max(...chartData.map(d => d.stock));
+    
+    // Round up maxStock to nearest hundred for grid lines
+    const gridMaxY = Math.ceil(maxStock / 200) * 200;
+    const gridLines = 10;
+    const gridStep = gridMaxY / gridLines;
+    
+    // Draw chart title
+    pdf.setFontSize(16);
+    pdf.setTextColor(139, 69, 19);
+    pdf.text('Stock Levels Overview', 20, chartStartY);
+
+    // Draw grid lines and labels
+    pdf.setDrawColor(200, 200, 200);
+    pdf.setTextColor(100);
+    pdf.setFontSize(8);
+    for (let i = 0; i <= gridLines; i++) {
+        const y = chartStartY + 10 + (chartHeight - (i * chartHeight / gridLines));
+        const value = Math.round(i * gridStep);
+        
+        // Draw grid line
+        pdf.setLineDashPattern([0.5, 0.5], 0);
+        pdf.line(20, y, 20 + chartWidth, y);
+        
+        // Draw label
+        pdf.text(value.toString(), 15, y, { align: 'right' });
+    }
+
+    // Draw bars
+    chartData.slice(0, maxBarsPerPage).forEach((item, index) => {
+      const x = 20 + (index * barWidth);
+      const barHeight = (item.stock / gridMaxY) * chartHeight;
+      const y = chartStartY + 10 + (chartHeight - barHeight);
+      
+      // Create gradient effect with multiple rectangles
+      const gradientSteps = 5;
+      const baseColor = [139, 69, 19];
+      for (let i = 0; i < gradientSteps; i++) {
+        const opacity = 1 - (i * 0.15);
+        pdf.setFillColor(
+          baseColor[0],
+          baseColor[1],
+          baseColor[2]
+        );
+        const stepHeight = barHeight / gradientSteps;
+        pdf.setGState(new pdf.GState({ opacity: opacity }));
+        pdf.rect(x, y + (i * stepHeight), barWidth - 2, stepHeight, 'F');
+      }
+      
+      // Draw product name (rotated)
+      pdf.setGState(new pdf.GState({ opacity: 1.0 }));
+      pdf.setFontSize(7);
+      pdf.setTextColor(100);
+      
+      // Truncate long product names
+      const maxNameLength = 15;
+      const displayName = item.name.length > maxNameLength 
+        ? item.name.substring(0, maxNameLength) + '...' 
+        : item.name;
+      
+      pdf.text(displayName, x + (barWidth / 2), chartStartY + chartHeight + 25, { angle: 45 });
+    });
+
+    // Add product table with pagination
+    const tableData = products.map(product => [
+      product.name,
+      product.stockQuantity,
+      `Rs. ${product.price.toLocaleString()}`,
+      product.stockQuantity === 0 ? 'Out of Stock' : 
+      product.stockQuantity < 10 ? 'Low Stock' : 'In Stock',
+      product.stockQuantity === 0 ? 'Urgent Restock Required' : 
+      product.stockQuantity < 10 ? 'Consider Restocking' : 'No Action Required'
+    ]);
+
+    let finalY = chartStartY + chartHeight + 35;
+
+    autoTable(pdf, {
+      startY: finalY,
+      head: [['Product Name', 'Stock', 'Price', 'Status', 'Action Required']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: {
+        fillColor: [139, 69, 19],
+        textColor: 255,
+        fontSize: 11,
+        fontStyle: 'bold',
+        halign: 'center',
+        cellPadding: 4
+      },
+      bodyStyles: {
+        fontSize: 10,
+        cellPadding: 4,
+        halign: 'center'
+      },
+      styles: {
+        lineColor: [139, 69, 19],
+        lineWidth: 0.1
+      },
+      margin: { left: 15, right: 15, top: 15, bottom: 25 },
+      columnStyles: {
+        0: { cellWidth: 45 },
+        1: { cellWidth: 25 },
+        2: { cellWidth: 35 },
+        3: { cellWidth: 30 },
+        4: { cellWidth: 40 }
+      },
+      didDrawPage: function(data) {
+        // Add footer on each page
+        pdf.setFontSize(10);
+        pdf.setTextColor(100);
+        pdf.text('Generated by Heritage Hands Product Management System', pageWidth / 2, pageHeight - 10, { align: 'center' });
+        pdf.text(`Page ${data.pageNumber}`, pageWidth - 20, pageHeight - 10, { align: 'right' });
+      }
+    });
+
+    pdf.save(`product-stock-report-${new Date().toISOString().split('T')[0]}.pdf`);
+  };
+
+  const handleRefundManagement = () => {
+    navigate('/product/admin/refund-management');
+  };
+
+  // Stock level chart data
+  const chartData = {
+    labels: products.map(p => p.name),
+    datasets: [
+      {
+        label: 'Stock Level',
+        data: products.map(p => p.stockQuantity),
+        borderColor: '#8B4513',
+        backgroundColor: 'rgba(139, 69, 19, 0.1)',
+        tension: 0.1
+      }
+    ]
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: 'Product Stock Levels'
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Quantity'
+        }
+      }
+    }
   };
 
   return (
-    <Box sx={{ 
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, rgba(222,184,135,0.1) 0%, rgba(255,255,255,0.1) 100%)',
-    }}>
-      <ManagerHeader 
-        title="Product Management" 
-        breadcrumbs={[
-          { label: 'Products', path: '/product/manager' },
-        ]}
-      />
-      <Box sx={{ padding: 3 }}>
+    <Box sx={{ flexGrow: 1, p: 3 }}>
+      <Container maxWidth="lg">
         <ToastContainer />
-        
         <Box sx={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
-          alignItems: 'center',
-          mb: 4,
-          background: 'rgba(255,255,255,0.8)',
-          padding: 3,
-          borderRadius: '16px',
-          backdropFilter: 'blur(10px)',
-          boxShadow: '0 4px 20px rgba(151, 85, 59, 0.1)',
+          alignItems: 'center', 
+          mb: 3,
+          flexWrap: 'wrap',
+          gap: 2
         }}>
-          <Typography 
-            variant="h4" 
-            sx={{ 
-              fontWeight: 700, 
-              color: '#2E1308',
-              background: 'linear-gradient(45deg, #2E1308, #97553B)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            Product Management Dashboard
+          <Typography variant="h4">
+            Product Manager Dashboard
           </Typography>
           <Box sx={{ display: 'flex', gap: 2 }}>
-            <ActionButton
+            <Button
               variant="contained"
-              startIcon={<FileDownloadIcon />}
-              onClick={generatePDF}
-              sx={{
-                background: 'linear-gradient(45deg, #97553B, #5E3219)',
+              startIcon={<SwapHoriz />}
+              onClick={handleRefundManagement}
+              sx={{ 
+                backgroundColor: '#8B4513', 
                 '&:hover': { 
-                  background: 'linear-gradient(45deg, #5E3219, #2E1308)',
-                }
-              }}
-            >
-              Generate Report
-            </ActionButton>
-            <ActionButton
-              variant="contained"
-              startIcon={<RefundIcon />}
-              onClick={() => navigate('/product/admin/refund-management')}
-              sx={{
-                background: 'linear-gradient(45deg, #2E1308, #97553B)',
-                '&:hover': { 
-                  background: 'linear-gradient(45deg, #97553B, #2E1308)',
+                  backgroundColor: '#654321' 
                 }
               }}
             >
               Manage Refunds
-            </ActionButton>
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<PictureAsPdf />}
+              onClick={generateStockReport}
+              sx={{ 
+                backgroundColor: '#8B4513', 
+                '&:hover': { 
+                  backgroundColor: '#654321' 
+                }
+              }}
+            >
+              Generate Stock Report
+            </Button>
           </Box>
         </Box>
-
         {error && (
-          <Alert 
-            severity="error" 
-            sx={{ 
-              mb: 3,
-              borderRadius: '12px',
-              boxShadow: '0 4px 12px rgba(211, 47, 47, 0.1)',
-            }}
-            onClose={() => setError(null)}
-          >
+          <Typography color="error" sx={{ marginBottom: 2, textAlign: 'center' }}>
             {error}
-          </Alert>
-        )}
-
-        <StyledPaper elevation={0}>
-          <Box 
-            component="form" 
-            onSubmit={handleSubmit} 
-            sx={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              gap: 3, 
-              maxWidth: 800, 
-              margin: '0 auto',
-              p: 4,
-            }}
-          >
-            <FormTextField
-              fullWidth
-              label="Product Name"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              required
-              disabled={loading}
-              error={!!formErrors.name}
-              helperText={formErrors.name || 'Only letters and spaces are allowed'}
-              InputProps={{
-                sx: { fontSize: '1.1rem' }
-              }}
-              InputLabelProps={{
-                sx: { fontSize: '1.1rem' }
-              }}
-            />
-            <FormTextField
-              fullWidth
-              label="Description"
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              multiline
-              rows={4}
-              required
-              disabled={loading}
-              error={!!formErrors.description}
-              helperText={formErrors.description}
-            />
-            <Box sx={{ display: 'flex', gap: 3 }}>
-              <FormTextField
-                fullWidth
-                label="Price (LKR)"
-                name="price"
-                type="number"
-                value={formData.price}
-                onChange={handleInputChange}
-                required
-                disabled={loading}
-                error={!!formErrors.price}
-                helperText={formErrors.price}
-                InputProps={{
-                  startAdornment: <InputAdornment position="start">LKR</InputAdornment>,
-                }}
-              />
-              <FormTextField
-                fullWidth
-                label="Stock Quantity"
-                name="stockQuantity"
-                type="number"
-                value={formData.stockQuantity}
-                onChange={handleInputChange}
-                required
-                disabled={loading}
-                error={!!formErrors.stockQuantity}
-                helperText={formErrors.stockQuantity}
-              />
-            </Box>
-            <FormTextField
-              fullWidth
-              label="Category"
-              name="category"
-              value={formData.category}
-              onChange={handleInputChange}
-              required
-              disabled={loading}
-              error={!!formErrors.category}
-              helperText={formErrors.category}
-            />
-            <Box sx={{ mt: 2 }}>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                style={{ display: 'none' }}
-                id="product-image-upload"
-              />
-              <label htmlFor="product-image-upload">
-                <Button
-                  variant="outlined"
-                  component="span"
-                  startIcon={<CloudUploadIcon />}
-                  sx={{ 
-                    borderRadius: '12px',
-                    borderColor: '#97553B',
-                    color: '#97553B',
-                    padding: '10px 24px',
-                    '&:hover': {
-                      borderColor: '#5E3219',
-                      backgroundColor: 'rgba(151, 85, 59, 0.08)',
-                      transform: 'translateY(-2px)',
-                    },
-                    transition: 'all 0.3s ease',
-                  }}
-                >
-                  Upload Image
-                </Button>
-              </label>
-              {formData.image && (
-                <Typography 
-                  variant="body2" 
-                  component="span" 
-                  sx={{ 
-                    ml: 2,
-                    color: '#97553B',
-                    fontStyle: 'italic'
-                  }}
-                >
-                  {typeof formData.image === 'string' 
-                    ? 'Current image: ' + formData.image.split('/').pop()
-                    : 'Selected file: ' + formData.image.name
-                  }
-                </Typography>
-              )}
-            </Box>
-            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-              <ActionButton
-                type="submit"
-                variant="contained"
-                disabled={loading}
-                sx={{
-                  minWidth: 250,
-                  height: 48,
-                  background: 'linear-gradient(45deg, #97553B, #5E3219)',
-                  fontSize: '1.1rem',
-                  '&:hover': { 
-                    background: 'linear-gradient(45deg, #5E3219, #2E1308)',
-                  }
-                }}
-              >
-                {loading ? (
-                  <CircularProgress size={24} color="inherit" />
-                ) : (
-                  editingProduct ? 'Update Product' : 'Add Product'
-                )}
-              </ActionButton>
-            </Box>
-          </Box>
-        </StyledPaper>
-
-        {/* Product List Section */}
-        <StyledPaper elevation={0} sx={{ mt: 4 }}>
-          <Typography 
-            variant="h5" 
-            sx={{ 
-              mb: 4, 
-              color: '#2E1308', 
-              fontWeight: 700,
-              textAlign: 'center',
-              position: 'relative',
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                bottom: -8,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                width: '60px',
-                height: '3px',
-                background: 'linear-gradient(45deg, #97553B, #5E3219)',
-                borderRadius: '2px',
-              }
-            }}
-          >
-            Product List
           </Typography>
-
-          {loading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', my: 6 }}>
-              <CircularProgress 
-                size={50}
-                sx={{ 
-                  color: '#97553B',
-                  '& .MuiCircularProgress-circle': {
-                    strokeLinecap: 'round',
-                  }
-                }} 
-              />
-            </Box>
-          ) : products.length === 0 ? (
-            <Box sx={{ 
-              textAlign: 'center', 
-              py: 6,
-              px: 3,
-              backgroundColor: alpha('#DEB887', 0.05),
-              borderRadius: '12px',
-            }}>
-              <Typography 
-                color="textSecondary"
-                sx={{ 
-                  fontSize: '1.1rem',
-                  fontStyle: 'italic'
-                }}
-              >
-                No products available. Add your first product using the form above.
-              </Typography>
-            </Box>
-          ) : (
-            <TableContainer sx={{ borderRadius: '12px', overflow: 'hidden' }}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <StyledTableCell className="image-cell">Image</StyledTableCell>
-                    <StyledTableCell className="name-cell">Name</StyledTableCell>
-                    <StyledTableCell className="category-cell">Category</StyledTableCell>
-                    <StyledTableCell className="price-cell">Price (LKR)</StyledTableCell>
-                    <StyledTableCell className="stock-cell">Stock</StyledTableCell>
-                    <StyledTableCell className="actions-cell" align="center">Actions</StyledTableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {products.map((product) => (
-                    <StyledTableRow key={product._id}>
-                      <TableCell className="image-cell">
-                        <ImagePreviewBox>
-                          <img
-                            src={getImageUrl(product.image)}
-                            alt={product.name}
-                            onError={(e) => {
-                              e.target.onerror = null;
-                              e.target.src = config.DEFAULT_PRODUCT_IMAGE;
-                            }}
-                            style={{ 
-                              width: '100%', 
-                              height: '100%', 
-                              objectFit: 'cover',
-                            }}
-                          />
-                        </ImagePreviewBox>
-                      </TableCell>
-                      <TableCell className="name-cell">
-                        <Typography 
-                          sx={{ 
-                            fontWeight: 600,
-                            fontSize: '0.95rem',
-                            color: '#2E1308',
-                          }}
-                        >
-                          {product.name}
-                        </Typography>
-                      </TableCell>
-                      <TableCell className="category-cell">
-                        <Chip
-                          label={product.category}
-                          size="small"
-                          sx={{ 
-                            backgroundColor: alpha('#97553B', 0.1),
-                            color: '#97553B',
-                            fontWeight: 600,
-                            borderRadius: '8px',
-                            '& .MuiChip-label': {
-                              px: 1.5,
-                              fontSize: '0.85rem',
-                            },
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell className="price-cell">
-                        <Typography 
-                          sx={{ 
-                            fontWeight: 700,
-                            color: '#2E1308',
-                            fontSize: '0.95rem',
-                          }}
-                        >
-                          {product.price.toFixed(2)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell className="stock-cell">
-                        <Chip
-                          label={product.stockQuantity}
-                          size="small"
-                          sx={{
-                            backgroundColor: product.stockQuantity <= 10 ? alpha('#dc3545', 0.1) :
-                                          product.stockQuantity <= 30 ? alpha('#ffc107', 0.1) :
-                                          alpha('#28a745', 0.1),
-                            color: product.stockQuantity <= 10 ? '#dc3545' :
-                                  product.stockQuantity <= 30 ? '#ffc107' :
-                                  '#28a745',
-                            fontWeight: 700,
-                            borderRadius: '8px',
-                            '& .MuiChip-label': {
-                              px: 1.5,
-                              fontSize: '0.85rem',
-                            },
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell className="actions-cell">
-                        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
-                          <Tooltip title="Edit Product" arrow>
-                            <IconButton 
-                              size="small"
-                              onClick={() => handleEdit(product)}
-                              sx={{ 
-                                color: '#97553B',
-                                backgroundColor: alpha('#97553B', 0.1),
-                                '&:hover': { 
-                                  backgroundColor: alpha('#97553B', 0.2),
-                                  transform: 'scale(1.1)',
-                                },
-                                transition: 'all 0.3s ease',
-                              }}
-                            >
-                              <EditIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Delete Product" arrow>
-                            <IconButton 
-                              size="small"
-                              onClick={() => handleDelete(product._id)}
-                              sx={{ 
-                                color: '#dc3545',
-                                backgroundColor: alpha('#dc3545', 0.1),
-                                '&:hover': { 
-                                  backgroundColor: alpha('#dc3545', 0.2),
-                                  transform: 'scale(1.1)',
-                                },
-                                transition: 'all 0.3s ease',
-                              }}
-                            >
-                              <DeleteIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </Box>
-                      </TableCell>
-                    </StyledTableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+        )}
+        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 500, margin: '0 auto' }}>
+          <TextField
+            label="Name"
+            name="name"
+            value={formData.name}
+            onChange={handleInputChange}
+            required
+            disabled={loading}
+            error={!formData.name.trim() && error}
+            helperText={!formData.name.trim() && error ? "Name is required" : ""}
+          />
+          <TextField
+            label="Description"
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
+            required
+            multiline
+            rows={3}
+            disabled={loading}
+            error={!formData.description.trim() && error}
+            helperText={!formData.description.trim() && error ? "Description is required" : ""}
+          />
+          <TextField
+            label="Price"
+            name="price"
+            type="number"
+            value={formData.price}
+            onChange={handleInputChange}
+            required
+            disabled={loading}
+            error={(isNaN(parseFloat(formData.price)) || parseFloat(formData.price) <= 0) && error}
+            helperText={(isNaN(parseFloat(formData.price)) || parseFloat(formData.price) <= 0) && error ? "Price must be positive" : ""}
+          />
+          <TextField
+            label="Stock Quantity"
+            name="stockQuantity"
+            type="number"
+            value={formData.stockQuantity}
+            onChange={handleInputChange}
+            required
+            disabled={loading}
+            error={(isNaN(parseInt(formData.stockQuantity, 10)) || parseInt(formData.stockQuantity, 10) < 0) && error}
+            helperText={(isNaN(parseInt(formData.stockQuantity, 10)) || parseInt(formData.stockQuantity, 10) < 0) && error ? "Stock must be non-negative" : ""}
+          />
+          <TextField
+            label="Category"
+            name="category"
+            value={formData.category}
+            onChange={handleInputChange}
+            required
+            disabled={loading}
+            error={!formData.category.trim() && error}
+            helperText={!formData.category.trim() && error ? "Category is required" : ""}
+          />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            disabled={loading}
+          />
+          <Button
+            type="submit"
+            variant="contained"
+            sx={{ backgroundColor: '#DAA520', '&:hover': { backgroundColor: '#228B22' } }}
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} /> : editingProduct ? 'Update Product' : 'Add Product'}
+          </Button>
+          {editingProduct && (
+            <Button
+              variant="outlined"
+              onClick={() => {
+                setEditingProduct(null);
+                setFormData({ name: '', description: '', price: '', stockQuantity: '', category: '', image: null });
+                setError(null); // Clear error on cancel
+              }}
+              disabled={loading}
+            >
+              Cancel Edit
+            </Button>
           )}
-        </StyledPaper>
-      </Box>
+        </Box>
+        <Typography variant="h5" sx={{ marginTop: 4, marginBottom: 2 }}>
+          Product List
+        </Typography>
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            <CircularProgress />
+          </Box>
+        ) : products.length === 0 ? (
+          <Typography>No products available.</Typography>
+        ) : (
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Image</TableCell>
+                <TableCell>Name</TableCell>
+                <TableCell>Category</TableCell>
+                <TableCell>Price</TableCell>
+                <TableCell>Stock</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {products.map((product) => (
+                <TableRow key={product._id}>
+                  <TableCell>
+                    <img
+                      src={product.image 
+                        ? `http://localhost:5000${product.image}` 
+                        : 'https://placehold.co/50x50/brown/white?text=No+Image'}
+                      alt={product.name}
+                      style={{ 
+                        width: 50, 
+                        height: 50, 
+                        objectFit: 'cover', 
+                        borderRadius: '4px',
+                        border: '1px solid #ddd'
+                      }}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://placehold.co/50x50/brown/white?text=Error';
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell>{product.name}</TableCell>
+                  <TableCell>{product.category}</TableCell>
+                  <TableCell>LKR {product.price.toFixed(2)}</TableCell>
+                  <TableCell>{product.stockQuantity}</TableCell>
+                  <TableCell>
+                    <IconButton onClick={() => handleEdit(product)} disabled={loading}>
+                      <Edit />
+                    </IconButton>
+                    <IconButton onClick={() => handleDelete(product._id)} disabled={loading}>
+                      <Delete />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </Container>
     </Box>
   );
 };

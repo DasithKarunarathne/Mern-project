@@ -90,9 +90,8 @@ const ActionButton = styled(Button)(({ theme }) => ({
 
 const MonthlyOvertime = () => {
   const { year: paramYear, month: paramMonth } = useParams();
-  const currentDate = new Date();
-  const [year, setYear] = useState(paramYear || currentDate.getFullYear().toString());
-  const [month, setMonth] = useState(paramMonth || (currentDate.getMonth() + 1).toString().padStart(2, '0'));
+  const [year, setYear] = useState(paramYear || "2025");
+  const [month, setMonth] = useState(paramMonth || "03");
   const [monthlyOvertime, setMonthlyOvertime] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);

@@ -103,137 +103,81 @@ export default function UpdateInventories() {
     // Styles
     const styles = {
         container: {
-            maxWidth: '800px',
-            margin: '2rem auto',
-            padding: '2rem',
-            backgroundColor: '#ffffff',
-            borderRadius: '12px',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-        },
-        header: {
-            color: '#5D4037',
-            marginBottom: '2rem',
-            textAlign: 'center',
-            fontSize: '1.8rem',
-            fontWeight: '600'
+            maxWidth: "800px",
+            margin: "0 auto",
+            padding: "20px"
         },
         form: {
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '1.5rem'
+            backgroundColor: "#f9f9f9",
+            padding: "20px",
+            borderRadius: "8px",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
         },
         formGroup: {
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.5rem'
+            marginBottom: "15px"
         },
-        'formGroup label': {
-            fontWeight: '600',
-            color: '#5D4037',
-            fontSize: '1rem'
+        label: {
+            display: "block",
+            marginBottom: "5px",
+            fontWeight: "bold"
         },
-        'formGroup input': {
-            padding: '0.75rem 1rem',
-            border: '1px solid #BCAAA4',
-            borderRadius: '8px',
-            fontSize: '1rem',
-            transition: 'all 0.3s ease',
-            '&:focus': {
-                outline: 'none',
-                borderColor: '#8D6E63',
-                boxShadow: '0 0 0 3px rgba(141, 110, 99, 0.1)'
-            }
+        input: {
+            width: "100%",
+            padding: "10px",
+            border: "1px solid #ddd",
+            borderRadius: "4px"
         },
-        buttonContainer: {
-            display: 'flex',
-            gap: '1rem',
-            justifyContent: 'center',
-            marginTop: '1.5rem'
-        },
-        submitButton: {
-            padding: '0.75rem 1.5rem',
-            backgroundColor: '#8D6E63',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '1rem',
-            fontWeight: '500',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            '&:hover': {
-                backgroundColor: '#6D4C41',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 4px 12px rgba(141, 110, 99, 0.3)'
-            }
+        button: {
+            padding: "10px 15px",
+            backgroundColor: "#8B4513",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            marginRight: "10px"
         },
         cancelButton: {
-            padding: '0.75rem 1.5rem',
-            backgroundColor: '#A1887F',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '1rem',
-            fontWeight: '500',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            '&:hover': {
-                backgroundColor: '#8D6E63',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 4px 12px rgba(161, 136, 127, 0.3)'
-            }
+            backgroundColor: "#f44336"
         },
-        error: {
-            color: '#D32F2F',
-            backgroundColor: '#FFEBEE',
-            padding: '1rem',
-            borderRadius: '8px',
-            marginBottom: '1rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem'
+        message: {
+            padding: "10px",
+            marginBottom: "15px",
+            borderRadius: "4px"
         },
         success: {
-            color: '#388E3C',
-            backgroundColor: '#E8F5E9',
-            padding: '1rem',
-            borderRadius: '8px',
-            marginBottom: '1rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem'
+            backgroundColor: "#dff0d8",
+            color: "#3c763d"
         },
-        loading: {
-            textAlign: 'center',
-            padding: '2rem',
-            color: '#5D4037',
-            fontSize: '1.1rem'
+        error: {
+            backgroundColor: "#f2dede",
+            color: "#a94442"
         }
     };
 
     return (
         <div style={styles.container}>
-            <h1 style={styles.header}>Update Inventory Item</h1>
+            <h1>Update Inventory Item</h1>
             
             {successMessage && (
-                <div style={styles.success}>
+                <div style={{...styles.message, ...styles.success}}>
                     {successMessage}
                 </div>
             )}
             
             {errorMessage && (
-                <div style={styles.error}>
+                <div style={{...styles.message, ...styles.error}}>
                     {errorMessage}
                 </div>
             )}
 
             {loading ? (
-                <div style={styles.loading}>Loading...</div>
+                <div>Loading...</div>
             ) : (
                 <form onSubmit={handleSubmit} style={styles.form}>
                     <div style={styles.formGroup}>
-                        <label style={styles['formGroup label']}>Item Number</label>
+                        <label style={styles.label}>Item Number</label>
                         <input
-                            style={styles['formGroup input']}
+                            style={styles.input}
                             type="text"
                             name="itemno"
                             value={formData.itemno}
@@ -243,9 +187,9 @@ export default function UpdateInventories() {
                     </div>
                     
                     <div style={styles.formGroup}>
-                        <label style={styles['formGroup label']}>Item Name</label>
+                        <label style={styles.label}>Item Name</label>
                         <input
-                            style={styles['formGroup input']}
+                            style={styles.input}
                             type="text"
                             name="itemname"
                             value={formData.itemname}
@@ -255,9 +199,9 @@ export default function UpdateInventories() {
                     </div>
                     
                     <div style={styles.formGroup}>
-                        <label style={styles['formGroup label']}>Price</label>
+                        <label style={styles.label}>Price</label>
                         <input
-                            style={styles['formGroup input']}
+                            style={styles.input}
                             type="number"
                             step="0.01"
                             name="price"
@@ -268,9 +212,9 @@ export default function UpdateInventories() {
                     </div>
                     
                     <div style={styles.formGroup}>
-                        <label style={styles['formGroup label']}>Quantity</label>
+                        <label style={styles.label}>Quantity</label>
                         <input
-                            style={styles['formGroup input']}
+                            style={styles.input}
                             type="number"
                             name="quantity"
                             value={formData.quantity}
@@ -280,9 +224,9 @@ export default function UpdateInventories() {
                     </div>
                     
                     <div style={styles.formGroup}>
-                        <label style={styles['formGroup label']}>Description</label>
+                        <label style={styles.label}>Description</label>
                         <textarea
-                            style={{...styles['formGroup input'], minHeight: "100px"}}
+                            style={{...styles.input, minHeight: "100px"}}
                             name="description"
                             value={formData.description}
                             onChange={handleChange}
@@ -290,9 +234,9 @@ export default function UpdateInventories() {
                     </div>
                     
                     <div style={styles.formGroup}>
-                        <label style={styles['formGroup label']}>Inventory Date</label>
+                        <label style={styles.label}>Inventory Date</label>
                         <input
-                            style={styles['formGroup input']}
+                            style={styles.input}
                             type="date"
                             name="inventorydate"
                             value={formData.inventorydate}
@@ -300,17 +244,17 @@ export default function UpdateInventories() {
                         />
                     </div>
                     
-                    <div style={styles.buttonContainer}>
+                    <div>
                         <button 
                             type="submit" 
-                            style={styles.submitButton}
+                            style={styles.button}
                             disabled={loading}
                         >
                             {loading ? "Updating..." : "Update"}
                         </button>
                         <button 
                             type="button" 
-                            style={styles.cancelButton}
+                            style={{...styles.button, ...styles.cancelButton}}
                             onClick={() => navigate("/inventory/display")}
                         >
                             Cancel
