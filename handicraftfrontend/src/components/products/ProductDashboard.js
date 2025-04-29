@@ -188,6 +188,8 @@ const ProductDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [loginDialog, setLoginDialog] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const MAX_RETRIES = 3;
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   

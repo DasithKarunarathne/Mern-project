@@ -68,28 +68,28 @@ export const addToCart = (data) => {
   if (!data.userId) {
     throw new Error('userId is required for addToCart');
   }
-  return axiosInstance.post('/cart', data);
+  return axiosInstance.post('/product/cart', data);
 };
 
 export const getCart = (userId) => {
   if (!userId) {
     throw new Error('userId is required for getCart');
   }
-  return axiosInstance.get(`/cart/user/${userId}`);
+  return axiosInstance.get(`/product/cart/user/${userId}`);
 };
 
 export const updateCartQuantity = (id, quantity, userId) => {
   if (!userId) {
     throw new Error('userId is required for updateCartQuantity');
   }
-  return axiosInstance.put(`/cart/${id}`, { quantity, userId });
+  return axiosInstance.put(`/product/cart/${id}`, { quantity, userId });
 };
 
 export const removeFromCart = (id, userId) => {
   if (!userId) {
     throw new Error('userId is required for removeFromCart');
   }
-  return axiosInstance.delete(`/cart/${id}`, { data: { userId } });
+  return axiosInstance.delete(`/product/cart/${id}`, { data: { userId } });
 };
 
 // Order-related API functions
